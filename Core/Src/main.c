@@ -29,6 +29,11 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include <stdio.h>         // 包含标准输入输出库，用于printf功能
+#include "gpio.h"          // 包含GPIO驱动模块头文件，用于GPIO底层操作
+#include "relay_control.h"
+
+
 
 /* USER CODE END Includes */
 
@@ -61,6 +66,21 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
+/**
+  * @brief  重定向printf函数到USART3，用于调试信息输出
+  * @param  ch: 要发送的字符
+  * @param  f: 文件指针（未使用）
+  * @retval 发送的字符
+  */
+// int fputc(int ch, FILE *f)
+// {
+//   // 通过USART3发送单个字符，等待发送完成
+//   HAL_UART_Transmit(&huart3, (uint8_t *)&ch, 1, HAL_MAX_DELAY);
+//   return ch;  // 返回发送的字符
+// }
+
+
 
 /* USER CODE END 0 */
 
@@ -96,12 +116,40 @@ int main(void)
   MX_DMA_Init();
   MX_ADC1_Init();
   MX_I2C1_Init();
-  MX_IWDG_Init();
+  // IWDG_Module_Init();        // 完全禁用看门狗，避免系统重启
   MX_SPI2_Init();
   MX_TIM3_Init();
   MX_USART1_UART_Init();
   MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
+  
+  // 延时200ms等待系统稳定
+  HAL_Delay(200);
+  
+  // 串口初始化测试
+  printf("\r\n");
+  printf("================================================\r\n");
+  printf("三通道高压切换控制器 v3.0\r\n");
+  printf("系统启动中...\r\n");
+  printf("------------------------------------------------\r\n");
+  printf("串口调试功能测试成功！\r\n");
+  printf("串口配置：115200 8N1\r\n");
+  printf("------------------------------------------------\r\n");
+  
+  // 测试DEBUG_Printf函数
+  DEBUG_Printf("系统时钟频率：%dMHz\r\n", (int)(HAL_RCC_GetSysClockFreq()/1000000));
+  DEBUG_Printf("当前编译时间：%s %s\r\n", __DATE__, __TIME__);
+  DEBUG_Printf("------------------------------------------------\r\n");
+
+  // 初始化继电器控制模块
+  RelayControl_Init();
+  DEBUG_Printf("继电器控制模块初始化完成\r\n");
+  
+  // 测试继电器状态读取
+  DEBUG_Printf("通道1状态: %d\r\n", RelayControl_GetChannelState(1));
+  DEBUG_Printf("通道2状态: %d\r\n", RelayControl_GetChannelState(2));
+  DEBUG_Printf("通道3状态: %d\r\n", RelayControl_GetChannelState(3));
+  DEBUG_Printf("------------------------------------------------\r\n");
 
   /* USER CODE END 2 */
 
@@ -112,6 +160,13 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+    
+    // 主循环控制，无调试输出
+    // 看门狗已禁用，系统运行在调试模式下
+    
+    // 主循环延时1ms，避免CPU占用过高（短延时无需智能延时）
+    HAL_Delay(1);
+    
   }
   /* USER CODE END 3 */
 }

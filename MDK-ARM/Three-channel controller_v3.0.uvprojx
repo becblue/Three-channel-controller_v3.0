@@ -449,34 +449,14 @@
               <FilePath>../Core/Src/stm32f1xx_hal_msp.c</FilePath>
             </File>
             <File>
-              <FileName>alarm.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Core\Src\alarm.c</FilePath>
-            </File>
-            <File>
-              <FileName>fan_control.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Core\Src\fan_control.c</FilePath>
-            </File>
-            <File>
-              <FileName>oled_display.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Core\Src\oled_display.c</FilePath>
-            </File>
-            <File>
               <FileName>relay_control.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Core\Src\relay_control.c</FilePath>
             </File>
             <File>
-              <FileName>switch_control.c</FileName>
+              <FileName>gpio_control.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\Core\Src\switch_control.c</FilePath>
-            </File>
-            <File>
-              <FileName>temperature.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Core\Src\temperature.c</FilePath>
+              <FilePath>..\Core\Src\gpio_control.c</FilePath>
             </File>
           </Files>
         </Group>
