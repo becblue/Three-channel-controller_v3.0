@@ -449,11 +449,6 @@
               <FilePath>../Core/Src/stm32f1xx_hal_msp.c</FilePath>
             </File>
             <File>
-              <FileName>relay_control.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Core\Src\relay_control.c</FilePath>
-            </File>
-            <File>
               <FileName>gpio_control.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Core\Src\gpio_control.c</FilePath>

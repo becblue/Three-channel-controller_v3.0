@@ -31,9 +31,6 @@
 /* USER CODE BEGIN Includes */
 #include <stdio.h>         // 包含标准输入输出库，用于printf功能
 #include "gpio.h"          // 包含GPIO驱动模块头文件，用于GPIO底层操作
-#include "relay_control.h"
-
-
 
 /* USER CODE END Includes */
 
@@ -127,28 +124,21 @@ int main(void)
   HAL_Delay(200);
   
   // 串口初始化测试
-  printf("\r\n");
-  printf("================================================\r\n");
-  printf("三通道高压切换控制器 v3.0\r\n");
-  printf("系统启动中...\r\n");
-  printf("------------------------------------------------\r\n");
-  printf("串口调试功能测试成功！\r\n");
-  printf("串口配置：115200 8N1\r\n");
-  printf("------------------------------------------------\r\n");
-  
-  // 测试DEBUG_Printf函数
+  printf("\r\n==============================\r\n");
+  printf("三通道高压切换控制器 v3.0 启动\r\n");
+  printf("串口调试功能测试\r\n");
   DEBUG_Printf("系统时钟频率：%dMHz\r\n", (int)(HAL_RCC_GetSysClockFreq()/1000000));
   DEBUG_Printf("当前编译时间：%s %s\r\n", __DATE__, __TIME__);
-  DEBUG_Printf("------------------------------------------------\r\n");
+  printf("==============================\r\n");
 
   // 初始化继电器控制模块
-  RelayControl_Init();
+  // RelayControl_Init();
   DEBUG_Printf("继电器控制模块初始化完成\r\n");
   
   // 测试继电器状态读取
-  DEBUG_Printf("通道1状态: %d\r\n", RelayControl_GetChannelState(1));
-  DEBUG_Printf("通道2状态: %d\r\n", RelayControl_GetChannelState(2));
-  DEBUG_Printf("通道3状态: %d\r\n", RelayControl_GetChannelState(3));
+  // DEBUG_Printf("通道1状态: %d\r\n", RelayControl_GetChannelState(1));
+  // DEBUG_Printf("通道2状态: %d\r\n", RelayControl_GetChannelState(2));
+  // DEBUG_Printf("通道3状态: %d\r\n", RelayControl_GetChannelState(3));
   DEBUG_Printf("------------------------------------------------\r\n");
 
   /* USER CODE END 2 */

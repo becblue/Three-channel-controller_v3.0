@@ -196,30 +196,21 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle)
 
 /* USER CODE BEGIN 1 */
 
-/**
-  * @brief  重定向printf到串口
-  * @note   
-  * @param  
-  * @retval 
-  */
+// printf重定向相关定义
 #ifdef __GNUC__
 #define PUTCHAR_PROTOTYPE int __io_putchar(int ch)
 #else
 #define PUTCHAR_PROTOTYPE int fputc(int ch, FILE *f)
 #endif
 
+// printf重定向到USART3
 PUTCHAR_PROTOTYPE
 {
-    /* 发送一个字节数据到串口 */
     HAL_UART_Transmit(&huart3, (uint8_t *)&ch, 1, 0xFFFF);
     return ch;
 }
 
-/**
-  * @brief  发送调试信息
-  * @param  format: 格式化字符串
-  * @retval 无
-  */
+// 调试信息格式化输出函数
 void DEBUG_Printf(const char *format, ...)
 {
     char buf[256];
@@ -227,7 +218,6 @@ void DEBUG_Printf(const char *format, ...)
     va_start(args, format);
     vsprintf(buf, format, args);
     va_end(args);
-    
     HAL_UART_Transmit(&huart3, (uint8_t *)buf, strlen(buf), 0xFFFF);
 }
 

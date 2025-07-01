@@ -19,8 +19,9 @@
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
+#include "main.h"
 #include "gpio.h"
-#include "relay_control.h"
+// #include "relay_control.h"
 
 /* USER CODE BEGIN 0 */
 
@@ -168,15 +169,15 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
     switch(GPIO_Pin)
     {
         case K1_EN_Pin:
-            RelayControl_HandleEnableSignal(1, HAL_GPIO_ReadPin(K1_EN_GPIO_Port, K1_EN_Pin));
+            // RelayControl_HandleEnableSignal(1, HAL_GPIO_ReadPin(K1_EN_GPIO_Port, K1_EN_Pin));
             break;
             
         case K2_EN_Pin:
-            RelayControl_HandleEnableSignal(2, HAL_GPIO_ReadPin(K2_EN_GPIO_Port, K2_EN_Pin));
+            // RelayControl_HandleEnableSignal(2, HAL_GPIO_ReadPin(K2_EN_GPIO_Port, K2_EN_Pin));
             break;
             
         case K3_EN_Pin:
-            RelayControl_HandleEnableSignal(3, HAL_GPIO_ReadPin(K3_EN_GPIO_Port, K3_EN_Pin));
+            // RelayControl_HandleEnableSignal(3, HAL_GPIO_ReadPin(K3_EN_GPIO_Port, K3_EN_Pin));
             break;
             
         case DC_CTRL_Pin:

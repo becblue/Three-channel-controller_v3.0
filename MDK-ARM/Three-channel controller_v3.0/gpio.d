@@ -1,5 +1,4 @@
 three-channel controller_v3.0\gpio.o: ../Core/Src/gpio.c
-three-channel controller_v3.0\gpio.o: ../Core/Inc/gpio.h
 three-channel controller_v3.0\gpio.o: ../Core/Inc/main.h
 three-channel controller_v3.0\gpio.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h
 three-channel controller_v3.0\gpio.o: ../Core/Inc/stm32f1xx_hal_conf.h
@@ -34,5 +33,4 @@ three-channel controller_v3.0\gpio.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f
 three-channel controller_v3.0\gpio.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim.h
 three-channel controller_v3.0\gpio.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim_ex.h
 three-channel controller_v3.0\gpio.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h
-three-channel controller_v3.0\gpio.o: ../Core/Inc/relay_control.h
-three-channel controller_v3.0\gpio.o: ../Core/Inc/gpio_control.h
+three-channel controller_v3.0\gpio.o: ../Core/Inc/gpio.h
