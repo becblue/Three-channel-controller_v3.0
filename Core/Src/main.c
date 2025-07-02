@@ -139,6 +139,9 @@ int main(void)
   // 启动风扇PWM输出，确保PA6有PWM信号输出
   HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1); // 必须有，否则无PWM波形
 
+  // ★★★ 增加温度监控初始化，启动ADC+DMA采集 ★★★
+  TemperatureMonitor_Init();
+
   // 继电器控制模块初始化及功能测试
   RelayControl_Init();
   HAL_Delay(500);

@@ -214,7 +214,11 @@ FanSpeedInfo_t TemperatureMonitor_GetFanSpeed(void)
 void TemperatureMonitor_DebugPrint(void)
 {
     for (int i = 0; i < TEMP_CH_MAX; ++i) {
-        DEBUG_Printf("[温度监控] 通道%d: %.1f℃ 状态=%d\r\n", i+1, tempInfos[i].value_celsius, tempInfos[i].state);
+        float voltage = adc_dma_buf[i] * NTC_VREF / 4095.0f;
+        float r_ntc = CalcNTCRes(voltage);
+        float temp = NTC_ResToTemp(r_ntc);
+        DEBUG_Printf("[温度监控] 通道%d: ADC原始值=%d, 电压=%.3fV, 温度=%.1f℃ 状态=%d\r\n",
+            i+1, adc_dma_buf[i], voltage, temp, tempInfos[i].state);
     }
     DEBUG_Printf("[温度监控] 风扇PWM: %d%%\r\n", fan_pwm);
     DEBUG_Printf("[温度监控] 风扇转速: %d RPM\r\n", fan_rpm);
