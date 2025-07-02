@@ -394,6 +394,21 @@
           <GroupName>Application/User/Core</GroupName>
           <Files>
             <File>
+              <FileName>gpio_control.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Core\Src\gpio_control.c</FilePath>
+            </File>
+            <File>
+              <FileName>relay_control.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Core\Src\relay_control.c</FilePath>
+            </File>
+            <File>
+              <FileName>temperature_monitor.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Core\Src\temperature_monitor.c</FilePath>
+            </File>
+            <File>
               <FileName>main.c</FileName>
               <FileType>1</FileType>
               <FilePath>../Core/Src/main.c</FilePath>
@@ -419,11 +434,6 @@
               <FilePath>../Core/Src/i2c.c</FilePath>
             </File>
             <File>
-              <FileName>iwdg.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../Core/Src/iwdg.c</FilePath>
-            </File>
-            <File>
               <FileName>spi.c</FileName>
               <FileType>1</FileType>
               <FilePath>../Core/Src/spi.c</FilePath>
@@ -447,21 +457,6 @@
               <FileName>stm32f1xx_hal_msp.c</FileName>
               <FileType>1</FileType>
               <FilePath>../Core/Src/stm32f1xx_hal_msp.c</FilePath>
-            </File>
-            <File>
-              <FileName>gpio_control.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Core\Src\gpio_control.c</FilePath>
-            </File>
-            <File>
-              <FileName>relay_control.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Core\Src\relay_control.c</FilePath>
-            </File>
-            <File>
-              <FileName>temperature_monitor.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Core\Src\temperature_monitor.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -537,11 +532,6 @@
               <FileName>stm32f1xx_hal_i2c.c</FileName>
               <FileType>1</FileType>
               <FilePath>../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_i2c.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32f1xx_hal_iwdg.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_iwdg.c</FilePath>
             </File>
             <File>
               <FileName>stm32f1xx_hal_spi.c</FileName>

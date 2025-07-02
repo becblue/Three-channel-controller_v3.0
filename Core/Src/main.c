@@ -21,19 +21,17 @@
 #include "adc.h"
 #include "dma.h"
 #include "i2c.h"
-#include "iwdg.h"
 #include "spi.h"
 #include "tim.h"
 #include "usart.h"
 #include "gpio.h"
-#include "relay_control.h"
-#include "temperature_monitor.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <stdio.h>         // 包含标准输入输出库，用于printf功能
 #include "gpio.h"          // 包含GPIO驱动模块头文件，用于GPIO底层操作
-
+#include "relay_control.h"
+#include "temperature_monitor.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -115,7 +113,6 @@ int main(void)
   MX_DMA_Init();
   MX_ADC1_Init();
   MX_I2C1_Init();
-  // IWDG_Module_Init();        // 完全禁用看门狗，避免系统重启
   MX_SPI2_Init();
   MX_TIM3_Init();
   MX_USART1_UART_Init();
@@ -168,10 +165,19 @@ int main(void)
   HAL_Delay(1000);
 
   // ================== 温度与风扇检测流程 ==================
+  extern volatile uint32_t fan_pulse_count;
+  extern uint32_t fan_rpm;
+  fan_pulse_count = 0;
+  fan_rpm = 0;
+  HAL_Delay(1000); // 预热1秒，确保统计窗口干净
+  // 丢弃第一个统计周期，避免启动瞬间脉冲堆积影响
+  TemperatureMonitor_FanSpeed1sHandler();
+  HAL_Delay(1000);
   DEBUG_Printf("[测试] 开始风扇PWM由慢到快检测\r\n");
   for(int t=0; t<10; t++) {
     uint8_t pwm = 10 + (90 * t) / 9; // 10%~100%
     TemperatureMonitor_SetFanPWM(pwm);
+    fan_pulse_count = 0; // 关键：每次PWM变化后先清零
     HAL_Delay(1000);
     TemperatureMonitor_FanSpeed1sHandler(); // 1秒统计转速
     FanSpeedInfo_t info = TemperatureMonitor_GetFanSpeed();
@@ -181,12 +187,22 @@ int main(void)
   for(int t=0; t<10; t++) {
     uint8_t pwm = 100 - (90 * t) / 9; // 100%~10%
     TemperatureMonitor_SetFanPWM(pwm);
+    fan_pulse_count = 0; // 关键：每次PWM变化后先清零
     HAL_Delay(1000);
     TemperatureMonitor_FanSpeed1sHandler(); // 1秒统计转速
     FanSpeedInfo_t info = TemperatureMonitor_GetFanSpeed();
     DEBUG_Printf("[风扇测试] PWM: %d%%, 实际转速: %d RPM\r\n", pwm, info.rpm);
   }
   DEBUG_Printf("[测试] 风扇检测流程结束\r\n");
+
+  // ================== ADC温度采集测试流程 ==================
+  DEBUG_Printf("[测试] 开始ADC温度采集测试，共10分钟\r\n");
+  for(int t=0; t<600; t++) {
+    TemperatureMonitor_UpdateAll(); // 刷新所有通道温度
+    TemperatureMonitor_DebugPrint(); // 输出3路温度
+    HAL_Delay(1000);
+  }
+  DEBUG_Printf("[测试] ADC温度采集测试结束\r\n");
 
   /* USER CODE END 2 */
 
@@ -221,11 +237,10 @@ void SystemClock_Config(void)
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSI|RCC_OSCILLATORTYPE_HSE;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
   RCC_OscInitStruct.HSEPredivValue = RCC_HSE_PREDIV_DIV1;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
-  RCC_OscInitStruct.LSIState = RCC_LSI_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
   RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL9;

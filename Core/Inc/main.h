@@ -110,6 +110,7 @@ void Error_Handler(void);
 #define K3_EN_EXTI_IRQn EXTI15_10_IRQn
 #define FAN_SEN_Pin GPIO_PIN_12
 #define FAN_SEN_GPIO_Port GPIOC
+#define FAN_SEN_EXTI_IRQn EXTI15_10_IRQn
 #define K3_2_ON_Pin GPIO_PIN_2
 #define K3_2_ON_GPIO_Port GPIOD
 #define BEEP_Pin GPIO_PIN_3

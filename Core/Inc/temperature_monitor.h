@@ -42,6 +42,9 @@ typedef struct {
     uint32_t pulse_count; // 1秒内检测到的脉冲数
 } FanSpeedInfo_t;
 
+// ================== ADC DMA采样相关 ===================
+extern uint16_t adc_dma_buf[TEMP_CH_MAX]; // DMA采样缓冲区
+
 // 温度监控模块初始化
 void TemperatureMonitor_Init(void);
 

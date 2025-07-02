@@ -48,11 +48,12 @@ static uint8_t fan_pwm = FAN_PWM_NORMAL;
 // ================== 风扇转速测量相关 ===================
 #define FAN_SEN_PULSE_PER_REV 2 // 每转脉冲数（根据风扇规格调整）
 volatile uint32_t fan_pulse_count = 0; // 1秒内脉冲计数
-static uint32_t fan_rpm = 0; // 当前风扇转速(RPM)
+uint32_t fan_rpm = 0; // 当前风扇转速(RPM)
+
+// ================== ADC DMA采样相关 ===================
+uint16_t adc_dma_buf[TEMP_CH_MAX] = {0}; // DMA采样缓冲区
 
 // ================== 内部工具函数 ===================
-// ADC采集通道映射（需与CubeMX配置一致）
-static uint32_t adc_channel_map[TEMP_CH_MAX] = {ADC_CHANNEL_0, ADC_CHANNEL_1, ADC_CHANNEL_2};
 
 // 由ADC采集电压计算NTC阻值（单位：kΩ）
 static float CalcNTCRes(float voltage)
@@ -76,14 +77,6 @@ static float NTC_ResToTemp(float r_ntc)
     return ntc_table[NTC_TABLE_SIZE-1].temp;
 }
 
-// 获取ADC采集电压（单位：V）
-static float GetNTCVoltage(TempChannel_t ch)
-{
-    uint32_t adc_val = HAL_ADC_GetValue(&hadc1); // 实际应切换通道并采集
-    float voltage = adc_val * NTC_VREF / 4095.0f;
-    return voltage;
-}
-
 // ================== 接口实现 ===================
 
 // 初始化温度监控模块
@@ -95,24 +88,25 @@ void TemperatureMonitor_Init(void)
         lastStates[i] = TEMP_STATE_NORMAL;
     }
     fan_pwm = FAN_PWM_NORMAL;
-    // 可初始化ADC、PWM等外设
-    DEBUG_Printf("[温度监控] 初始化完成\r\n");
+    // 启动ADC DMA采集
+    HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_dma_buf, TEMP_CH_MAX);
+    DEBUG_Printf("[温度监控] 初始化完成，已启动ADC DMA采集\r\n");
+}
+
+// ADC DMA采集完成回调
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
+{
+    if (hadc->Instance == ADC1) {
+        // 采集完成回调，但不需要在这里处理，因为UpdateAll()会直接处理DMA缓冲区
+    }
 }
 
 // 采集所有NTC温度并更新状态（建议定时调用）
 void TemperatureMonitor_UpdateAll(void)
 {
+    // 直接处理DMA缓冲区，无需等待标志
     for (int i = 0; i < TEMP_CH_MAX; ++i) {
-        // 切换ADC通道并采集
-        ADC_ChannelConfTypeDef sConfig = {0};
-        sConfig.Channel = adc_channel_map[i];
-        sConfig.Rank = ADC_REGULAR_RANK_1;
-        sConfig.SamplingTime = ADC_SAMPLETIME_55CYCLES_5;
-        HAL_ADC_ConfigChannel(&hadc1, &sConfig);
-        HAL_ADC_Start(&hadc1);
-        HAL_ADC_PollForConversion(&hadc1, 10);
-        float voltage = GetNTCVoltage((TempChannel_t)i);
-        HAL_ADC_Stop(&hadc1);
+        float voltage = adc_dma_buf[i] * NTC_VREF / 4095.0f;
         float r_ntc = CalcNTCRes(voltage); // 先算阻值
         float temp = NTC_ResToTemp(r_ntc); // 再查表反查温度
         tempInfos[i].value_celsius = temp;
@@ -146,7 +140,6 @@ void TemperatureMonitor_UpdateAll(void)
     } else {
         fan_pwm = FAN_PWM_NORMAL;
     }
-    // 设置风扇PWM（假设TIM3->CCR1控制）
     uint32_t arr = __HAL_TIM_GET_AUTORELOAD(&htim3);
     uint32_t ccr = (fan_pwm * (arr + 1)) / 100;
     __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, ccr);
