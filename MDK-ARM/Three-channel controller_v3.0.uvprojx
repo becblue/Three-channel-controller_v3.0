@@ -458,6 +458,11 @@
               <FileType>1</FileType>
               <FilePath>../Core/Src/stm32f1xx_hal_msp.c</FilePath>
             </File>
+            <File>
+              <FileName>oled_display.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Core\Src\oled_display.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
