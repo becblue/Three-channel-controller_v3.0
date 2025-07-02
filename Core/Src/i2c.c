@@ -19,6 +19,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "i2c.h"
+#include "usart.h"
 
 /* USER CODE BEGIN 0 */
 
@@ -54,6 +55,7 @@ void MX_I2C1_Init(void)
 
   /* USER CODE END I2C1_Init 2 */
 
+  DEBUG_Printf("I2C1初始化完成\r\n");
 }
 
 void HAL_I2C_MspInit(I2C_HandleTypeDef* i2cHandle)

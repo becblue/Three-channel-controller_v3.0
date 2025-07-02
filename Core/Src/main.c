@@ -26,6 +26,7 @@
 #include "tim.h"
 #include "usart.h"
 #include "gpio.h"
+#include "relay_control.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -131,15 +132,36 @@ int main(void)
   DEBUG_Printf("当前编译时间：%s %s\r\n", __DATE__, __TIME__);
   printf("==============================\r\n");
 
-  // 初始化继电器控制模块
-  // RelayControl_Init();
-  DEBUG_Printf("继电器控制模块初始化完成\r\n");
-  
-  // 测试继电器状态读取
-  // DEBUG_Printf("通道1状态: %d\r\n", RelayControl_GetChannelState(1));
-  // DEBUG_Printf("通道2状态: %d\r\n", RelayControl_GetChannelState(2));
-  // DEBUG_Printf("通道3状态: %d\r\n", RelayControl_GetChannelState(3));
-  DEBUG_Printf("------------------------------------------------\r\n");
+  // 外设初始化及调试输出
+  MX_ADC1_Init();
+  MX_TIM3_Init();
+  MX_I2C1_Init();
+  MX_SPI2_Init();
+
+  // 继电器控制模块初始化及功能测试
+  RelayControl_Init();
+  HAL_Delay(500);
+  // 依次测试三通道的开启和关闭
+  DEBUG_Printf("[测试] 开启通道1\r\n");
+  RelayControl_OpenChannel(1);
+  HAL_Delay(1000);
+  DEBUG_Printf("[测试] 关闭通道1\r\n");
+  RelayControl_CloseChannel(1);
+  HAL_Delay(1000);
+
+  DEBUG_Printf("[测试] 开启通道2\r\n");
+  RelayControl_OpenChannel(2);
+  HAL_Delay(1000);
+  DEBUG_Printf("[测试] 关闭通道2\r\n");
+  RelayControl_CloseChannel(2);
+  HAL_Delay(1000);
+
+  DEBUG_Printf("[测试] 开启通道3\r\n");
+  RelayControl_OpenChannel(3);
+  HAL_Delay(1000);
+  DEBUG_Printf("[测试] 关闭通道3\r\n");
+  RelayControl_CloseChannel(3);
+  HAL_Delay(1000);
 
   /* USER CODE END 2 */
 

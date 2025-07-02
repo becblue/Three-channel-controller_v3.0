@@ -19,6 +19,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "spi.h"
+#include "usart.h"
 
 /* USER CODE BEGIN 0 */
 
@@ -57,6 +58,7 @@ void MX_SPI2_Init(void)
 
   /* USER CODE END SPI2_Init 2 */
 
+  DEBUG_Printf("SPI2初始化完成\r\n");
 }
 
 void HAL_SPI_MspInit(SPI_HandleTypeDef* spiHandle)

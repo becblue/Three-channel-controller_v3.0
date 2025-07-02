@@ -19,6 +19,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "adc.h"
+#include "usart.h"
 
 /* USER CODE BEGIN 0 */
 
@@ -86,6 +87,7 @@ void MX_ADC1_Init(void)
 
   /* USER CODE END ADC1_Init 2 */
 
+  DEBUG_Printf("ADC1初始化完成\r\n");
 }
 
 void HAL_ADC_MspInit(ADC_HandleTypeDef* adcHandle)
