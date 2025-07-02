@@ -27,6 +27,7 @@
 #include "usart.h"
 #include "gpio.h"
 #include "relay_control.h"
+#include "temperature_monitor.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -138,6 +139,9 @@ int main(void)
   MX_I2C1_Init();
   MX_SPI2_Init();
 
+  // 启动风扇PWM输出，确保PA6有PWM信号输出
+  HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1); // 必须有，否则无PWM波形
+
   // 继电器控制模块初始化及功能测试
   RelayControl_Init();
   HAL_Delay(500);
@@ -162,6 +166,27 @@ int main(void)
   DEBUG_Printf("[测试] 关闭通道3\r\n");
   RelayControl_CloseChannel(3);
   HAL_Delay(1000);
+
+  // ================== 温度与风扇检测流程 ==================
+  DEBUG_Printf("[测试] 开始风扇PWM由慢到快检测\r\n");
+  for(int t=0; t<10; t++) {
+    uint8_t pwm = 10 + (90 * t) / 9; // 10%~100%
+    TemperatureMonitor_SetFanPWM(pwm);
+    HAL_Delay(1000);
+    TemperatureMonitor_FanSpeed1sHandler(); // 1秒统计转速
+    FanSpeedInfo_t info = TemperatureMonitor_GetFanSpeed();
+    DEBUG_Printf("[风扇测试] PWM: %d%%, 实际转速: %d RPM\r\n", pwm, info.rpm);
+  }
+  DEBUG_Printf("[测试] 开始风扇PWM由快到慢检测\r\n");
+  for(int t=0; t<10; t++) {
+    uint8_t pwm = 100 - (90 * t) / 9; // 100%~10%
+    TemperatureMonitor_SetFanPWM(pwm);
+    HAL_Delay(1000);
+    TemperatureMonitor_FanSpeed1sHandler(); // 1秒统计转速
+    FanSpeedInfo_t info = TemperatureMonitor_GetFanSpeed();
+    DEBUG_Printf("[风扇测试] PWM: %d%%, 实际转速: %d RPM\r\n", pwm, info.rpm);
+  }
+  DEBUG_Printf("[测试] 风扇检测流程结束\r\n");
 
   /* USER CODE END 2 */
 

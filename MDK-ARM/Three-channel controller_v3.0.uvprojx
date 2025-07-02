@@ -458,6 +458,11 @@
               <FileType>1</FileType>
               <FilePath>..\Core\Src\relay_control.c</FilePath>
             </File>
+            <File>
+              <FileName>temperature_monitor.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Core\Src\temperature_monitor.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

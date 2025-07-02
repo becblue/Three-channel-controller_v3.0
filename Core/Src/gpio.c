@@ -24,7 +24,7 @@
 // #include "relay_control.h"
 
 /* USER CODE BEGIN 0 */
-
+extern volatile uint32_t fan_pulse_count;
 /* USER CODE END 0 */
 
 /*----------------------------------------------------------------------------*/
@@ -182,6 +182,10 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
             
         case DC_CTRL_Pin:
             // 电源监控中断处理
+            break;
+            
+        case GPIO_PIN_12: // PC12风扇测速
+            fan_pulse_count++;
             break;
             
         default:
