@@ -23,6 +23,8 @@
 
 /* USER CODE BEGIN 0 */
 extern volatile uint32_t fan_pulse_count;
+#include "relay_control.h"
+#include "usart.h"
 /* USER CODE END 0 */
 
 /*----------------------------------------------------------------------------*/
@@ -123,7 +125,7 @@ void MX_GPIO_Init(void)
   /*Configure GPIO pin : PtPin */
   GPIO_InitStruct.Pin = K3_EN_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(K3_EN_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : PtPin */
@@ -142,7 +144,7 @@ void MX_GPIO_Init(void)
   /*Configure GPIO pins : PBPin PBPin */
   GPIO_InitStruct.Pin = K2_EN_Pin|K1_EN_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
@@ -161,19 +163,23 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
     switch(GPIO_Pin)
     {
         case K1_EN_Pin:
-            // RelayControl_HandleEnableSignal(1, HAL_GPIO_ReadPin(K1_EN_GPIO_Port, K1_EN_Pin));
+            // K1_EN中断处理：读取当前状态并传递给继电器控制模块
+            RelayControl_HandleEnableSignal(1, HAL_GPIO_ReadPin(K1_EN_GPIO_Port, K1_EN_Pin));
             break;
             
         case K2_EN_Pin:
-            // RelayControl_HandleEnableSignal(2, HAL_GPIO_ReadPin(K2_EN_GPIO_Port, K2_EN_Pin));
+            // K2_EN中断处理：读取当前状态并传递给继电器控制模块
+            RelayControl_HandleEnableSignal(2, HAL_GPIO_ReadPin(K2_EN_GPIO_Port, K2_EN_Pin));
             break;
             
         case K3_EN_Pin:
-            // RelayControl_HandleEnableSignal(3, HAL_GPIO_ReadPin(K3_EN_GPIO_Port, K3_EN_Pin));
+            // K3_EN中断处理：读取当前状态并传递给继电器控制模块
+            RelayControl_HandleEnableSignal(3, HAL_GPIO_ReadPin(K3_EN_GPIO_Port, K3_EN_Pin));
             break;
             
         case DC_CTRL_Pin:
-            // 电源监控中断处理
+            // 电源监控中断处理（预留，后续3.2阶段实现）
+            DEBUG_Printf("DC_CTRL中断触发\r\n");
             break;
             
         case GPIO_PIN_12: // PC12风扇测速

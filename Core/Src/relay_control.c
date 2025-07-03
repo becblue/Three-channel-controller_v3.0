@@ -10,6 +10,7 @@
 // 三个继电器通道实例
 static RelayChannel_t relayChannels[3];
 static uint8_t enableCheckCount[3] = {0}; // 三重检测计数器
+static uint8_t pendingAction[3] = {0}; // 待处理的动作：0=无动作，1=开启，2=关闭
 
 /**
   * @brief  继电器控制模块初始化
@@ -23,8 +24,25 @@ void RelayControl_Init(void)
         relayChannels[i].lastActionTime = 0;
         relayChannels[i].errorCode = RELAY_ERR_NONE;
         enableCheckCount[i] = 0;
+        pendingAction[i] = 0;
+        
+        // 初始化所有继电器控制信号为高电平（三极管截止，继电器不动作）
+        switch(i+1) {
+            case 1:
+                GPIO_SetK1_1_ON(1); GPIO_SetK1_1_OFF(1);
+                GPIO_SetK1_2_ON(1); GPIO_SetK1_2_OFF(1);
+                break;
+            case 2:
+                GPIO_SetK2_1_ON(1); GPIO_SetK2_1_OFF(1);
+                GPIO_SetK2_2_ON(1); GPIO_SetK2_2_OFF(1);
+                break;
+            case 3:
+                GPIO_SetK3_1_ON(1); GPIO_SetK3_1_OFF(1);
+                GPIO_SetK3_2_ON(1); GPIO_SetK3_2_OFF(1);
+                break;
+        }
     }
-    DEBUG_Printf("继电器控制模块初始化完成\r\n");
+    DEBUG_Printf("继电器控制模块初始化完成，所有控制信号设为高电平（三极管截止）\r\n");
 }
 
 /**
@@ -187,7 +205,10 @@ uint8_t RelayControl_OpenChannel(uint8_t channelNum)
         DEBUG_Printf("通道%d互锁错误\r\n", channelNum);
         return RELAY_ERR_INTERLOCK;
     }
-    // 输出500ms低电平脉冲
+    
+    DEBUG_Printf("通道%d开启中 - 输出500ms低电平脉冲（三极管导通）\r\n", channelNum);
+    
+    // 输出500ms低电平脉冲（三极管导通，继电器动作）
     switch(channelNum) {
         case 1:
             GPIO_SetK1_1_ON(0); GPIO_SetK1_2_ON(0);
@@ -201,7 +222,8 @@ uint8_t RelayControl_OpenChannel(uint8_t channelNum)
     }
     relayChannels[idx].lastActionTime = HAL_GetTick();
     HAL_Delay(RELAY_PULSE_WIDTH);
-    // 恢复高电平
+    
+    // 脉冲结束，恢复高电平（三极管截止）
     switch(channelNum) {
         case 1:
             GPIO_SetK1_1_ON(1); GPIO_SetK1_2_ON(1);
@@ -213,6 +235,9 @@ uint8_t RelayControl_OpenChannel(uint8_t channelNum)
             GPIO_SetK3_1_ON(1); GPIO_SetK3_2_ON(1);
             break;
     }
+    
+    DEBUG_Printf("通道%d脉冲输出完成，等待反馈\r\n", channelNum);
+    
     // 延时500ms后，先更新状态再检查反馈
     HAL_Delay(RELAY_FEEDBACK_DELAY);
     relayChannels[idx].state = RELAY_STATE_ON; // 先更新状态
@@ -237,7 +262,10 @@ uint8_t RelayControl_CloseChannel(uint8_t channelNum)
     if(channelNum < 1 || channelNum > 3)
         return RELAY_ERR_INVALID_CHANNEL;
     uint8_t idx = channelNum - 1;
-    // 输出500ms低电平脉冲
+    
+    DEBUG_Printf("通道%d关闭中 - 输出500ms低电平脉冲（三极管导通）\r\n", channelNum);
+    
+    // 输出500ms低电平脉冲（三极管导通，继电器动作）
     switch(channelNum) {
         case 1:
             GPIO_SetK1_1_OFF(0); GPIO_SetK1_2_OFF(0);
@@ -251,7 +279,8 @@ uint8_t RelayControl_CloseChannel(uint8_t channelNum)
     }
     relayChannels[idx].lastActionTime = HAL_GetTick();
     HAL_Delay(RELAY_PULSE_WIDTH);
-    // 恢复高电平
+    
+    // 脉冲结束，恢复高电平（三极管截止）
     switch(channelNum) {
         case 1:
             GPIO_SetK1_1_OFF(1); GPIO_SetK1_2_OFF(1);
@@ -263,6 +292,9 @@ uint8_t RelayControl_CloseChannel(uint8_t channelNum)
             GPIO_SetK3_1_OFF(1); GPIO_SetK3_2_OFF(1);
             break;
     }
+    
+    DEBUG_Printf("通道%d脉冲输出完成，等待反馈\r\n", channelNum);
+    
     // 延时500ms后，先更新状态再检查反馈
     HAL_Delay(RELAY_FEEDBACK_DELAY);
     relayChannels[idx].state = RELAY_STATE_OFF; // 先更新状态
@@ -316,32 +348,61 @@ void RelayControl_ClearError(uint8_t channelNum)
 }
 
 /**
-  * @brief  处理使能信号变化（在中断中调用，三重检测）
+  * @brief  处理使能信号变化（在中断中调用，三重检测，非阻塞）
   * @param  channelNum: 通道号(1-3)
-  * @param  state: 信号状态
+  * @param  state: 信号状态（0=低电平=开启，1=高电平=关闭）
   * @retval 无
   */
 void RelayControl_HandleEnableSignal(uint8_t channelNum, uint8_t state)
 {
     if(channelNum < 1 || channelNum > 3)
         return;
-    uint8_t idx = channelNum - 1;
-    // 检查是否需要重置计数器
-    if(HAL_GetTick() - relayChannels[idx].lastActionTime > RELAY_CHECK_INTERVAL)
-        enableCheckCount[idx] = 0;
-    relayChannels[idx].lastActionTime = HAL_GetTick();
-    enableCheckCount[idx]++;
-    if(enableCheckCount[idx] >= RELAY_CHECK_COUNT) {
-        enableCheckCount[idx] = 0;
-        if(state == 0) { // 低电平，开启通道
-            if(RelayControl_OpenChannel(channelNum) == RELAY_ERR_NONE)
-                DEBUG_Printf("通道%d使能开启\r\n", channelNum);
-        } else { // 高电平，关闭通道
-            if(RelayControl_CloseChannel(channelNum) == RELAY_ERR_NONE)
-                DEBUG_Printf("通道%d使能关闭\r\n", channelNum);
+
+    static uint32_t lastTrigTime[3] = {0, 0, 0}; // 记录每个通道上次触发时间
+    uint32_t now = HAL_GetTick();
+    if(now - lastTrigTime[channelNum - 1] < 100) {
+        // 100ms内忽略重复中断
+        DEBUG_Printf("[防抖] 通道%d 100ms内重复中断，已忽略\r\n", channelNum);
+        return;
+    }
+    lastTrigTime[channelNum - 1] = now;
+
+    relayChannels[channelNum - 1].lastActionTime = now;
+
+    if(state == 0) {
+        pendingAction[channelNum - 1] = 1;
+        DEBUG_Printf("[中断] 通道%d检测到下降沿，待开启\r\n", channelNum);
+    } else {
+        pendingAction[channelNum - 1] = 2;
+        DEBUG_Printf("[中断] 通道%d检测到上升沿，待关闭\r\n", channelNum);
+    }
+}
+
+/**
+  * @brief  处理待处理的继电器动作（在主循环中调用，非中断环境）
+  * @retval 无
+  */
+void RelayControl_ProcessPendingActions(void)
+{
+    for(uint8_t i = 0; i < 3; i++) {
+        if(pendingAction[i] == 1) { // 开启通道
+            pendingAction[i] = 0;
+            uint8_t result = RelayControl_OpenChannel(i + 1);
+            if(result == RELAY_ERR_NONE) {
+                DEBUG_Printf("通道%d开启成功\r\n", i + 1);
+            } else {
+                DEBUG_Printf("通道%d开启失败，错误码=%d\r\n", i + 1, result);
+            }
+        } else if(pendingAction[i] == 2) { // 关闭通道
+            pendingAction[i] = 0;
+            uint8_t result = RelayControl_CloseChannel(i + 1);
+            if(result == RELAY_ERR_NONE) {
+                DEBUG_Printf("通道%d关闭成功\r\n", i + 1);
+            } else {
+                DEBUG_Printf("通道%d关闭失败，错误码=%d\r\n", i + 1, result);
+            }
         }
     }
-
 } 
 
 

@@ -442,7 +442,50 @@ void OLED_DrawString(uint8_t x, uint8_t y, const char* str, uint8_t fontSize)
         str++;
     }
     OLED_Refresh();
-} 
+}
+
+/**
+  * @brief  显示主界面（三分区布局）
+  * @param  alarm: 报警信息
+  * @param  status1: 通道1状态
+  * @param  status2: 通道2状态  
+  * @param  status3: 通道3状态
+  * @param  tempInfo: 温度信息
+  * @param  fanInfo: 风扇信息
+  * @retval 无
+  */
+void OLED_ShowMainScreen(const char* alarm, const char* status1, const char* status2, const char* status3, const char* tempInfo, const char* fanInfo)
+{
+    OLED_Clear(); // 清屏
+    
+    // 第一分区：报警信息区（第0行，8x16字体）
+    if(alarm && strlen(alarm) > 0) {
+        OLED_DrawString(0, 0, alarm, 8);
+    } else {
+        OLED_DrawString(0, 0, "System Normal", 8);  // 默认显示系统正常
+    }
+    
+    // 第二分区：三通道状态区（第2、3、4行，6x8字体）
+    if(status1) {
+        OLED_DrawString(0, 2, status1, 6);
+    }
+    if(status2) {
+        OLED_DrawString(0, 3, status2, 6);
+    }
+    if(status3) {
+        OLED_DrawString(0, 4, status3, 6);
+    }
+    
+    // 第三分区：温度和风扇信息区（第6、7行，6x8字体）
+    if(tempInfo) {
+        OLED_DrawString(0, 6, tempInfo, 6);
+    }
+    if(fanInfo) {
+        OLED_DrawString(0, 7, fanInfo, 6);
+    }
+    
+    OLED_Refresh(); // 刷新显示
+}
 
 
 

@@ -64,6 +64,9 @@ void RelayControl_HandleEnableSignal(uint8_t channelNum, uint8_t state);
 #define RELAY_FEEDBACK_DELAY        500     // 反馈检测延时(ms)
 #define RELAY_CHECK_COUNT           3       // 使能信号检测次数
 
+// ========== 函数声明 ==========
+void RelayControl_ProcessPendingActions(void); // 处理待处理的动作
+
 #ifdef __cplusplus
 }
 #endif

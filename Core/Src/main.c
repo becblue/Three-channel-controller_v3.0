@@ -25,14 +25,17 @@
 #include "tim.h"
 #include "usart.h"
 #include "gpio.h"
-#include "oled_display.h" // 加入OLED显示头文件
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <stdio.h>         // 包含标准输入输出库，用于printf功能
 #include "gpio.h"          // 包含GPIO驱动模块头文件，用于GPIO底层操作
+#include "gpio_control.h"  // 包含GPIO控制模块
 #include "relay_control.h"
 #include "temperature_monitor.h"
+#include "oled_display.h"
+#include "system_control.h"
+#include "usart.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -124,167 +127,40 @@ int main(void)
   HAL_Delay(200);
   
   // 串口初始化测试
-  printf("\r\n==============================\r\n");
-  printf("三通道高压切换控制器 v3.0 启动\r\n");
-  printf("串口调试功能测试\r\n");
-  DEBUG_Printf("系统时钟频率：%dMHz\r\n", (int)(HAL_RCC_GetSysClockFreq()/1000000));
-  DEBUG_Printf("当前编译时间：%s %s\r\n", __DATE__, __TIME__);
-  printf("==============================\r\n");
+  DEBUG_Printf("\r\n=== 三通道切换箱控制系统启动 ===\r\n");
+  DEBUG_Printf("MCU: STM32F103RCT6\r\n");
+  DEBUG_Printf("系统时钟: %luMHz\r\n", HAL_RCC_GetSysClockFreq() / 1000000);
+  DEBUG_Printf("编译时间: %s %s\r\n", __DATE__, __TIME__);
+  DEBUG_Printf("USART3调试串口初始化完成\r\n");
 
-  // 外设初始化及调试输出
-  MX_ADC1_Init();
-  MX_TIM3_Init();
-  MX_I2C1_Init();
-  MX_SPI2_Init();
+  // 初始化各功能模块
+  DEBUG_Printf("开始初始化各功能模块...\r\n");
   
-  // I2C设备扫描 - 查找OLED地址
-  DEBUG_Printf("[扫描] 开始I2C设备扫描\r\n");
-  uint8_t found_devices = 0;
-  for(uint8_t addr = 0x08; addr < 0x78; addr++) {
-    if(HAL_I2C_IsDeviceReady(&hi2c1, addr << 1, 1, 10) == HAL_OK) {
-      DEBUG_Printf("[扫描] 发现I2C设备地址: 0x%02X (7位) / 0x%02X (8位)\r\n", addr, addr << 1);
-      found_devices++;
-    }
-  }
-  if(found_devices == 0) {
-    DEBUG_Printf("[扫描] 未发现任何I2C设备！请检查硬件连接\r\n");
-  }
-  HAL_Delay(1000);
+  // 启动风扇PWM输出
+  HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
+  DEBUG_Printf("风扇PWM输出启动完成\r\n");
   
-  // OLED连接测试
-  DEBUG_Printf("[测试] 开始OLED连接测试\r\n");
-  uint8_t oled_addr = OLED_TestConnection();
-  if(oled_addr != 0) {
-    DEBUG_Printf("[测试] OLED连接成功，地址: 0x%02X\r\n", oled_addr);
-    
-    // OLED显示初始化和测试
-    DEBUG_Printf("[测试] 初始化OLED显示屏\r\n");
+  // OLED显示模块初始化
+  if(OLED_TestConnection()) {
+    DEBUG_Printf("OLED连接正常，初始化OLED模块\r\n");
     OLED_Init();
-    HAL_Delay(500);
-    
-    DEBUG_Printf("[测试] 显示LOGO\r\n");
-    OLED_ShowLogo();
-    HAL_Delay(5000); // 显示LOGO 5秒
-    
-    // 字库测试
-    DEBUG_Printf("[测试] 开始字库测试\r\n");
-    
-    // 测试6x8字体
-    DEBUG_Printf("[测试] 测试6x8字体\r\n");
-    OLED_Clear();
-    OLED_DrawString(0, 0, "6x8 Font Test:", 6);
-    OLED_DrawString(0, 1, "ABCDEFGHIJKLMNOP", 6);
-    OLED_DrawString(0, 2, "QRSTUVWXYZ", 6);
-    OLED_DrawString(0, 3, "abcdefghijklmnop", 6);
-    OLED_DrawString(0, 4, "qrstuvwxyz", 6);
-    OLED_DrawString(0, 5, "0123456789", 6);
-    OLED_DrawString(0, 6, "!@#$%^&*()_+-=", 6);
-    OLED_DrawString(0, 7, "[]{}|;':\",./<>?", 6);
-    DEBUG_Printf("[测试] 6x8字体显示完成，每行最多21字符\r\n");
-    HAL_Delay(4000); // 显示4秒
-    
-    // 测试8x16字体
-    DEBUG_Printf("[测试] 测试8x16字体\r\n");
-    OLED_Clear();
-    OLED_DrawString(0, 0, "8x16 Font:", 8);
-    OLED_DrawString(0, 2, "ABCDEFGHIJ", 8);
-    OLED_DrawString(0, 4, "0123456789", 8);
-    OLED_DrawString(0, 6, "!@#$%^&*()", 8);
-    DEBUG_Printf("[测试] 8x16字体显示完成，每行最多16字符\r\n");
-    HAL_Delay(4000); // 显示4秒
-    
-    // 混合字体测试
-    DEBUG_Printf("[测试] 混合字体测试\r\n");
-    OLED_Clear();
-    OLED_DrawString(0, 0, "STM32F103RCT6", 8);   // 8x16字体标题
-    OLED_DrawString(0, 3, "Channel 1: ON  [6x8]", 6);  // 6x8字体内容
-    OLED_DrawString(0, 4, "Channel 2: OFF [6x8]", 6);
-    OLED_DrawString(0, 5, "Channel 3: ON  [6x8]", 6);
-    OLED_DrawString(0, 7, "Temp:25C Fan:50%", 6);
-    DEBUG_Printf("[测试] 混合字体测试完成，验证8x16+6x8组合\r\n");
-    HAL_Delay(4000); // 显示4秒
-    
-    DEBUG_Printf("[测试] 字库测试完成\r\n");
-    DEBUG_Printf("[测试] OLED测试完成\r\n");
   } else {
-    DEBUG_Printf("[错误] OLED连接失败！请检查硬件连接和地址设置\r\n");
-    DEBUG_Printf("[提示] 常见OLED地址: 0x78, 0x7A (8位) 或 0x3C, 0x3D (7位)\r\n");
+    DEBUG_Printf("OLED连接失败！\r\n");
   }
-
-  // 启动风扇PWM输出，确保PA6有PWM信号输出
-  HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1); // 必须有，否则无PWM波形
-
-  // ★★★ 增加温度监控初始化，启动ADC+DMA采集 ★★★
+  
+  // 温度监控模块初始化
   TemperatureMonitor_Init();
-
-  // 继电器控制模块初始化及功能测试
+  DEBUG_Printf("温度监控模块初始化完成\r\n");
+  
+  // 继电器控制模块初始化
   RelayControl_Init();
-  HAL_Delay(500);
-  // 依次测试三通道的开启和关闭
-  DEBUG_Printf("[测试] 开启通道1\r\n");
-  RelayControl_OpenChannel(1);
-  HAL_Delay(1000);
-  DEBUG_Printf("[测试] 关闭通道1\r\n");
-  RelayControl_CloseChannel(1);
-  HAL_Delay(1000);
+  DEBUG_Printf("继电器控制模块初始化完成\r\n");
+  
+  // 系统控制模块初始化（开始2秒LOGO显示）
+  SystemControl_Init();
+  DEBUG_Printf("系统控制模块初始化完成，开始执行自检流程\r\n");
 
-  DEBUG_Printf("[测试] 开启通道2\r\n");
-  RelayControl_OpenChannel(2);
-  HAL_Delay(1000);
-  DEBUG_Printf("[测试] 关闭通道2\r\n");
-  RelayControl_CloseChannel(2);
-  HAL_Delay(1000);
 
-  DEBUG_Printf("[测试] 开启通道3\r\n");
-  RelayControl_OpenChannel(3);
-  HAL_Delay(1000);
-  DEBUG_Printf("[测试] 关闭通道3\r\n");
-  RelayControl_CloseChannel(3);
-  HAL_Delay(1000);
-
-  // ================== 温度与风扇检测流程 ==================
-  extern volatile uint32_t fan_pulse_count;
-  extern uint32_t fan_rpm;
-  fan_pulse_count = 0;
-  fan_rpm = 0;
-  HAL_Delay(1000); // 预热1秒，确保统计窗口干净
-  // 丢弃第一个统计周期，避免启动瞬间脉冲堆积影响
-  TemperatureMonitor_FanSpeed1sHandler();
-  HAL_Delay(1000);
-  DEBUG_Printf("[测试] 开始风扇PWM由慢到快检测\r\n");
-  for(int t=0; t<10; t++) {
-    uint8_t pwm = 10 + (90 * t) / 9; // 10%~100%
-    TemperatureMonitor_SetFanPWM(pwm);
-    fan_pulse_count = 0;
-    HAL_Delay(1000); // 等待风扇稳定
-    fan_pulse_count = 0; // 重新清零，准备统计1秒
-    HAL_Delay(1000);     // 精确统计1秒脉冲
-    TemperatureMonitor_FanSpeed1sHandler();
-    FanSpeedInfo_t info = TemperatureMonitor_GetFanSpeed();
-    DEBUG_Printf("[风扇测试] PWM: %d%%, 实际转速: %d RPM\r\n", pwm, info.rpm);
-  }
-  DEBUG_Printf("[测试] 开始风扇PWM由快到慢检测\r\n");
-  for(int t=0; t<10; t++) {
-    uint8_t pwm = 100 - (90 * t) / 9; // 100%~10%
-    TemperatureMonitor_SetFanPWM(pwm);
-    fan_pulse_count = 0;
-    HAL_Delay(1000); // 等待风扇稳定
-    fan_pulse_count = 0; // 重新清零，准备统计1秒
-    HAL_Delay(1000);     // 精确统计1秒脉冲
-    TemperatureMonitor_FanSpeed1sHandler();
-    FanSpeedInfo_t info = TemperatureMonitor_GetFanSpeed();
-    DEBUG_Printf("[风扇测试] PWM: %d%%, 实际转速: %d RPM\r\n", pwm, info.rpm);
-  }
-  DEBUG_Printf("[测试] 风扇检测流程结束\r\n");
-
-  // ================== ADC温度采集测试流程 ==================
-  DEBUG_Printf("[测试] 开始ADC温度采集测试，共30秒\r\n");
-  for(int t=0; t<30; t++) {
-    TemperatureMonitor_UpdateAll(); // 刷新所有通道温度
-    TemperatureMonitor_DebugPrint(); // 输出3路温度
-    HAL_Delay(1000);
-  }
-  DEBUG_Printf("[测试] ADC温度采集测试结束\r\n");
 
   /* USER CODE END 2 */
 
@@ -296,10 +172,10 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
     
-    // 主循环控制，无调试输出
-    // 看门狗已禁用，系统运行在调试模式下
+    // 系统控制模块状态机处理（包含自检、主循环调度等）
+    SystemControl_Process();
     
-    // 主循环延时1ms，避免CPU占用过高（短延时无需智能延时）
+    // 主循环延时1ms，避免CPU占用过高
     HAL_Delay(1);
     
   }
