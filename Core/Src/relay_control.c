@@ -358,16 +358,7 @@ void RelayControl_HandleEnableSignal(uint8_t channelNum, uint8_t state)
     if(channelNum < 1 || channelNum > 3)
         return;
 
-    static uint32_t lastTrigTime[3] = {0, 0, 0}; // 记录每个通道上次触发时间
-    uint32_t now = HAL_GetTick();
-    if(now - lastTrigTime[channelNum - 1] < 100) {
-        // 100ms内忽略重复中断
-        DEBUG_Printf("[防抖] 通道%d 100ms内重复中断，已忽略\r\n", channelNum);
-        return;
-    }
-    lastTrigTime[channelNum - 1] = now;
-
-    relayChannels[channelNum - 1].lastActionTime = now;
+    relayChannels[channelNum - 1].lastActionTime = HAL_GetTick();
 
     if(state == 0) {
         pendingAction[channelNum - 1] = 1;

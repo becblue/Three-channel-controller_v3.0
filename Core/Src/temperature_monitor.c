@@ -143,7 +143,6 @@ void TemperatureMonitor_UpdateAll(void)
     uint32_t arr = __HAL_TIM_GET_AUTORELOAD(&htim3);
     uint32_t ccr = (fan_pwm * (arr + 1)) / 100;
     __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, ccr);
-    DEBUG_Printf("[风扇测试] 自动设置风扇PWM: %d%% (CCR=%lu, ARR=%lu)\r\n", fan_pwm, ccr, arr);
 }
 
 // 获取指定通道的温度信息
@@ -172,7 +171,6 @@ void TemperatureMonitor_SetFanPWM(uint8_t duty)
     uint32_t arr = __HAL_TIM_GET_AUTORELOAD(&htim3);
     uint32_t ccr = (fan_pwm * (arr + 1)) / 100;
     __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, ccr);
-    DEBUG_Printf("[风扇测试] 自动设置风扇PWM: %d%% (CCR=%lu, ARR=%lu)\r\n", fan_pwm, ccr, arr);
 }
 
 // 查询风扇当前PWM占空比
