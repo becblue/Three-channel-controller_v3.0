@@ -138,6 +138,9 @@ void SystemControl_DebugPrint(void);
 void SystemControl_MainLoopScheduler(void);
 void SystemControl_UpdateDisplay(void);
 
+// K_EN状态诊断信息输出（每秒调用一次）
+void SystemControl_PrintKEnDiagnostics(void);
+
 #ifdef __cplusplus
 }
 #endif

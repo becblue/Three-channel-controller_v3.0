@@ -3,11 +3,11 @@
 <title>Static Call Graph - [Three-channel controller_v3.0\Three-channel controller_v3.0]</title></head>
 <body><HR>
 <H1>Static Call Graph for image Three-channel controller_v3.0\Three-channel controller_v3.0</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060960: Last Updated: Fri Jul 04 00:55:04 2025
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060960: Last Updated: Fri Jul 04 14:59:22 2025
 <BR><P>
-<H3>Maximum Stack Usage =        480 bytes + Unknown(Cycles, Untraceable Function Pointers)</H3><H3>
+<H3>Maximum Stack Usage =        616 bytes + Unknown(Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
-main &rArr; SystemControl_Process &rArr; SystemControl_MainLoopScheduler &rArr; RelayControl_ProcessPendingActions &rArr; RelayControl_OpenChannel &rArr; RelayControl_CheckChannelFeedback &rArr; DEBUG_Printf &rArr; HAL_UART_Transmit &rArr; UART_WaitOnFlagUntilTimeout
+main &rArr; SystemControl_Process &rArr; SystemControl_MainLoopScheduler &rArr; SystemControl_UpdateDisplay &rArr; DEBUG_Printf &rArr; HAL_UART_Transmit &rArr; UART_WaitOnFlagUntilTimeout
 <P>
 <H3>
 Mutually Recursive functions
@@ -18,6 +18,7 @@ Mutually Recursive functions
  <LI><a href="#[3]">MemManage_Handler</a>&nbsp;&nbsp;&nbsp;&rArr;&nbsp;&nbsp;&nbsp;<a href="#[3]">MemManage_Handler</a><BR>
  <LI><a href="#[1]">NMI_Handler</a>&nbsp;&nbsp;&nbsp;&rArr;&nbsp;&nbsp;&nbsp;<a href="#[1]">NMI_Handler</a><BR>
  <LI><a href="#[5]">UsageFault_Handler</a>&nbsp;&nbsp;&nbsp;&rArr;&nbsp;&nbsp;&nbsp;<a href="#[5]">UsageFault_Handler</a><BR>
+ <LI><a href="#[df]">OLED_AddDirtyRegion</a>&nbsp;&nbsp;&nbsp;&rArr;&nbsp;&nbsp;&nbsp;<a href="#[df]">OLED_AddDirtyRegion</a><BR>
 </UL>
 <P>
 <H3>
@@ -110,7 +111,7 @@ Global Symbols
 <P><STRONG><a name="[48]"></a>__main</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, entry.o(.ARM.Collect$$$$00000000))
 <BR>[Address Reference Count : 1]<UL><LI> startup_stm32f103xe.o(.text)
 </UL>
-<P><STRONG><a name="[114]"></a>_main_stk</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, entry2.o(.ARM.Collect$$$$00000001))
+<P><STRONG><a name="[11d]"></a>_main_stk</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, entry2.o(.ARM.Collect$$$$00000001))
 
 <P><STRONG><a name="[4e]"></a>_main_scatterload</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, entry5.o(.ARM.Collect$$$$00000004))
 <BR><BR>[Calls]<UL><LI><a href="#[4f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__scatterload
@@ -120,17 +121,17 @@ Global Symbols
 <BR><BR>[Called By]<UL><LI><a href="#[4f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__scatterload
 </UL>
 
-<P><STRONG><a name="[115]"></a>_main_clock</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, entry7b.o(.ARM.Collect$$$$00000008))
+<P><STRONG><a name="[11e]"></a>_main_clock</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, entry7b.o(.ARM.Collect$$$$00000008))
 
-<P><STRONG><a name="[116]"></a>_main_cpp_init</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, entry8b.o(.ARM.Collect$$$$0000000A))
+<P><STRONG><a name="[11f]"></a>_main_cpp_init</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, entry8b.o(.ARM.Collect$$$$0000000A))
 
-<P><STRONG><a name="[117]"></a>_main_init</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, entry9a.o(.ARM.Collect$$$$0000000B))
+<P><STRONG><a name="[120]"></a>_main_init</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, entry9a.o(.ARM.Collect$$$$0000000B))
 
-<P><STRONG><a name="[118]"></a>__rt_lib_shutdown_fini</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, entry12b.o(.ARM.Collect$$$$0000000E))
+<P><STRONG><a name="[121]"></a>__rt_lib_shutdown_fini</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, entry12b.o(.ARM.Collect$$$$0000000E))
 
-<P><STRONG><a name="[119]"></a>__rt_final_cpp</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, entry10a.o(.ARM.Collect$$$$0000000F))
+<P><STRONG><a name="[122]"></a>__rt_final_cpp</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, entry10a.o(.ARM.Collect$$$$0000000F))
 
-<P><STRONG><a name="[11a]"></a>__rt_final_exit</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, entry11a.o(.ARM.Collect$$$$00000011))
+<P><STRONG><a name="[123]"></a>__rt_final_exit</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, entry11a.o(.ARM.Collect$$$$00000011))
 
 <P><STRONG><a name="[0]"></a>Reset_Handler</STRONG> (Thumb, 8 bytes, Stack size 0 bytes, startup_stm32f103xe.o(.text))
 <BR>[Address Reference Count : 1]<UL><LI> startup_stm32f103xe.o(RESET)
@@ -313,51 +314,62 @@ Global Symbols
 <LI><a href="#[65]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_d2ulz
 </UL>
 
-<P><STRONG><a name="[11b]"></a>_ll_ushift_r</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, llushr.o(.text), UNUSED)
+<P><STRONG><a name="[124]"></a>_ll_ushift_r</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, llushr.o(.text), UNUSED)
+
+<P><STRONG><a name="[e9]"></a>__aeabi_memcpy</STRONG> (Thumb, 36 bytes, Stack size 0 bytes, memcpya.o(.text))
+<BR><BR>[Called By]<UL><LI><a href="#[e8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_RefreshDirtyRegions
+</UL>
+
+<P><STRONG><a name="[125]"></a>__aeabi_memcpy4</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, memcpya.o(.text), UNUSED)
+
+<P><STRONG><a name="[126]"></a>__aeabi_memcpy8</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, memcpya.o(.text), UNUSED)
 
 <P><STRONG><a name="[51]"></a>__aeabi_memset</STRONG> (Thumb, 14 bytes, Stack size 0 bytes, memseta.o(.text))
 <BR><BR>[Called By]<UL><LI><a href="#[52]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_memset$wrapper
 <LI><a href="#[50]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memclr
 </UL>
 
-<P><STRONG><a name="[11c]"></a>__aeabi_memset4</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, memseta.o(.text), UNUSED)
+<P><STRONG><a name="[127]"></a>__aeabi_memset4</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, memseta.o(.text), UNUSED)
 
-<P><STRONG><a name="[11d]"></a>__aeabi_memset8</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, memseta.o(.text), UNUSED)
+<P><STRONG><a name="[128]"></a>__aeabi_memset8</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, memseta.o(.text), UNUSED)
 
 <P><STRONG><a name="[50]"></a>__aeabi_memclr</STRONG> (Thumb, 4 bytes, Stack size 0 bytes, memseta.o(.text))
 <BR><BR>[Calls]<UL><LI><a href="#[51]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memset
 </UL>
-<BR>[Called By]<UL><LI><a href="#[df]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_Clear
+<BR>[Called By]<UL><LI><a href="#[ea]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_ResetDisplayCache
+<LI><a href="#[e0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_ClearDirtyRegions
+<LI><a href="#[e1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_Clear
 </UL>
 
 <P><STRONG><a name="[d9]"></a>__aeabi_memclr4</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, memseta.o(.text))
 <BR><BR>[Called By]<UL><LI><a href="#[d8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;MX_TIM3_Init
-<LI><a href="#[ef]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemClock_Config
-<LI><a href="#[101]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_UpdateDisplay
-<LI><a href="#[104]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_Reset
-<LI><a href="#[fd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_Init
-<LI><a href="#[f9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_ExecuteSelfTest
+<LI><a href="#[f6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemClock_Config
+<LI><a href="#[10b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_UpdateDisplay
+<LI><a href="#[10e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_Reset
+<LI><a href="#[104]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_Init
+<LI><a href="#[100]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_ExecuteSelfTest
 </UL>
 
-<P><STRONG><a name="[11e]"></a>__aeabi_memclr8</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, memseta.o(.text), UNUSED)
+<P><STRONG><a name="[129]"></a>__aeabi_memclr8</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, memseta.o(.text), UNUSED)
 
 <P><STRONG><a name="[52]"></a>_memset$wrapper</STRONG> (Thumb, 18 bytes, Stack size 8 bytes, memseta.o(.text), UNUSED)
 <BR><BR>[Calls]<UL><LI><a href="#[51]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memset
 </UL>
 
-<P><STRONG><a name="[fa]"></a>strcat</STRONG> (Thumb, 24 bytes, Stack size 0 bytes, strcat.o(.text))
-<BR><BR>[Called By]<UL><LI><a href="#[f9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_ExecuteSelfTest
+<P><STRONG><a name="[101]"></a>strcat</STRONG> (Thumb, 24 bytes, Stack size 0 bytes, strcat.o(.text))
+<BR><BR>[Called By]<UL><LI><a href="#[100]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_ExecuteSelfTest
 </UL>
 
-<P><STRONG><a name="[f7]"></a>strncpy</STRONG> (Thumb, 24 bytes, Stack size 8 bytes, strncpy.o(.text))
+<P><STRONG><a name="[fe]"></a>strncpy</STRONG> (Thumb, 24 bytes, Stack size 8 bytes, strncpy.o(.text))
 <BR><BR>[Stack]<UL><LI>Max Depth = 8<LI>Call Chain = strncpy
 </UL>
-<BR>[Called By]<UL><LI><a href="#[f6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_EnterErrorState
+<BR>[Called By]<UL><LI><a href="#[fd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_EnterErrorState
 </UL>
 
 <P><STRONG><a name="[72]"></a>strlen</STRONG> (Thumb, 14 bytes, Stack size 0 bytes, strlen.o(.text))
-<BR><BR>[Called By]<UL><LI><a href="#[e5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_ShowMainScreen
+<BR><BR>[Called By]<UL><LI><a href="#[ec]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_ShowMainScreenDirty
 <LI><a href="#[70]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DEBUG_Printf
+<LI><a href="#[10b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_UpdateDisplay
 </UL>
 
 <P><STRONG><a name="[53]"></a>__aeabi_fadd</STRONG> (Thumb, 164 bytes, Stack size 16 bytes, fadd.o(.text))
@@ -390,7 +402,7 @@ Global Symbols
 <P><STRONG><a name="[6f]"></a>__aeabi_fmul</STRONG> (Thumb, 100 bytes, Stack size 8 bytes, fmul.o(.text))
 <BR><BR>[Stack]<UL><LI>Max Depth = 8<LI>Call Chain = __aeabi_fmul
 </UL>
-<BR>[Called By]<UL><LI><a href="#[f3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TemperatureMonitor_UpdateAll
+<BR>[Called By]<UL><LI><a href="#[fa]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TemperatureMonitor_UpdateAll
 <LI><a href="#[dd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;NTC_ResToTemp
 <LI><a href="#[6e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;CalcNTCRes
 </UL>
@@ -400,7 +412,7 @@ Global Symbols
 </UL>
 <BR>[Calls]<UL><LI><a href="#[55]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_float_round
 </UL>
-<BR>[Called By]<UL><LI><a href="#[f3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TemperatureMonitor_UpdateAll
+<BR>[Called By]<UL><LI><a href="#[fa]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TemperatureMonitor_UpdateAll
 <LI><a href="#[dd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;NTC_ResToTemp
 <LI><a href="#[6e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;CalcNTCRes
 </UL>
@@ -410,34 +422,34 @@ Global Symbols
 </UL>
 <BR>[Calls]<UL><LI><a href="#[54]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_float_epilogue
 </UL>
-<BR>[Called By]<UL><LI><a href="#[f3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TemperatureMonitor_UpdateAll
+<BR>[Called By]<UL><LI><a href="#[fa]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TemperatureMonitor_UpdateAll
 </UL>
 
-<P><STRONG><a name="[f5]"></a>__aeabi_f2d</STRONG> (Thumb, 38 bytes, Stack size 0 bytes, f2d.o(.text))
-<BR><BR>[Called By]<UL><LI><a href="#[f3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TemperatureMonitor_UpdateAll
-<LI><a href="#[101]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_UpdateDisplay
-<LI><a href="#[f2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_CheckTemperature
+<P><STRONG><a name="[fc]"></a>__aeabi_f2d</STRONG> (Thumb, 38 bytes, Stack size 0 bytes, f2d.o(.text))
+<BR><BR>[Called By]<UL><LI><a href="#[fa]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TemperatureMonitor_UpdateAll
+<LI><a href="#[10b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_UpdateDisplay
+<LI><a href="#[f9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_CheckTemperature
 </UL>
 
 <P><STRONG><a name="[de]"></a>__aeabi_cfrcmple</STRONG> (Thumb, 20 bytes, Stack size 0 bytes, cfrcmple.o(.text))
 <BR><BR>[Called By]<UL><LI><a href="#[dd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;NTC_ResToTemp
 </UL>
 
-<P><STRONG><a name="[11f]"></a>__aeabi_uidiv</STRONG> (Thumb, 0 bytes, Stack size 12 bytes, uidiv.o(.text), UNUSED)
+<P><STRONG><a name="[12a]"></a>__aeabi_uidiv</STRONG> (Thumb, 0 bytes, Stack size 12 bytes, uidiv.o(.text), UNUSED)
 
-<P><STRONG><a name="[112]"></a>__aeabi_uidivmod</STRONG> (Thumb, 44 bytes, Stack size 12 bytes, uidiv.o(.text), UNUSED)
-<BR><BR>[Called By]<UL><LI><a href="#[10c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_printf_core
+<P><STRONG><a name="[11b]"></a>__aeabi_uidivmod</STRONG> (Thumb, 44 bytes, Stack size 12 bytes, uidiv.o(.text), UNUSED)
+<BR><BR>[Called By]<UL><LI><a href="#[115]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_printf_core
 </UL>
 
 <P><STRONG><a name="[5a]"></a>__aeabi_uldivmod</STRONG> (Thumb, 98 bytes, Stack size 40 bytes, uldiv.o(.text), UNUSED)
 <BR><BR>[Calls]<UL><LI><a href="#[5b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_llsr
 <LI><a href="#[5c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_llsl
 </UL>
-<BR>[Called By]<UL><LI><a href="#[10c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_printf_core
-<LI><a href="#[10e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_fp_digits
+<BR>[Called By]<UL><LI><a href="#[115]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_printf_core
+<LI><a href="#[117]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_fp_digits
 </UL>
 
-<P><STRONG><a name="[120]"></a>__I$use$fp</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, iusefp.o(.text), UNUSED)
+<P><STRONG><a name="[12b]"></a>__I$use$fp</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, iusefp.o(.text), UNUSED)
 
 <P><STRONG><a name="[55]"></a>_float_round</STRONG> (Thumb, 18 bytes, Stack size 0 bytes, fepilogue.o(.text))
 <BR><BR>[Called By]<UL><LI><a href="#[58]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_fdiv
@@ -459,7 +471,7 @@ Global Symbols
 </UL>
 <BR>[Called By]<UL><LI><a href="#[62]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_drsub
 <LI><a href="#[61]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_dsub
-<LI><a href="#[10e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_fp_digits
+<LI><a href="#[117]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_fp_digits
 </UL>
 
 <P><STRONG><a name="[61]"></a>__aeabi_dsub</STRONG> (Thumb, 6 bytes, Stack size 0 bytes, dadd.o(.text), UNUSED)
@@ -473,24 +485,24 @@ Global Symbols
 <P><STRONG><a name="[63]"></a>__aeabi_dmul</STRONG> (Thumb, 228 bytes, Stack size 48 bytes, dmul.o(.text), UNUSED)
 <BR><BR>[Calls]<UL><LI><a href="#[5f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_double_epilogue
 </UL>
-<BR>[Called By]<UL><LI><a href="#[10e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_fp_digits
+<BR>[Called By]<UL><LI><a href="#[117]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_fp_digits
 </UL>
 
 <P><STRONG><a name="[64]"></a>__aeabi_ddiv</STRONG> (Thumb, 222 bytes, Stack size 32 bytes, ddiv.o(.text), UNUSED)
 <BR><BR>[Calls]<UL><LI><a href="#[60]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_double_round
 </UL>
-<BR>[Called By]<UL><LI><a href="#[10e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_fp_digits
+<BR>[Called By]<UL><LI><a href="#[117]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_fp_digits
 </UL>
 
 <P><STRONG><a name="[65]"></a>__aeabi_d2ulz</STRONG> (Thumb, 48 bytes, Stack size 0 bytes, dfixul.o(.text), UNUSED)
 <BR><BR>[Calls]<UL><LI><a href="#[5b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_llsr
 <LI><a href="#[5c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_llsl
 </UL>
-<BR>[Called By]<UL><LI><a href="#[10e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_fp_digits
+<BR>[Called By]<UL><LI><a href="#[117]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_fp_digits
 </UL>
 
-<P><STRONG><a name="[10f]"></a>__aeabi_cdrcmple</STRONG> (Thumb, 48 bytes, Stack size 0 bytes, cdrcmple.o(.text), UNUSED)
-<BR><BR>[Called By]<UL><LI><a href="#[10e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_fp_digits
+<P><STRONG><a name="[118]"></a>__aeabi_cdrcmple</STRONG> (Thumb, 48 bytes, Stack size 0 bytes, cdrcmple.o(.text), UNUSED)
+<BR><BR>[Called By]<UL><LI><a href="#[117]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_fp_digits
 </UL>
 
 <P><STRONG><a name="[4f]"></a>__scatterload</STRONG> (Thumb, 28 bytes, Stack size 0 bytes, init.o(.text))
@@ -499,7 +511,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[4e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_main_scatterload
 </UL>
 
-<P><STRONG><a name="[121]"></a>__scatterload_rt2</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, init.o(.text), UNUSED)
+<P><STRONG><a name="[12c]"></a>__scatterload_rt2</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, init.o(.text), UNUSED)
 
 <P><STRONG><a name="[5c]"></a>__aeabi_llsl</STRONG> (Thumb, 30 bytes, Stack size 0 bytes, llshl.o(.text), UNUSED)
 <BR><BR>[Called By]<UL><LI><a href="#[5f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_double_epilogue
@@ -508,13 +520,13 @@ Global Symbols
 <LI><a href="#[65]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_d2ulz
 </UL>
 
-<P><STRONG><a name="[122]"></a>_ll_shift_l</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, llshl.o(.text), UNUSED)
+<P><STRONG><a name="[12d]"></a>_ll_shift_l</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, llshl.o(.text), UNUSED)
 
 <P><STRONG><a name="[5e]"></a>__aeabi_lasr</STRONG> (Thumb, 36 bytes, Stack size 0 bytes, llsshr.o(.text), UNUSED)
 <BR><BR>[Called By]<UL><LI><a href="#[5d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_dadd
 </UL>
 
-<P><STRONG><a name="[123]"></a>_ll_sshift_r</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, llsshr.o(.text), UNUSED)
+<P><STRONG><a name="[12e]"></a>_ll_sshift_r</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, llsshr.o(.text), UNUSED)
 
 <P><STRONG><a name="[60]"></a>_double_round</STRONG> (Thumb, 30 bytes, Stack size 8 bytes, depilogue.o(.text), UNUSED)
 <BR><BR>[Called By]<UL><LI><a href="#[5f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_double_epilogue
@@ -589,43 +601,46 @@ Global Symbols
 <LI><a href="#[72]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;strlen
 <LI><a href="#[71]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vsprintf
 </UL>
-<BR>[Called By]<UL><LI><a href="#[f3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TemperatureMonitor_UpdateAll
-<LI><a href="#[108]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TemperatureMonitor_Init
-<LI><a href="#[100]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TemperatureMonitor_CheckAndHandleAlarm
-<LI><a href="#[ed]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_ProcessPendingActions
-<LI><a href="#[ec]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_OpenChannel
-<LI><a href="#[eb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_Init
+<BR>[Called By]<UL><LI><a href="#[fa]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TemperatureMonitor_UpdateAll
+<LI><a href="#[111]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TemperatureMonitor_Init
+<LI><a href="#[10a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TemperatureMonitor_CheckAndHandleAlarm
+<LI><a href="#[f4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_ProcessPendingActions
+<LI><a href="#[f3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_OpenChannel
+<LI><a href="#[f2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_Init
 <LI><a href="#[9d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_HandleEnableSignal
-<LI><a href="#[ea]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_CloseChannel
-<LI><a href="#[e8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_CheckChannelFeedback
+<LI><a href="#[f1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_CloseChannel
+<LI><a href="#[ef]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_CheckChannelFeedback
 <LI><a href="#[9c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GPIO_EXTI_Callback
 <LI><a href="#[46]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
-<LI><a href="#[103]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_StartSelfTest
-<LI><a href="#[fe]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_StartLogoDisplay
-<LI><a href="#[104]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_Reset
-<LI><a href="#[102]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_Process
-<LI><a href="#[fd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_Init
-<LI><a href="#[fb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_HandleSelfTestError
-<LI><a href="#[f9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_ExecuteSelfTest
-<LI><a href="#[f8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_EnterNormalState
-<LI><a href="#[f6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_EnterErrorState
-<LI><a href="#[f2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_CheckTemperature
-<LI><a href="#[f1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_CheckInputSignals
-<LI><a href="#[f0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_CheckFeedbackSignals
+<LI><a href="#[10b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_UpdateDisplay
+<LI><a href="#[10d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_StartSelfTest
+<LI><a href="#[105]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_StartLogoDisplay
+<LI><a href="#[10e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_Reset
+<LI><a href="#[10c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_Process
+<LI><a href="#[107]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_PrintKEnDiagnostics
+<LI><a href="#[106]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_MainLoopScheduler
+<LI><a href="#[104]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_Init
+<LI><a href="#[102]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_HandleSelfTestError
+<LI><a href="#[100]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_ExecuteSelfTest
+<LI><a href="#[ff]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_EnterNormalState
+<LI><a href="#[fd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_EnterErrorState
+<LI><a href="#[f9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_CheckTemperature
+<LI><a href="#[f8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_CheckInputSignals
+<LI><a href="#[f7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_CheckFeedbackSignals
 </UL>
 
 <P><STRONG><a name="[7]"></a>DebugMon_Handler</STRONG> (Thumb, 2 bytes, Stack size 0 bytes, stm32f1xx_it.o(i.DebugMon_Handler))
 <BR>[Address Reference Count : 1]<UL><LI> startup_stm32f103xe.o(RESET)
 </UL>
 <P><STRONG><a name="[32]"></a>EXTI15_10_IRQHandler</STRONG> (Thumb, 38 bytes, Stack size 8 bytes, stm32f1xx_it.o(i.EXTI15_10_IRQHandler))
-<BR><BR>[Stack]<UL><LI>Max Depth = 384<LI>Call Chain = EXTI15_10_IRQHandler &rArr; HAL_GPIO_EXTI_IRQHandler &rArr; HAL_GPIO_EXTI_Callback &rArr; RelayControl_HandleEnableSignal &rArr; DEBUG_Printf &rArr; HAL_UART_Transmit &rArr; UART_WaitOnFlagUntilTimeout
+<BR><BR>[Stack]<UL><LI>Max Depth = 368<LI>Call Chain = EXTI15_10_IRQHandler &rArr; HAL_GPIO_EXTI_IRQHandler &rArr; HAL_GPIO_EXTI_Callback &rArr; RelayControl_HandleEnableSignal &rArr; DEBUG_Printf &rArr; HAL_UART_Transmit &rArr; UART_WaitOnFlagUntilTimeout
 </UL>
 <BR>[Calls]<UL><LI><a href="#[74]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GPIO_EXTI_IRQHandler
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> startup_stm32f103xe.o(RESET)
 </UL>
 <P><STRONG><a name="[21]"></a>EXTI9_5_IRQHandler</STRONG> (Thumb, 28 bytes, Stack size 8 bytes, stm32f1xx_it.o(i.EXTI9_5_IRQHandler))
-<BR><BR>[Stack]<UL><LI>Max Depth = 384<LI>Call Chain = EXTI9_5_IRQHandler &rArr; HAL_GPIO_EXTI_IRQHandler &rArr; HAL_GPIO_EXTI_Callback &rArr; RelayControl_HandleEnableSignal &rArr; DEBUG_Printf &rArr; HAL_UART_Transmit &rArr; UART_WaitOnFlagUntilTimeout
+<BR><BR>[Stack]<UL><LI>Max Depth = 368<LI>Call Chain = EXTI9_5_IRQHandler &rArr; HAL_GPIO_EXTI_IRQHandler &rArr; HAL_GPIO_EXTI_Callback &rArr; RelayControl_HandleEnableSignal &rArr; DEBUG_Printf &rArr; HAL_UART_Transmit &rArr; UART_WaitOnFlagUntilTimeout
 </UL>
 <BR>[Calls]<UL><LI><a href="#[74]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GPIO_EXTI_IRQHandler
 </UL>
@@ -644,178 +659,202 @@ Global Symbols
 <P><STRONG><a name="[75]"></a>GPIO_ReadK1_1_STA</STRONG> (Thumb, 8 bytes, Stack size 0 bytes, gpio_control.o(i.GPIO_ReadK1_1_STA))
 <BR><BR>[Calls]<UL><LI><a href="#[76]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GPIO_ReadPin
 </UL>
-<BR>[Called By]<UL><LI><a href="#[e9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_CheckInterlock
-<LI><a href="#[e8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_CheckChannelFeedback
-<LI><a href="#[f0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_CheckFeedbackSignals
+<BR>[Called By]<UL><LI><a href="#[f4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_ProcessPendingActions
+<LI><a href="#[f0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_CheckInterlock
+<LI><a href="#[ef]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_CheckChannelFeedback
+<LI><a href="#[107]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_PrintKEnDiagnostics
+<LI><a href="#[f7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_CheckFeedbackSignals
 </UL>
 
 <P><STRONG><a name="[77]"></a>GPIO_ReadK1_2_STA</STRONG> (Thumb, 8 bytes, Stack size 0 bytes, gpio_control.o(i.GPIO_ReadK1_2_STA))
 <BR><BR>[Calls]<UL><LI><a href="#[76]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GPIO_ReadPin
 </UL>
-<BR>[Called By]<UL><LI><a href="#[e9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_CheckInterlock
-<LI><a href="#[e8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_CheckChannelFeedback
-<LI><a href="#[f0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_CheckFeedbackSignals
+<BR>[Called By]<UL><LI><a href="#[f4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_ProcessPendingActions
+<LI><a href="#[f0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_CheckInterlock
+<LI><a href="#[ef]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_CheckChannelFeedback
+<LI><a href="#[107]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_PrintKEnDiagnostics
+<LI><a href="#[f7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_CheckFeedbackSignals
 </UL>
 
 <P><STRONG><a name="[78]"></a>GPIO_ReadK1_EN</STRONG> (Thumb, 10 bytes, Stack size 0 bytes, gpio_control.o(i.GPIO_ReadK1_EN))
 <BR><BR>[Calls]<UL><LI><a href="#[76]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GPIO_ReadPin
 </UL>
-<BR>[Called By]<UL><LI><a href="#[e9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_CheckInterlock
-<LI><a href="#[f1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_CheckInputSignals
+<BR>[Called By]<UL><LI><a href="#[f4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_ProcessPendingActions
+<LI><a href="#[f0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_CheckInterlock
+<LI><a href="#[107]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_PrintKEnDiagnostics
+<LI><a href="#[f8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_CheckInputSignals
 </UL>
 
 <P><STRONG><a name="[79]"></a>GPIO_ReadK2_1_STA</STRONG> (Thumb, 8 bytes, Stack size 0 bytes, gpio_control.o(i.GPIO_ReadK2_1_STA))
 <BR><BR>[Calls]<UL><LI><a href="#[76]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GPIO_ReadPin
 </UL>
-<BR>[Called By]<UL><LI><a href="#[e9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_CheckInterlock
-<LI><a href="#[e8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_CheckChannelFeedback
-<LI><a href="#[f0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_CheckFeedbackSignals
+<BR>[Called By]<UL><LI><a href="#[f4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_ProcessPendingActions
+<LI><a href="#[f0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_CheckInterlock
+<LI><a href="#[ef]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_CheckChannelFeedback
+<LI><a href="#[107]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_PrintKEnDiagnostics
+<LI><a href="#[f7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_CheckFeedbackSignals
 </UL>
 
 <P><STRONG><a name="[7a]"></a>GPIO_ReadK2_2_STA</STRONG> (Thumb, 10 bytes, Stack size 0 bytes, gpio_control.o(i.GPIO_ReadK2_2_STA))
 <BR><BR>[Calls]<UL><LI><a href="#[76]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GPIO_ReadPin
 </UL>
-<BR>[Called By]<UL><LI><a href="#[e9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_CheckInterlock
-<LI><a href="#[e8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_CheckChannelFeedback
-<LI><a href="#[f0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_CheckFeedbackSignals
+<BR>[Called By]<UL><LI><a href="#[f4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_ProcessPendingActions
+<LI><a href="#[f0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_CheckInterlock
+<LI><a href="#[ef]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_CheckChannelFeedback
+<LI><a href="#[107]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_PrintKEnDiagnostics
+<LI><a href="#[f7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_CheckFeedbackSignals
 </UL>
 
 <P><STRONG><a name="[7b]"></a>GPIO_ReadK2_EN</STRONG> (Thumb, 10 bytes, Stack size 0 bytes, gpio_control.o(i.GPIO_ReadK2_EN))
 <BR><BR>[Calls]<UL><LI><a href="#[76]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GPIO_ReadPin
 </UL>
-<BR>[Called By]<UL><LI><a href="#[e9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_CheckInterlock
-<LI><a href="#[f1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_CheckInputSignals
+<BR>[Called By]<UL><LI><a href="#[f4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_ProcessPendingActions
+<LI><a href="#[f0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_CheckInterlock
+<LI><a href="#[107]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_PrintKEnDiagnostics
+<LI><a href="#[f8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_CheckInputSignals
 </UL>
 
 <P><STRONG><a name="[7c]"></a>GPIO_ReadK3_1_STA</STRONG> (Thumb, 8 bytes, Stack size 0 bytes, gpio_control.o(i.GPIO_ReadK3_1_STA))
 <BR><BR>[Calls]<UL><LI><a href="#[76]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GPIO_ReadPin
 </UL>
-<BR>[Called By]<UL><LI><a href="#[e9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_CheckInterlock
-<LI><a href="#[e8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_CheckChannelFeedback
-<LI><a href="#[f0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_CheckFeedbackSignals
+<BR>[Called By]<UL><LI><a href="#[f4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_ProcessPendingActions
+<LI><a href="#[f0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_CheckInterlock
+<LI><a href="#[ef]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_CheckChannelFeedback
+<LI><a href="#[107]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_PrintKEnDiagnostics
+<LI><a href="#[f7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_CheckFeedbackSignals
 </UL>
 
 <P><STRONG><a name="[7d]"></a>GPIO_ReadK3_2_STA</STRONG> (Thumb, 10 bytes, Stack size 0 bytes, gpio_control.o(i.GPIO_ReadK3_2_STA))
 <BR><BR>[Calls]<UL><LI><a href="#[76]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GPIO_ReadPin
 </UL>
-<BR>[Called By]<UL><LI><a href="#[e9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_CheckInterlock
-<LI><a href="#[e8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_CheckChannelFeedback
-<LI><a href="#[f0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_CheckFeedbackSignals
+<BR>[Called By]<UL><LI><a href="#[f4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_ProcessPendingActions
+<LI><a href="#[f0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_CheckInterlock
+<LI><a href="#[ef]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_CheckChannelFeedback
+<LI><a href="#[107]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_PrintKEnDiagnostics
+<LI><a href="#[f7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_CheckFeedbackSignals
 </UL>
 
 <P><STRONG><a name="[7e]"></a>GPIO_ReadK3_EN</STRONG> (Thumb, 10 bytes, Stack size 0 bytes, gpio_control.o(i.GPIO_ReadK3_EN))
 <BR><BR>[Calls]<UL><LI><a href="#[76]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GPIO_ReadPin
 </UL>
-<BR>[Called By]<UL><LI><a href="#[e9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_CheckInterlock
-<LI><a href="#[f1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_CheckInputSignals
+<BR>[Called By]<UL><LI><a href="#[f4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_ProcessPendingActions
+<LI><a href="#[f0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_CheckInterlock
+<LI><a href="#[107]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_PrintKEnDiagnostics
+<LI><a href="#[f8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_CheckInputSignals
 </UL>
 
 <P><STRONG><a name="[7f]"></a>GPIO_ReadSW1_STA</STRONG> (Thumb, 10 bytes, Stack size 0 bytes, gpio_control.o(i.GPIO_ReadSW1_STA))
 <BR><BR>[Calls]<UL><LI><a href="#[76]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GPIO_ReadPin
 </UL>
-<BR>[Called By]<UL><LI><a href="#[e9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_CheckInterlock
-<LI><a href="#[e8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_CheckChannelFeedback
-<LI><a href="#[f0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_CheckFeedbackSignals
+<BR>[Called By]<UL><LI><a href="#[f4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_ProcessPendingActions
+<LI><a href="#[f0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_CheckInterlock
+<LI><a href="#[ef]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_CheckChannelFeedback
+<LI><a href="#[107]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_PrintKEnDiagnostics
+<LI><a href="#[f7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_CheckFeedbackSignals
 </UL>
 
 <P><STRONG><a name="[80]"></a>GPIO_ReadSW2_STA</STRONG> (Thumb, 10 bytes, Stack size 0 bytes, gpio_control.o(i.GPIO_ReadSW2_STA))
 <BR><BR>[Calls]<UL><LI><a href="#[76]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GPIO_ReadPin
 </UL>
-<BR>[Called By]<UL><LI><a href="#[e9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_CheckInterlock
-<LI><a href="#[e8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_CheckChannelFeedback
-<LI><a href="#[f0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_CheckFeedbackSignals
+<BR>[Called By]<UL><LI><a href="#[f4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_ProcessPendingActions
+<LI><a href="#[f0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_CheckInterlock
+<LI><a href="#[ef]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_CheckChannelFeedback
+<LI><a href="#[107]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_PrintKEnDiagnostics
+<LI><a href="#[f7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_CheckFeedbackSignals
 </UL>
 
 <P><STRONG><a name="[81]"></a>GPIO_ReadSW3_STA</STRONG> (Thumb, 10 bytes, Stack size 0 bytes, gpio_control.o(i.GPIO_ReadSW3_STA))
 <BR><BR>[Calls]<UL><LI><a href="#[76]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GPIO_ReadPin
 </UL>
-<BR>[Called By]<UL><LI><a href="#[e9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_CheckInterlock
-<LI><a href="#[e8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_CheckChannelFeedback
-<LI><a href="#[f0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_CheckFeedbackSignals
+<BR>[Called By]<UL><LI><a href="#[f4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_ProcessPendingActions
+<LI><a href="#[f0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_CheckInterlock
+<LI><a href="#[ef]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_CheckChannelFeedback
+<LI><a href="#[107]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_PrintKEnDiagnostics
+<LI><a href="#[f7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_CheckFeedbackSignals
 </UL>
 
 <P><STRONG><a name="[82]"></a>GPIO_SetK1_1_OFF</STRONG> (Thumb, 10 bytes, Stack size 0 bytes, gpio_control.o(i.GPIO_SetK1_1_OFF))
 <BR><BR>[Calls]<UL><LI><a href="#[83]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GPIO_WritePin
 </UL>
-<BR>[Called By]<UL><LI><a href="#[eb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_Init
-<LI><a href="#[ea]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_CloseChannel
+<BR>[Called By]<UL><LI><a href="#[f2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_Init
+<LI><a href="#[f1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_CloseChannel
 </UL>
 
 <P><STRONG><a name="[84]"></a>GPIO_SetK1_1_ON</STRONG> (Thumb, 10 bytes, Stack size 0 bytes, gpio_control.o(i.GPIO_SetK1_1_ON))
 <BR><BR>[Calls]<UL><LI><a href="#[83]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GPIO_WritePin
 </UL>
-<BR>[Called By]<UL><LI><a href="#[ec]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_OpenChannel
-<LI><a href="#[eb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_Init
+<BR>[Called By]<UL><LI><a href="#[f3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_OpenChannel
+<LI><a href="#[f2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_Init
 </UL>
 
 <P><STRONG><a name="[85]"></a>GPIO_SetK1_2_OFF</STRONG> (Thumb, 10 bytes, Stack size 0 bytes, gpio_control.o(i.GPIO_SetK1_2_OFF))
 <BR><BR>[Calls]<UL><LI><a href="#[83]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GPIO_WritePin
 </UL>
-<BR>[Called By]<UL><LI><a href="#[eb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_Init
-<LI><a href="#[ea]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_CloseChannel
+<BR>[Called By]<UL><LI><a href="#[f2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_Init
+<LI><a href="#[f1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_CloseChannel
 </UL>
 
 <P><STRONG><a name="[86]"></a>GPIO_SetK1_2_ON</STRONG> (Thumb, 12 bytes, Stack size 0 bytes, gpio_control.o(i.GPIO_SetK1_2_ON))
 <BR><BR>[Calls]<UL><LI><a href="#[83]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GPIO_WritePin
 </UL>
-<BR>[Called By]<UL><LI><a href="#[ec]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_OpenChannel
-<LI><a href="#[eb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_Init
+<BR>[Called By]<UL><LI><a href="#[f3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_OpenChannel
+<LI><a href="#[f2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_Init
 </UL>
 
 <P><STRONG><a name="[87]"></a>GPIO_SetK2_1_OFF</STRONG> (Thumb, 10 bytes, Stack size 0 bytes, gpio_control.o(i.GPIO_SetK2_1_OFF))
 <BR><BR>[Calls]<UL><LI><a href="#[83]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GPIO_WritePin
 </UL>
-<BR>[Called By]<UL><LI><a href="#[eb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_Init
-<LI><a href="#[ea]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_CloseChannel
+<BR>[Called By]<UL><LI><a href="#[f2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_Init
+<LI><a href="#[f1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_CloseChannel
 </UL>
 
 <P><STRONG><a name="[88]"></a>GPIO_SetK2_1_ON</STRONG> (Thumb, 10 bytes, Stack size 0 bytes, gpio_control.o(i.GPIO_SetK2_1_ON))
 <BR><BR>[Calls]<UL><LI><a href="#[83]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GPIO_WritePin
 </UL>
-<BR>[Called By]<UL><LI><a href="#[ec]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_OpenChannel
-<LI><a href="#[eb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_Init
+<BR>[Called By]<UL><LI><a href="#[f3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_OpenChannel
+<LI><a href="#[f2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_Init
 </UL>
 
 <P><STRONG><a name="[89]"></a>GPIO_SetK2_2_OFF</STRONG> (Thumb, 10 bytes, Stack size 0 bytes, gpio_control.o(i.GPIO_SetK2_2_OFF))
 <BR><BR>[Calls]<UL><LI><a href="#[83]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GPIO_WritePin
 </UL>
-<BR>[Called By]<UL><LI><a href="#[eb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_Init
-<LI><a href="#[ea]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_CloseChannel
+<BR>[Called By]<UL><LI><a href="#[f2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_Init
+<LI><a href="#[f1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_CloseChannel
 </UL>
 
 <P><STRONG><a name="[8a]"></a>GPIO_SetK2_2_ON</STRONG> (Thumb, 10 bytes, Stack size 0 bytes, gpio_control.o(i.GPIO_SetK2_2_ON))
 <BR><BR>[Calls]<UL><LI><a href="#[83]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GPIO_WritePin
 </UL>
-<BR>[Called By]<UL><LI><a href="#[ec]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_OpenChannel
-<LI><a href="#[eb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_Init
+<BR>[Called By]<UL><LI><a href="#[f3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_OpenChannel
+<LI><a href="#[f2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_Init
 </UL>
 
 <P><STRONG><a name="[8b]"></a>GPIO_SetK3_1_OFF</STRONG> (Thumb, 10 bytes, Stack size 0 bytes, gpio_control.o(i.GPIO_SetK3_1_OFF))
 <BR><BR>[Calls]<UL><LI><a href="#[83]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GPIO_WritePin
 </UL>
-<BR>[Called By]<UL><LI><a href="#[eb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_Init
-<LI><a href="#[ea]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_CloseChannel
+<BR>[Called By]<UL><LI><a href="#[f2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_Init
+<LI><a href="#[f1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_CloseChannel
 </UL>
 
 <P><STRONG><a name="[8c]"></a>GPIO_SetK3_1_ON</STRONG> (Thumb, 10 bytes, Stack size 0 bytes, gpio_control.o(i.GPIO_SetK3_1_ON))
 <BR><BR>[Calls]<UL><LI><a href="#[83]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GPIO_WritePin
 </UL>
-<BR>[Called By]<UL><LI><a href="#[ec]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_OpenChannel
-<LI><a href="#[eb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_Init
+<BR>[Called By]<UL><LI><a href="#[f3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_OpenChannel
+<LI><a href="#[f2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_Init
 </UL>
 
 <P><STRONG><a name="[8d]"></a>GPIO_SetK3_2_OFF</STRONG> (Thumb, 10 bytes, Stack size 0 bytes, gpio_control.o(i.GPIO_SetK3_2_OFF))
 <BR><BR>[Calls]<UL><LI><a href="#[83]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GPIO_WritePin
 </UL>
-<BR>[Called By]<UL><LI><a href="#[eb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_Init
-<LI><a href="#[ea]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_CloseChannel
+<BR>[Called By]<UL><LI><a href="#[f2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_Init
+<LI><a href="#[f1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_CloseChannel
 </UL>
 
 <P><STRONG><a name="[8e]"></a>GPIO_SetK3_2_ON</STRONG> (Thumb, 10 bytes, Stack size 0 bytes, gpio_control.o(i.GPIO_SetK3_2_ON))
 <BR><BR>[Calls]<UL><LI><a href="#[83]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GPIO_WritePin
 </UL>
-<BR>[Called By]<UL><LI><a href="#[ec]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_OpenChannel
-<LI><a href="#[eb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_Init
+<BR>[Called By]<UL><LI><a href="#[f3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_OpenChannel
+<LI><a href="#[f2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_Init
 </UL>
 
 <P><STRONG><a name="[8f]"></a>HAL_ADCEx_InjectedConvCpltCallback</STRONG> (Thumb, 2 bytes, Stack size 0 bytes, stm32f1xx_hal_adc_ex.o(i.HAL_ADCEx_InjectedConvCpltCallback))
@@ -879,10 +918,10 @@ Global Symbols
 <P><STRONG><a name="[98]"></a>HAL_ADC_Start_DMA</STRONG> (Thumb, 246 bytes, Stack size 32 bytes, stm32f1xx_hal_adc.o(i.HAL_ADC_Start_DMA))
 <BR><BR>[Stack]<UL><LI>Max Depth = 60<LI>Call Chain = HAL_ADC_Start_DMA &rArr; HAL_DMA_Start_IT &rArr; DMA_SetConfig
 </UL>
-<BR>[Calls]<UL><LI><a href="#[99]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_DMA_Start_IT
-<LI><a href="#[6d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ADC_Enable
+<BR>[Calls]<UL><LI><a href="#[6d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ADC_Enable
+<LI><a href="#[99]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_DMA_Start_IT
 </UL>
-<BR>[Called By]<UL><LI><a href="#[108]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TemperatureMonitor_Init
+<BR>[Called By]<UL><LI><a href="#[111]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TemperatureMonitor_Init
 </UL>
 
 <P><STRONG><a name="[ca]"></a>HAL_DMA_Abort</STRONG> (Thumb, 70 bytes, Stack size 8 bytes, stm32f1xx_hal_dma.o(i.HAL_DMA_Abort))
@@ -916,14 +955,14 @@ Global Symbols
 </UL>
 <BR>[Calls]<UL><LI><a href="#[69]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GetTick
 </UL>
-<BR>[Called By]<UL><LI><a href="#[e2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_Init
-<LI><a href="#[ec]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_OpenChannel
-<LI><a href="#[ea]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_CloseChannel
+<BR>[Called By]<UL><LI><a href="#[e6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_Init
+<LI><a href="#[f3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_OpenChannel
+<LI><a href="#[f1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_CloseChannel
 <LI><a href="#[46]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
 
 <P><STRONG><a name="[9c]"></a>HAL_GPIO_EXTI_Callback</STRONG> (Thumb, 100 bytes, Stack size 8 bytes, gpio.o(i.HAL_GPIO_EXTI_Callback))
-<BR><BR>[Stack]<UL><LI>Max Depth = 368<LI>Call Chain = HAL_GPIO_EXTI_Callback &rArr; RelayControl_HandleEnableSignal &rArr; DEBUG_Printf &rArr; HAL_UART_Transmit &rArr; UART_WaitOnFlagUntilTimeout
+<BR><BR>[Stack]<UL><LI>Max Depth = 352<LI>Call Chain = HAL_GPIO_EXTI_Callback &rArr; RelayControl_HandleEnableSignal &rArr; DEBUG_Printf &rArr; HAL_UART_Transmit &rArr; UART_WaitOnFlagUntilTimeout
 </UL>
 <BR>[Calls]<UL><LI><a href="#[9d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_HandleEnableSignal
 <LI><a href="#[76]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GPIO_ReadPin
@@ -933,7 +972,7 @@ Global Symbols
 </UL>
 
 <P><STRONG><a name="[74]"></a>HAL_GPIO_EXTI_IRQHandler</STRONG> (Thumb, 18 bytes, Stack size 8 bytes, stm32f1xx_hal_gpio.o(i.HAL_GPIO_EXTI_IRQHandler))
-<BR><BR>[Stack]<UL><LI>Max Depth = 376<LI>Call Chain = HAL_GPIO_EXTI_IRQHandler &rArr; HAL_GPIO_EXTI_Callback &rArr; RelayControl_HandleEnableSignal &rArr; DEBUG_Printf &rArr; HAL_UART_Transmit &rArr; UART_WaitOnFlagUntilTimeout
+<BR><BR>[Stack]<UL><LI>Max Depth = 360<LI>Call Chain = HAL_GPIO_EXTI_IRQHandler &rArr; HAL_GPIO_EXTI_Callback &rArr; RelayControl_HandleEnableSignal &rArr; DEBUG_Printf &rArr; HAL_UART_Transmit &rArr; UART_WaitOnFlagUntilTimeout
 </UL>
 <BR>[Calls]<UL><LI><a href="#[9c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GPIO_EXTI_Callback
 </UL>
@@ -988,23 +1027,22 @@ Global Symbols
 <BR><BR>[Called By]<UL><LI><a href="#[a3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_I2C_Mem_Write
 <LI><a href="#[a1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_I2C_IsDeviceReady
 <LI><a href="#[9b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_Delay
-<LI><a href="#[ec]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_OpenChannel
-<LI><a href="#[9d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_HandleEnableSignal
-<LI><a href="#[ea]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_CloseChannel
+<LI><a href="#[f3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_OpenChannel
+<LI><a href="#[f1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_CloseChannel
 <LI><a href="#[6d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ADC_Enable
 <LI><a href="#[68]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ADC_ConversionStop_Disable
 <LI><a href="#[73]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UART_Transmit
 <LI><a href="#[b0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_RCC_OscConfig
 <LI><a href="#[ae]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_RCC_ClockConfig
 <LI><a href="#[ad]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_RCCEx_PeriphCLKConfig
-<LI><a href="#[103]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_StartSelfTest
-<LI><a href="#[fe]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_StartLogoDisplay
-<LI><a href="#[104]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_Reset
-<LI><a href="#[102]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_Process
-<LI><a href="#[ff]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_MainLoopScheduler
-<LI><a href="#[fd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_Init
-<LI><a href="#[f8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_EnterNormalState
-<LI><a href="#[f6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_EnterErrorState
+<LI><a href="#[10d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_StartSelfTest
+<LI><a href="#[105]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_StartLogoDisplay
+<LI><a href="#[10e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_Reset
+<LI><a href="#[10c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_Process
+<LI><a href="#[106]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_MainLoopScheduler
+<LI><a href="#[104]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_Init
+<LI><a href="#[ff]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_EnterNormalState
+<LI><a href="#[fd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_EnterErrorState
 <LI><a href="#[a5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;I2C_WaitOnTXEFlagUntilTimeout
 <LI><a href="#[d1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;I2C_WaitOnMasterAddressFlagUntilTimeout
 <LI><a href="#[a2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;I2C_WaitOnFlagUntilTimeout
@@ -1027,7 +1065,7 @@ Global Symbols
 <BR>[Calls]<UL><LI><a href="#[69]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GetTick
 <LI><a href="#[a2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;I2C_WaitOnFlagUntilTimeout
 </UL>
-<BR>[Called By]<UL><LI><a href="#[e7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_TestConnection
+<BR>[Called By]<UL><LI><a href="#[ee]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_TestConnection
 </UL>
 
 <P><STRONG><a name="[a3]"></a>HAL_I2C_Mem_Write</STRONG> (Thumb, 294 bytes, Stack size 64 bytes, stm32f1xx_hal_i2c.o(i.HAL_I2C_Mem_Write))
@@ -1039,9 +1077,10 @@ Global Symbols
 <LI><a href="#[a6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;I2C_WaitOnBTFFlagUntilTimeout
 <LI><a href="#[a4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;I2C_RequestMemoryWrite
 </UL>
-<BR>[Called By]<UL><LI><a href="#[e7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_TestConnection
-<LI><a href="#[e0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_Refresh
-<LI><a href="#[e3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_WriteCmd
+<BR>[Called By]<UL><LI><a href="#[ee]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_TestConnection
+<LI><a href="#[e8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_RefreshDirtyRegions
+<LI><a href="#[e2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_Refresh
+<LI><a href="#[e7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_WriteCmd
 </UL>
 
 <P><STRONG><a name="[9f]"></a>HAL_I2C_MspInit</STRONG> (Thumb, 80 bytes, Stack size 32 bytes, i2c.o(i.HAL_I2C_MspInit))
@@ -1052,7 +1091,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[9e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_I2C_Init
 </UL>
 
-<P><STRONG><a name="[ee]"></a>HAL_IncTick</STRONG> (Thumb, 12 bytes, Stack size 0 bytes, stm32f1xx_hal.o(i.HAL_IncTick))
+<P><STRONG><a name="[f5]"></a>HAL_IncTick</STRONG> (Thumb, 12 bytes, Stack size 0 bytes, stm32f1xx_hal.o(i.HAL_IncTick))
 <BR><BR>[Called By]<UL><LI><a href="#[9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SysTick_Handler
 </UL>
 
@@ -1108,7 +1147,7 @@ Global Symbols
 </UL>
 <BR>[Calls]<UL><LI><a href="#[69]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GetTick
 </UL>
-<BR>[Called By]<UL><LI><a href="#[ef]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemClock_Config
+<BR>[Called By]<UL><LI><a href="#[f6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemClock_Config
 </UL>
 
 <P><STRONG><a name="[ae]"></a>HAL_RCC_ClockConfig</STRONG> (Thumb, 280 bytes, Stack size 32 bytes, stm32f1xx_hal_rcc.o(i.HAL_RCC_ClockConfig))
@@ -1118,7 +1157,7 @@ Global Symbols
 <LI><a href="#[af]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_RCC_GetSysClockFreq
 <LI><a href="#[a9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_InitTick
 </UL>
-<BR>[Called By]<UL><LI><a href="#[ef]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemClock_Config
+<BR>[Called By]<UL><LI><a href="#[f6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemClock_Config
 </UL>
 
 <P><STRONG><a name="[a0]"></a>HAL_RCC_GetPCLK1Freq</STRONG> (Thumb, 20 bytes, Stack size 0 bytes, stm32f1xx_hal_rcc.o(i.HAL_RCC_GetPCLK1Freq))
@@ -1126,7 +1165,7 @@ Global Symbols
 <LI><a href="#[cf]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;UART_SetConfig
 </UL>
 
-<P><STRONG><a name="[10a]"></a>HAL_RCC_GetPCLK2Freq</STRONG> (Thumb, 20 bytes, Stack size 0 bytes, stm32f1xx_hal_rcc.o(i.HAL_RCC_GetPCLK2Freq))
+<P><STRONG><a name="[113]"></a>HAL_RCC_GetPCLK2Freq</STRONG> (Thumb, 20 bytes, Stack size 0 bytes, stm32f1xx_hal_rcc.o(i.HAL_RCC_GetPCLK2Freq))
 <BR><BR>[Called By]<UL><LI><a href="#[cf]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;UART_SetConfig
 </UL>
 
@@ -1140,7 +1179,7 @@ Global Symbols
 </UL>
 <BR>[Calls]<UL><LI><a href="#[69]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GetTick
 </UL>
-<BR>[Called By]<UL><LI><a href="#[ef]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemClock_Config
+<BR>[Called By]<UL><LI><a href="#[f6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemClock_Config
 </UL>
 
 <P><STRONG><a name="[b1]"></a>HAL_SPI_Init</STRONG> (Thumb, 178 bytes, Stack size 16 bytes, stm32f1xx_hal_spi.o(i.HAL_SPI_Init))
@@ -1221,8 +1260,8 @@ Global Symbols
 <P><STRONG><a name="[c1]"></a>HAL_TIM_PWM_Init</STRONG> (Thumb, 90 bytes, Stack size 8 bytes, stm32f1xx_hal_tim.o(i.HAL_TIM_PWM_Init))
 <BR><BR>[Stack]<UL><LI>Max Depth = 28<LI>Call Chain = HAL_TIM_PWM_Init &rArr; TIM_Base_SetConfig
 </UL>
-<BR>[Calls]<UL><LI><a href="#[c2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_TIM_PWM_MspInit
-<LI><a href="#[b5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TIM_Base_SetConfig
+<BR>[Calls]<UL><LI><a href="#[b5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TIM_Base_SetConfig
+<LI><a href="#[c2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_TIM_PWM_MspInit
 </UL>
 <BR>[Called By]<UL><LI><a href="#[d8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;MX_TIM3_Init
 </UL>
@@ -1252,8 +1291,8 @@ Global Symbols
 <P><STRONG><a name="[c5]"></a>HAL_UART_IRQHandler</STRONG> (Thumb, 616 bytes, Stack size 24 bytes, stm32f1xx_hal_uart.o(i.HAL_UART_IRQHandler))
 <BR><BR>[Stack]<UL><LI>Max Depth = 64<LI>Call Chain = HAL_UART_IRQHandler &rArr; HAL_DMA_Abort_IT
 </UL>
-<BR>[Calls]<UL><LI><a href="#[ca]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_DMA_Abort
-<LI><a href="#[c8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_DMA_Abort_IT
+<BR>[Calls]<UL><LI><a href="#[c8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_DMA_Abort_IT
+<LI><a href="#[ca]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_DMA_Abort
 <LI><a href="#[cc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UART_TxCpltCallback
 <LI><a href="#[c9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UART_ErrorCallback
 <LI><a href="#[cb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UARTEx_RxEventCallback
@@ -1283,7 +1322,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[cd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UART_Init
 </UL>
 
-<P><STRONG><a name="[109]"></a>HAL_UART_RxCpltCallback</STRONG> (Thumb, 2 bytes, Stack size 0 bytes, stm32f1xx_hal_uart.o(i.HAL_UART_RxCpltCallback))
+<P><STRONG><a name="[112]"></a>HAL_UART_RxCpltCallback</STRONG> (Thumb, 2 bytes, Stack size 0 bytes, stm32f1xx_hal_uart.o(i.HAL_UART_RxCpltCallback))
 <BR><BR>[Called By]<UL><LI><a href="#[c6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;UART_Receive_IT
 </UL>
 
@@ -1317,7 +1356,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[46]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
 
-<P><STRONG><a name="[113]"></a>MX_DMA_Init</STRONG> (Thumb, 22 bytes, Stack size 8 bytes, dma.o(i.MX_DMA_Init))
+<P><STRONG><a name="[11c]"></a>MX_DMA_Init</STRONG> (Thumb, 22 bytes, Stack size 8 bytes, dma.o(i.MX_DMA_Init))
 <BR><BR>[Stack]<UL><LI>Max Depth = 8<LI>Call Chain = MX_DMA_Init
 </UL>
 <BR>[Called By]<UL><LI><a href="#[46]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
@@ -1399,82 +1438,140 @@ Global Symbols
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> startup_stm32f103xe.o(RESET)
 </UL>
-<P><STRONG><a name="[df]"></a>OLED_Clear</STRONG> (Thumb, 20 bytes, Stack size 8 bytes, oled_display.o(i.OLED_Clear))
+<P><STRONG><a name="[df]"></a>OLED_AddDirtyRegion</STRONG> (Thumb, 124 bytes, Stack size 24 bytes, oled_display.o(i.OLED_AddDirtyRegion))
+<BR><BR>[Stack]<UL><LI>Max Depth = 32 + In Cycle
+<LI>Call Chain = OLED_AddDirtyRegion &rArr;  OLED_AddDirtyRegion (Cycle)
+</UL>
+<BR>[Calls]<UL><LI><a href="#[e0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_ClearDirtyRegions
+<LI><a href="#[df]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_AddDirtyRegion
+</UL>
+<BR>[Called By]<UL><LI><a href="#[ec]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_ShowMainScreenDirty
+<LI><a href="#[e5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_DrawStringDirty
+<LI><a href="#[df]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_AddDirtyRegion
+</UL>
+
+<P><STRONG><a name="[e1]"></a>OLED_Clear</STRONG> (Thumb, 20 bytes, Stack size 8 bytes, oled_display.o(i.OLED_Clear))
 <BR><BR>[Stack]<UL><LI>Max Depth = 192<LI>Call Chain = OLED_Clear &rArr; OLED_Refresh &rArr; OLED_WriteCmd &rArr; HAL_I2C_Mem_Write &rArr; I2C_RequestMemoryWrite &rArr; I2C_WaitOnMasterAddressFlagUntilTimeout
 </UL>
-<BR>[Calls]<UL><LI><a href="#[e0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_Refresh
+<BR>[Calls]<UL><LI><a href="#[e2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_Refresh
 <LI><a href="#[50]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memclr
 </UL>
-<BR>[Called By]<UL><LI><a href="#[e5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_ShowMainScreen
-<LI><a href="#[e4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_ShowLogo
-<LI><a href="#[e2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_Init
-<LI><a href="#[103]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_StartSelfTest
-<LI><a href="#[fb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_HandleSelfTestError
-<LI><a href="#[f8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_EnterNormalState
+<BR>[Called By]<UL><LI><a href="#[eb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_ShowLogo
+<LI><a href="#[e6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_Init
+<LI><a href="#[10d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_StartSelfTest
+<LI><a href="#[102]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_HandleSelfTestError
+<LI><a href="#[ff]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_EnterNormalState
 </UL>
 
-<P><STRONG><a name="[e1]"></a>OLED_DrawString</STRONG> (Thumb, 162 bytes, Stack size 16 bytes, oled_display.o(i.OLED_DrawString))
+<P><STRONG><a name="[e0]"></a>OLED_ClearDirtyRegions</STRONG> (Thumb, 18 bytes, Stack size 8 bytes, oled_display.o(i.OLED_ClearDirtyRegions))
+<BR><BR>[Stack]<UL><LI>Max Depth = 8<LI>Call Chain = OLED_ClearDirtyRegions
+</UL>
+<BR>[Calls]<UL><LI><a href="#[50]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memclr
+</UL>
+<BR>[Called By]<UL><LI><a href="#[ec]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_ShowMainScreenDirty
+<LI><a href="#[df]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_AddDirtyRegion
+<LI><a href="#[ff]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_EnterNormalState
+<LI><a href="#[fd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_EnterErrorState
+</UL>
+
+<P><STRONG><a name="[e3]"></a>OLED_DrawString</STRONG> (Thumb, 162 bytes, Stack size 16 bytes, oled_display.o(i.OLED_DrawString))
 <BR><BR>[Stack]<UL><LI>Max Depth = 200<LI>Call Chain = OLED_DrawString &rArr; OLED_Refresh &rArr; OLED_WriteCmd &rArr; HAL_I2C_Mem_Write &rArr; I2C_RequestMemoryWrite &rArr; I2C_WaitOnMasterAddressFlagUntilTimeout
 </UL>
-<BR>[Calls]<UL><LI><a href="#[e0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_Refresh
+<BR>[Calls]<UL><LI><a href="#[e2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_Refresh
 </UL>
-<BR>[Called By]<UL><LI><a href="#[e5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_ShowMainScreen
-<LI><a href="#[fb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_HandleSelfTestError
+<BR>[Called By]<UL><LI><a href="#[e4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_DrawString6x8
 </UL>
 
-<P><STRONG><a name="[e2]"></a>OLED_Init</STRONG> (Thumb, 172 bytes, Stack size 8 bytes, oled_display.o(i.OLED_Init))
+<P><STRONG><a name="[e4]"></a>OLED_DrawString6x8</STRONG> (Thumb, 6 bytes, Stack size 0 bytes, oled_display.o(i.OLED_DrawString6x8))
+<BR><BR>[Stack]<UL><LI>Max Depth = 200<LI>Call Chain = OLED_DrawString6x8 &rArr; OLED_DrawString &rArr; OLED_Refresh &rArr; OLED_WriteCmd &rArr; HAL_I2C_Mem_Write &rArr; I2C_RequestMemoryWrite &rArr; I2C_WaitOnMasterAddressFlagUntilTimeout
+</UL>
+<BR>[Calls]<UL><LI><a href="#[e3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_DrawString
+</UL>
+<BR>[Called By]<UL><LI><a href="#[102]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_HandleSelfTestError
+</UL>
+
+<P><STRONG><a name="[e5]"></a>OLED_DrawStringDirty</STRONG> (Thumb, 214 bytes, Stack size 24 bytes, oled_display.o(i.OLED_DrawStringDirty))
+<BR><BR>[Stack]<UL><LI>Max Depth = 56<LI>Call Chain = OLED_DrawStringDirty &rArr; OLED_AddDirtyRegion &rArr;  OLED_AddDirtyRegion (Cycle)
+</UL>
+<BR>[Calls]<UL><LI><a href="#[df]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_AddDirtyRegion
+</UL>
+<BR>[Called By]<UL><LI><a href="#[ec]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_ShowMainScreenDirty
+</UL>
+
+<P><STRONG><a name="[e6]"></a>OLED_Init</STRONG> (Thumb, 172 bytes, Stack size 8 bytes, oled_display.o(i.OLED_Init))
 <BR><BR>[Stack]<UL><LI>Max Depth = 200<LI>Call Chain = OLED_Init &rArr; OLED_Clear &rArr; OLED_Refresh &rArr; OLED_WriteCmd &rArr; HAL_I2C_Mem_Write &rArr; I2C_RequestMemoryWrite &rArr; I2C_WaitOnMasterAddressFlagUntilTimeout
 </UL>
-<BR>[Calls]<UL><LI><a href="#[df]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_Clear
-<LI><a href="#[e3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_WriteCmd
+<BR>[Calls]<UL><LI><a href="#[e1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_Clear
+<LI><a href="#[e7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_WriteCmd
 <LI><a href="#[9b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_Delay
 </UL>
 <BR>[Called By]<UL><LI><a href="#[46]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
 
-<P><STRONG><a name="[e0]"></a>OLED_Refresh</STRONG> (Thumb, 66 bytes, Stack size 32 bytes, oled_display.o(i.OLED_Refresh))
+<P><STRONG><a name="[e2]"></a>OLED_Refresh</STRONG> (Thumb, 66 bytes, Stack size 32 bytes, oled_display.o(i.OLED_Refresh))
 <BR><BR>[Stack]<UL><LI>Max Depth = 184<LI>Call Chain = OLED_Refresh &rArr; OLED_WriteCmd &rArr; HAL_I2C_Mem_Write &rArr; I2C_RequestMemoryWrite &rArr; I2C_WaitOnMasterAddressFlagUntilTimeout
 </UL>
 <BR>[Calls]<UL><LI><a href="#[a3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_I2C_Mem_Write
-<LI><a href="#[e3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_WriteCmd
+<LI><a href="#[e7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_WriteCmd
 </UL>
-<BR>[Called By]<UL><LI><a href="#[e6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_ShowSelfTestBar
-<LI><a href="#[e5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_ShowMainScreen
-<LI><a href="#[e4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_ShowLogo
-<LI><a href="#[e1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_DrawString
-<LI><a href="#[df]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_Clear
-<LI><a href="#[fb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_HandleSelfTestError
+<BR>[Called By]<UL><LI><a href="#[ed]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_ShowSelfTestBar
+<LI><a href="#[eb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_ShowLogo
+<LI><a href="#[e3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_DrawString
+<LI><a href="#[e1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_Clear
+<LI><a href="#[102]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_HandleSelfTestError
 </UL>
 
-<P><STRONG><a name="[e4]"></a>OLED_ShowLogo</STRONG> (Thumb, 180 bytes, Stack size 40 bytes, oled_display.o(i.OLED_ShowLogo))
+<P><STRONG><a name="[e8]"></a>OLED_RefreshDirtyRegions</STRONG> (Thumb, 200 bytes, Stack size 56 bytes, oled_display.o(i.OLED_RefreshDirtyRegions))
+<BR><BR>[Stack]<UL><LI>Max Depth = 208<LI>Call Chain = OLED_RefreshDirtyRegions &rArr; OLED_WriteCmd &rArr; HAL_I2C_Mem_Write &rArr; I2C_RequestMemoryWrite &rArr; I2C_WaitOnMasterAddressFlagUntilTimeout
+</UL>
+<BR>[Calls]<UL><LI><a href="#[a3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_I2C_Mem_Write
+<LI><a href="#[e7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_WriteCmd
+<LI><a href="#[e9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memcpy
+</UL>
+<BR>[Called By]<UL><LI><a href="#[ec]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_ShowMainScreenDirty
+</UL>
+
+<P><STRONG><a name="[ea]"></a>OLED_ResetDisplayCache</STRONG> (Thumb, 20 bytes, Stack size 8 bytes, oled_display.o(i.OLED_ResetDisplayCache))
+<BR><BR>[Stack]<UL><LI>Max Depth = 8<LI>Call Chain = OLED_ResetDisplayCache
+</UL>
+<BR>[Calls]<UL><LI><a href="#[50]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memclr
+</UL>
+<BR>[Called By]<UL><LI><a href="#[10b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_UpdateDisplay
+<LI><a href="#[102]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_HandleSelfTestError
+<LI><a href="#[ff]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_EnterNormalState
+<LI><a href="#[fd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_EnterErrorState
+</UL>
+
+<P><STRONG><a name="[eb]"></a>OLED_ShowLogo</STRONG> (Thumb, 180 bytes, Stack size 40 bytes, oled_display.o(i.OLED_ShowLogo))
 <BR><BR>[Stack]<UL><LI>Max Depth = 232<LI>Call Chain = OLED_ShowLogo &rArr; OLED_Clear &rArr; OLED_Refresh &rArr; OLED_WriteCmd &rArr; HAL_I2C_Mem_Write &rArr; I2C_RequestMemoryWrite &rArr; I2C_WaitOnMasterAddressFlagUntilTimeout
 </UL>
-<BR>[Calls]<UL><LI><a href="#[e0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_Refresh
-<LI><a href="#[df]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_Clear
+<BR>[Calls]<UL><LI><a href="#[e2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_Refresh
+<LI><a href="#[e1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_Clear
 </UL>
-<BR>[Called By]<UL><LI><a href="#[fe]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_StartLogoDisplay
+<BR>[Called By]<UL><LI><a href="#[105]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_StartLogoDisplay
 </UL>
 
-<P><STRONG><a name="[e5]"></a>OLED_ShowMainScreen</STRONG> (Thumb, 134 bytes, Stack size 32 bytes, oled_display.o(i.OLED_ShowMainScreen))
-<BR><BR>[Stack]<UL><LI>Max Depth = 232<LI>Call Chain = OLED_ShowMainScreen &rArr; OLED_DrawString &rArr; OLED_Refresh &rArr; OLED_WriteCmd &rArr; HAL_I2C_Mem_Write &rArr; I2C_RequestMemoryWrite &rArr; I2C_WaitOnMasterAddressFlagUntilTimeout
+<P><STRONG><a name="[ec]"></a>OLED_ShowMainScreenDirty</STRONG> (Thumb, 314 bytes, Stack size 40 bytes, oled_display.o(i.OLED_ShowMainScreenDirty))
+<BR><BR>[Stack]<UL><LI>Max Depth = 248<LI>Call Chain = OLED_ShowMainScreenDirty &rArr; OLED_RefreshDirtyRegions &rArr; OLED_WriteCmd &rArr; HAL_I2C_Mem_Write &rArr; I2C_RequestMemoryWrite &rArr; I2C_WaitOnMasterAddressFlagUntilTimeout
 </UL>
-<BR>[Calls]<UL><LI><a href="#[e0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_Refresh
-<LI><a href="#[e1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_DrawString
-<LI><a href="#[df]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_Clear
+<BR>[Calls]<UL><LI><a href="#[e8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_RefreshDirtyRegions
+<LI><a href="#[e5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_DrawStringDirty
+<LI><a href="#[e0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_ClearDirtyRegions
+<LI><a href="#[df]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_AddDirtyRegion
 <LI><a href="#[72]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;strlen
 </UL>
-<BR>[Called By]<UL><LI><a href="#[101]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_UpdateDisplay
+<BR>[Called By]<UL><LI><a href="#[10b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_UpdateDisplay
 </UL>
 
-<P><STRONG><a name="[e6]"></a>OLED_ShowSelfTestBar</STRONG> (Thumb, 124 bytes, Stack size 8 bytes, oled_display.o(i.OLED_ShowSelfTestBar))
+<P><STRONG><a name="[ed]"></a>OLED_ShowSelfTestBar</STRONG> (Thumb, 124 bytes, Stack size 8 bytes, oled_display.o(i.OLED_ShowSelfTestBar))
 <BR><BR>[Stack]<UL><LI>Max Depth = 192<LI>Call Chain = OLED_ShowSelfTestBar &rArr; OLED_Refresh &rArr; OLED_WriteCmd &rArr; HAL_I2C_Mem_Write &rArr; I2C_RequestMemoryWrite &rArr; I2C_WaitOnMasterAddressFlagUntilTimeout
 </UL>
-<BR>[Calls]<UL><LI><a href="#[e0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_Refresh
+<BR>[Calls]<UL><LI><a href="#[e2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_Refresh
 </UL>
-<BR>[Called By]<UL><LI><a href="#[102]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_Process
+<BR>[Called By]<UL><LI><a href="#[10c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_Process
 </UL>
 
-<P><STRONG><a name="[e7]"></a>OLED_TestConnection</STRONG> (Thumb, 82 bytes, Stack size 48 bytes, oled_display.o(i.OLED_TestConnection))
+<P><STRONG><a name="[ee]"></a>OLED_TestConnection</STRONG> (Thumb, 82 bytes, Stack size 48 bytes, oled_display.o(i.OLED_TestConnection))
 <BR><BR>[Stack]<UL><LI>Max Depth = 176<LI>Call Chain = OLED_TestConnection &rArr; HAL_I2C_Mem_Write &rArr; I2C_RequestMemoryWrite &rArr; I2C_WaitOnMasterAddressFlagUntilTimeout
 </UL>
 <BR>[Calls]<UL><LI><a href="#[a3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_I2C_Mem_Write
@@ -1486,7 +1583,7 @@ Global Symbols
 <P><STRONG><a name="[8]"></a>PendSV_Handler</STRONG> (Thumb, 2 bytes, Stack size 0 bytes, stm32f1xx_it.o(i.PendSV_Handler))
 <BR>[Address Reference Count : 1]<UL><LI> startup_stm32f103xe.o(RESET)
 </UL>
-<P><STRONG><a name="[e8]"></a>RelayControl_CheckChannelFeedback</STRONG> (Thumb, 414 bytes, Stack size 72 bytes, relay_control.o(i.RelayControl_CheckChannelFeedback))
+<P><STRONG><a name="[ef]"></a>RelayControl_CheckChannelFeedback</STRONG> (Thumb, 414 bytes, Stack size 72 bytes, relay_control.o(i.RelayControl_CheckChannelFeedback))
 <BR><BR>[Stack]<UL><LI>Max Depth = 416<LI>Call Chain = RelayControl_CheckChannelFeedback &rArr; DEBUG_Printf &rArr; HAL_UART_Transmit &rArr; UART_WaitOnFlagUntilTimeout
 </UL>
 <BR>[Calls]<UL><LI><a href="#[70]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DEBUG_Printf
@@ -1500,11 +1597,11 @@ Global Symbols
 <LI><a href="#[77]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_ReadK1_2_STA
 <LI><a href="#[75]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_ReadK1_1_STA
 </UL>
-<BR>[Called By]<UL><LI><a href="#[ec]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_OpenChannel
-<LI><a href="#[ea]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_CloseChannel
+<BR>[Called By]<UL><LI><a href="#[f3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_OpenChannel
+<LI><a href="#[f1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_CloseChannel
 </UL>
 
-<P><STRONG><a name="[e9]"></a>RelayControl_CheckInterlock</STRONG> (Thumb, 152 bytes, Stack size 8 bytes, relay_control.o(i.RelayControl_CheckInterlock))
+<P><STRONG><a name="[f0]"></a>RelayControl_CheckInterlock</STRONG> (Thumb, 152 bytes, Stack size 8 bytes, relay_control.o(i.RelayControl_CheckInterlock))
 <BR><BR>[Stack]<UL><LI>Max Depth = 8<LI>Call Chain = RelayControl_CheckInterlock
 </UL>
 <BR>[Calls]<UL><LI><a href="#[81]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_ReadSW3_STA
@@ -1520,14 +1617,14 @@ Global Symbols
 <LI><a href="#[77]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_ReadK1_2_STA
 <LI><a href="#[75]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_ReadK1_1_STA
 </UL>
-<BR>[Called By]<UL><LI><a href="#[ec]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_OpenChannel
+<BR>[Called By]<UL><LI><a href="#[f3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_OpenChannel
 </UL>
 
-<P><STRONG><a name="[ea]"></a>RelayControl_CloseChannel</STRONG> (Thumb, 216 bytes, Stack size 16 bytes, relay_control.o(i.RelayControl_CloseChannel))
+<P><STRONG><a name="[f1]"></a>RelayControl_CloseChannel</STRONG> (Thumb, 216 bytes, Stack size 16 bytes, relay_control.o(i.RelayControl_CloseChannel))
 <BR><BR>[Stack]<UL><LI>Max Depth = 432<LI>Call Chain = RelayControl_CloseChannel &rArr; RelayControl_CheckChannelFeedback &rArr; DEBUG_Printf &rArr; HAL_UART_Transmit &rArr; UART_WaitOnFlagUntilTimeout
 </UL>
 <BR>[Calls]<UL><LI><a href="#[9b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_Delay
-<LI><a href="#[e8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_CheckChannelFeedback
+<LI><a href="#[ef]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_CheckChannelFeedback
 <LI><a href="#[69]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GetTick
 <LI><a href="#[70]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DEBUG_Printf
 <LI><a href="#[8d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_SetK3_2_OFF
@@ -1537,23 +1634,22 @@ Global Symbols
 <LI><a href="#[85]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_SetK1_2_OFF
 <LI><a href="#[82]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_SetK1_1_OFF
 </UL>
-<BR>[Called By]<UL><LI><a href="#[ed]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_ProcessPendingActions
+<BR>[Called By]<UL><LI><a href="#[f4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_ProcessPendingActions
 </UL>
 
-<P><STRONG><a name="[105]"></a>RelayControl_GetChannelState</STRONG> (Thumb, 26 bytes, Stack size 0 bytes, relay_control.o(i.RelayControl_GetChannelState))
-<BR><BR>[Called By]<UL><LI><a href="#[101]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_UpdateDisplay
+<P><STRONG><a name="[10f]"></a>RelayControl_GetChannelState</STRONG> (Thumb, 26 bytes, Stack size 0 bytes, relay_control.o(i.RelayControl_GetChannelState))
+<BR><BR>[Called By]<UL><LI><a href="#[10b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_UpdateDisplay
 </UL>
 
-<P><STRONG><a name="[9d]"></a>RelayControl_HandleEnableSignal</STRONG> (Thumb, 68 bytes, Stack size 16 bytes, relay_control.o(i.RelayControl_HandleEnableSignal))
-<BR><BR>[Stack]<UL><LI>Max Depth = 360<LI>Call Chain = RelayControl_HandleEnableSignal &rArr; DEBUG_Printf &rArr; HAL_UART_Transmit &rArr; UART_WaitOnFlagUntilTimeout
+<P><STRONG><a name="[9d]"></a>RelayControl_HandleEnableSignal</STRONG> (Thumb, 6 bytes, Stack size 0 bytes, relay_control.o(i.RelayControl_HandleEnableSignal))
+<BR><BR>[Stack]<UL><LI>Max Depth = 344<LI>Call Chain = RelayControl_HandleEnableSignal &rArr; DEBUG_Printf &rArr; HAL_UART_Transmit &rArr; UART_WaitOnFlagUntilTimeout
 </UL>
-<BR>[Calls]<UL><LI><a href="#[69]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GetTick
-<LI><a href="#[70]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DEBUG_Printf
+<BR>[Calls]<UL><LI><a href="#[70]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DEBUG_Printf
 </UL>
 <BR>[Called By]<UL><LI><a href="#[9c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GPIO_EXTI_Callback
 </UL>
 
-<P><STRONG><a name="[eb]"></a>RelayControl_Init</STRONG> (Thumb, 148 bytes, Stack size 24 bytes, relay_control.o(i.RelayControl_Init))
+<P><STRONG><a name="[f2]"></a>RelayControl_Init</STRONG> (Thumb, 148 bytes, Stack size 24 bytes, relay_control.o(i.RelayControl_Init))
 <BR><BR>[Stack]<UL><LI>Max Depth = 368<LI>Call Chain = RelayControl_Init &rArr; DEBUG_Printf &rArr; HAL_UART_Transmit &rArr; UART_WaitOnFlagUntilTimeout
 </UL>
 <BR>[Calls]<UL><LI><a href="#[70]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DEBUG_Printf
@@ -1573,12 +1669,12 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[46]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
 
-<P><STRONG><a name="[ec]"></a>RelayControl_OpenChannel</STRONG> (Thumb, 252 bytes, Stack size 24 bytes, relay_control.o(i.RelayControl_OpenChannel))
+<P><STRONG><a name="[f3]"></a>RelayControl_OpenChannel</STRONG> (Thumb, 252 bytes, Stack size 24 bytes, relay_control.o(i.RelayControl_OpenChannel))
 <BR><BR>[Stack]<UL><LI>Max Depth = 440<LI>Call Chain = RelayControl_OpenChannel &rArr; RelayControl_CheckChannelFeedback &rArr; DEBUG_Printf &rArr; HAL_UART_Transmit &rArr; UART_WaitOnFlagUntilTimeout
 </UL>
 <BR>[Calls]<UL><LI><a href="#[9b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_Delay
-<LI><a href="#[e9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_CheckInterlock
-<LI><a href="#[e8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_CheckChannelFeedback
+<LI><a href="#[f0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_CheckInterlock
+<LI><a href="#[ef]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_CheckChannelFeedback
 <LI><a href="#[69]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GetTick
 <LI><a href="#[70]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DEBUG_Printf
 <LI><a href="#[8e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_SetK3_2_ON
@@ -1588,28 +1684,40 @@ Global Symbols
 <LI><a href="#[86]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_SetK1_2_ON
 <LI><a href="#[84]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_SetK1_1_ON
 </UL>
-<BR>[Called By]<UL><LI><a href="#[ed]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_ProcessPendingActions
+<BR>[Called By]<UL><LI><a href="#[f4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_ProcessPendingActions
 </UL>
 
-<P><STRONG><a name="[ed]"></a>RelayControl_ProcessPendingActions</STRONG> (Thumb, 88 bytes, Stack size 16 bytes, relay_control.o(i.RelayControl_ProcessPendingActions))
+<P><STRONG><a name="[f4]"></a>RelayControl_ProcessPendingActions</STRONG> (Thumb, 188 bytes, Stack size 16 bytes, relay_control.o(i.RelayControl_ProcessPendingActions))
 <BR><BR>[Stack]<UL><LI>Max Depth = 456<LI>Call Chain = RelayControl_ProcessPendingActions &rArr; RelayControl_OpenChannel &rArr; RelayControl_CheckChannelFeedback &rArr; DEBUG_Printf &rArr; HAL_UART_Transmit &rArr; UART_WaitOnFlagUntilTimeout
 </UL>
-<BR>[Calls]<UL><LI><a href="#[ec]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_OpenChannel
-<LI><a href="#[ea]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_CloseChannel
+<BR>[Calls]<UL><LI><a href="#[f3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_OpenChannel
+<LI><a href="#[f1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_CloseChannel
 <LI><a href="#[70]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DEBUG_Printf
+<LI><a href="#[81]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_ReadSW3_STA
+<LI><a href="#[80]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_ReadSW2_STA
+<LI><a href="#[7f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_ReadSW1_STA
+<LI><a href="#[7e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_ReadK3_EN
+<LI><a href="#[7d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_ReadK3_2_STA
+<LI><a href="#[7c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_ReadK3_1_STA
+<LI><a href="#[7b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_ReadK2_EN
+<LI><a href="#[7a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_ReadK2_2_STA
+<LI><a href="#[79]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_ReadK2_1_STA
+<LI><a href="#[78]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_ReadK1_EN
+<LI><a href="#[77]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_ReadK1_2_STA
+<LI><a href="#[75]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_ReadK1_1_STA
 </UL>
-<BR>[Called By]<UL><LI><a href="#[ff]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_MainLoopScheduler
+<BR>[Called By]<UL><LI><a href="#[106]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_MainLoopScheduler
 </UL>
 
 <P><STRONG><a name="[6]"></a>SVC_Handler</STRONG> (Thumb, 2 bytes, Stack size 0 bytes, stm32f1xx_it.o(i.SVC_Handler))
 <BR>[Address Reference Count : 1]<UL><LI> startup_stm32f103xe.o(RESET)
 </UL>
 <P><STRONG><a name="[9]"></a>SysTick_Handler</STRONG> (Thumb, 4 bytes, Stack size 0 bytes, stm32f1xx_it.o(i.SysTick_Handler))
-<BR><BR>[Calls]<UL><LI><a href="#[ee]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_IncTick
+<BR><BR>[Calls]<UL><LI><a href="#[f5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_IncTick
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> startup_stm32f103xe.o(RESET)
 </UL>
-<P><STRONG><a name="[ef]"></a>SystemClock_Config</STRONG> (Thumb, 122 bytes, Stack size 96 bytes, main.o(i.SystemClock_Config))
+<P><STRONG><a name="[f6]"></a>SystemClock_Config</STRONG> (Thumb, 122 bytes, Stack size 96 bytes, main.o(i.SystemClock_Config))
 <BR><BR>[Stack]<UL><LI>Max Depth = 160<LI>Call Chain = SystemClock_Config &rArr; HAL_RCC_ClockConfig &rArr; HAL_InitTick &rArr; HAL_NVIC_SetPriority
 </UL>
 <BR>[Calls]<UL><LI><a href="#[b0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_RCC_OscConfig
@@ -1620,7 +1728,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[46]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
 
-<P><STRONG><a name="[f0]"></a>SystemControl_CheckFeedbackSignals</STRONG> (Thumb, 144 bytes, Stack size 56 bytes, system_control.o(i.SystemControl_CheckFeedbackSignals))
+<P><STRONG><a name="[f7]"></a>SystemControl_CheckFeedbackSignals</STRONG> (Thumb, 144 bytes, Stack size 56 bytes, system_control.o(i.SystemControl_CheckFeedbackSignals))
 <BR><BR>[Stack]<UL><LI>Max Depth = 400<LI>Call Chain = SystemControl_CheckFeedbackSignals &rArr; DEBUG_Printf &rArr; HAL_UART_Transmit &rArr; UART_WaitOnFlagUntilTimeout
 </UL>
 <BR>[Calls]<UL><LI><a href="#[70]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DEBUG_Printf
@@ -1634,10 +1742,10 @@ Global Symbols
 <LI><a href="#[77]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_ReadK1_2_STA
 <LI><a href="#[75]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_ReadK1_1_STA
 </UL>
-<BR>[Called By]<UL><LI><a href="#[f9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_ExecuteSelfTest
+<BR>[Called By]<UL><LI><a href="#[100]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_ExecuteSelfTest
 </UL>
 
-<P><STRONG><a name="[f1]"></a>SystemControl_CheckInputSignals</STRONG> (Thumb, 64 bytes, Stack size 16 bytes, system_control.o(i.SystemControl_CheckInputSignals))
+<P><STRONG><a name="[f8]"></a>SystemControl_CheckInputSignals</STRONG> (Thumb, 64 bytes, Stack size 16 bytes, system_control.o(i.SystemControl_CheckInputSignals))
 <BR><BR>[Stack]<UL><LI>Max Depth = 360<LI>Call Chain = SystemControl_CheckInputSignals &rArr; DEBUG_Printf &rArr; HAL_UART_Transmit &rArr; UART_WaitOnFlagUntilTimeout
 </UL>
 <BR>[Calls]<UL><LI><a href="#[70]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DEBUG_Printf
@@ -1645,152 +1753,184 @@ Global Symbols
 <LI><a href="#[7b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_ReadK2_EN
 <LI><a href="#[78]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_ReadK1_EN
 </UL>
-<BR>[Called By]<UL><LI><a href="#[f9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_ExecuteSelfTest
+<BR>[Called By]<UL><LI><a href="#[100]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_ExecuteSelfTest
 </UL>
 
-<P><STRONG><a name="[f2]"></a>SystemControl_CheckTemperature</STRONG> (Thumb, 114 bytes, Stack size 64 bytes, system_control.o(i.SystemControl_CheckTemperature))
+<P><STRONG><a name="[f9]"></a>SystemControl_CheckTemperature</STRONG> (Thumb, 154 bytes, Stack size 64 bytes, system_control.o(i.SystemControl_CheckTemperature))
 <BR><BR>[Stack]<UL><LI>Max Depth = 456<LI>Call Chain = SystemControl_CheckTemperature &rArr; TemperatureMonitor_UpdateAll &rArr; DEBUG_Printf &rArr; HAL_UART_Transmit &rArr; UART_WaitOnFlagUntilTimeout
 </UL>
-<BR>[Calls]<UL><LI><a href="#[f5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_f2d
-<LI><a href="#[f3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TemperatureMonitor_UpdateAll
-<LI><a href="#[f4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TemperatureMonitor_GetInfo
+<BR>[Calls]<UL><LI><a href="#[fc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_f2d
+<LI><a href="#[fa]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TemperatureMonitor_UpdateAll
+<LI><a href="#[fb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TemperatureMonitor_GetInfo
 <LI><a href="#[70]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DEBUG_Printf
 </UL>
-<BR>[Called By]<UL><LI><a href="#[f9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_ExecuteSelfTest
+<BR>[Called By]<UL><LI><a href="#[100]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_ExecuteSelfTest
 </UL>
 
-<P><STRONG><a name="[f6]"></a>SystemControl_EnterErrorState</STRONG> (Thumb, 46 bytes, Stack size 16 bytes, system_control.o(i.SystemControl_EnterErrorState))
+<P><STRONG><a name="[fd]"></a>SystemControl_EnterErrorState</STRONG> (Thumb, 54 bytes, Stack size 16 bytes, system_control.o(i.SystemControl_EnterErrorState))
 <BR><BR>[Stack]<UL><LI>Max Depth = 360<LI>Call Chain = SystemControl_EnterErrorState &rArr; DEBUG_Printf &rArr; HAL_UART_Transmit &rArr; UART_WaitOnFlagUntilTimeout
 </UL>
-<BR>[Calls]<UL><LI><a href="#[69]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GetTick
+<BR>[Calls]<UL><LI><a href="#[ea]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_ResetDisplayCache
+<LI><a href="#[e0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_ClearDirtyRegions
+<LI><a href="#[69]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GetTick
 <LI><a href="#[70]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DEBUG_Printf
-<LI><a href="#[f7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;strncpy
+<LI><a href="#[fe]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;strncpy
 </UL>
-<BR>[Called By]<UL><LI><a href="#[fb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_HandleSelfTestError
+<BR>[Called By]<UL><LI><a href="#[102]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_HandleSelfTestError
 </UL>
 
-<P><STRONG><a name="[f8]"></a>SystemControl_EnterNormalState</STRONG> (Thumb, 28 bytes, Stack size 8 bytes, system_control.o(i.SystemControl_EnterNormalState))
+<P><STRONG><a name="[ff]"></a>SystemControl_EnterNormalState</STRONG> (Thumb, 36 bytes, Stack size 8 bytes, system_control.o(i.SystemControl_EnterNormalState))
 <BR><BR>[Stack]<UL><LI>Max Depth = 352<LI>Call Chain = SystemControl_EnterNormalState &rArr; DEBUG_Printf &rArr; HAL_UART_Transmit &rArr; UART_WaitOnFlagUntilTimeout
 </UL>
-<BR>[Calls]<UL><LI><a href="#[df]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_Clear
+<BR>[Calls]<UL><LI><a href="#[ea]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_ResetDisplayCache
+<LI><a href="#[e0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_ClearDirtyRegions
+<LI><a href="#[e1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_Clear
 <LI><a href="#[69]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GetTick
 <LI><a href="#[70]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DEBUG_Printf
 </UL>
-<BR>[Called By]<UL><LI><a href="#[f9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_ExecuteSelfTest
+<BR>[Called By]<UL><LI><a href="#[100]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_ExecuteSelfTest
 </UL>
 
-<P><STRONG><a name="[f9]"></a>SystemControl_ExecuteSelfTest</STRONG> (Thumb, 130 bytes, Stack size 16 bytes, system_control.o(i.SystemControl_ExecuteSelfTest))
+<P><STRONG><a name="[100]"></a>SystemControl_ExecuteSelfTest</STRONG> (Thumb, 130 bytes, Stack size 16 bytes, system_control.o(i.SystemControl_ExecuteSelfTest))
 <BR><BR>[Stack]<UL><LI>Max Depth = 472<LI>Call Chain = SystemControl_ExecuteSelfTest &rArr; SystemControl_CheckTemperature &rArr; TemperatureMonitor_UpdateAll &rArr; DEBUG_Printf &rArr; HAL_UART_Transmit &rArr; UART_WaitOnFlagUntilTimeout
 </UL>
 <BR>[Calls]<UL><LI><a href="#[70]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DEBUG_Printf
-<LI><a href="#[fb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_HandleSelfTestError
-<LI><a href="#[f8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_EnterNormalState
-<LI><a href="#[f2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_CheckTemperature
-<LI><a href="#[f1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_CheckInputSignals
-<LI><a href="#[f0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_CheckFeedbackSignals
-<LI><a href="#[fa]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;strcat
+<LI><a href="#[102]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_HandleSelfTestError
+<LI><a href="#[ff]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_EnterNormalState
+<LI><a href="#[f9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_CheckTemperature
+<LI><a href="#[f8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_CheckInputSignals
+<LI><a href="#[f7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_CheckFeedbackSignals
+<LI><a href="#[101]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;strcat
 <LI><a href="#[d9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memclr4
 </UL>
-<BR>[Called By]<UL><LI><a href="#[102]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_Process
+<BR>[Called By]<UL><LI><a href="#[10c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_Process
 </UL>
 
-<P><STRONG><a name="[fb]"></a>SystemControl_HandleSelfTestError</STRONG> (Thumb, 60 bytes, Stack size 72 bytes, system_control.o(i.SystemControl_HandleSelfTestError))
+<P><STRONG><a name="[102]"></a>SystemControl_HandleSelfTestError</STRONG> (Thumb, 62 bytes, Stack size 72 bytes, system_control.o(i.SystemControl_HandleSelfTestError))
 <BR><BR>[Stack]<UL><LI>Max Depth = 432<LI>Call Chain = SystemControl_HandleSelfTestError &rArr; SystemControl_EnterErrorState &rArr; DEBUG_Printf &rArr; HAL_UART_Transmit &rArr; UART_WaitOnFlagUntilTimeout
 </UL>
-<BR>[Calls]<UL><LI><a href="#[e0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_Refresh
-<LI><a href="#[e1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_DrawString
-<LI><a href="#[df]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_Clear
+<BR>[Calls]<UL><LI><a href="#[ea]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_ResetDisplayCache
+<LI><a href="#[e2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_Refresh
+<LI><a href="#[e4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_DrawString6x8
+<LI><a href="#[e1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_Clear
 <LI><a href="#[70]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DEBUG_Printf
-<LI><a href="#[f6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_EnterErrorState
-<LI><a href="#[fc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__2sprintf
+<LI><a href="#[fd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_EnterErrorState
+<LI><a href="#[103]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__2sprintf
 </UL>
-<BR>[Called By]<UL><LI><a href="#[f9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_ExecuteSelfTest
+<BR>[Called By]<UL><LI><a href="#[100]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_ExecuteSelfTest
 </UL>
 
-<P><STRONG><a name="[fd]"></a>SystemControl_Init</STRONG> (Thumb, 38 bytes, Stack size 8 bytes, system_control.o(i.SystemControl_Init))
+<P><STRONG><a name="[104]"></a>SystemControl_Init</STRONG> (Thumb, 38 bytes, Stack size 8 bytes, system_control.o(i.SystemControl_Init))
 <BR><BR>[Stack]<UL><LI>Max Depth = 360<LI>Call Chain = SystemControl_Init &rArr; SystemControl_StartLogoDisplay &rArr; DEBUG_Printf &rArr; HAL_UART_Transmit &rArr; UART_WaitOnFlagUntilTimeout
 </UL>
 <BR>[Calls]<UL><LI><a href="#[69]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GetTick
 <LI><a href="#[70]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DEBUG_Printf
-<LI><a href="#[fe]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_StartLogoDisplay
+<LI><a href="#[105]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_StartLogoDisplay
 <LI><a href="#[d9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memclr4
 </UL>
 <BR>[Called By]<UL><LI><a href="#[46]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
 
-<P><STRONG><a name="[ff]"></a>SystemControl_MainLoopScheduler</STRONG> (Thumb, 70 bytes, Stack size 16 bytes, system_control.o(i.SystemControl_MainLoopScheduler))
-<BR><BR>[Stack]<UL><LI>Max Depth = 472<LI>Call Chain = SystemControl_MainLoopScheduler &rArr; RelayControl_ProcessPendingActions &rArr; RelayControl_OpenChannel &rArr; RelayControl_CheckChannelFeedback &rArr; DEBUG_Printf &rArr; HAL_UART_Transmit &rArr; UART_WaitOnFlagUntilTimeout
+<P><STRONG><a name="[106]"></a>SystemControl_MainLoopScheduler</STRONG> (Thumb, 116 bytes, Stack size 24 bytes, system_control.o(i.SystemControl_MainLoopScheduler))
+<BR><BR>[Stack]<UL><LI>Max Depth = 608<LI>Call Chain = SystemControl_MainLoopScheduler &rArr; SystemControl_UpdateDisplay &rArr; DEBUG_Printf &rArr; HAL_UART_Transmit &rArr; UART_WaitOnFlagUntilTimeout
 </UL>
-<BR>[Calls]<UL><LI><a href="#[f3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TemperatureMonitor_UpdateAll
-<LI><a href="#[100]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TemperatureMonitor_CheckAndHandleAlarm
-<LI><a href="#[ed]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_ProcessPendingActions
-<LI><a href="#[69]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GetTick
-<LI><a href="#[101]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_UpdateDisplay
-</UL>
-<BR>[Called By]<UL><LI><a href="#[102]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_Process
-</UL>
-
-<P><STRONG><a name="[102]"></a>SystemControl_Process</STRONG> (Thumb, 152 bytes, Stack size 8 bytes, system_control.o(i.SystemControl_Process))
-<BR><BR>[Stack]<UL><LI>Max Depth = 480<LI>Call Chain = SystemControl_Process &rArr; SystemControl_MainLoopScheduler &rArr; RelayControl_ProcessPendingActions &rArr; RelayControl_OpenChannel &rArr; RelayControl_CheckChannelFeedback &rArr; DEBUG_Printf &rArr; HAL_UART_Transmit &rArr; UART_WaitOnFlagUntilTimeout
-</UL>
-<BR>[Calls]<UL><LI><a href="#[e6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_ShowSelfTestBar
+<BR>[Calls]<UL><LI><a href="#[fa]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TemperatureMonitor_UpdateAll
+<LI><a href="#[109]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TemperatureMonitor_GetFanSpeed
+<LI><a href="#[108]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TemperatureMonitor_FanSpeed1sHandler
+<LI><a href="#[10a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TemperatureMonitor_CheckAndHandleAlarm
+<LI><a href="#[f4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_ProcessPendingActions
 <LI><a href="#[69]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GetTick
 <LI><a href="#[70]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DEBUG_Printf
-<LI><a href="#[103]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_StartSelfTest
-<LI><a href="#[fe]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_StartLogoDisplay
-<LI><a href="#[104]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_Reset
-<LI><a href="#[ff]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_MainLoopScheduler
-<LI><a href="#[f9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_ExecuteSelfTest
+<LI><a href="#[10b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_UpdateDisplay
+<LI><a href="#[107]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_PrintKEnDiagnostics
+</UL>
+<BR>[Called By]<UL><LI><a href="#[10c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_Process
+</UL>
+
+<P><STRONG><a name="[107]"></a>SystemControl_PrintKEnDiagnostics</STRONG> (Thumb, 128 bytes, Stack size 40 bytes, system_control.o(i.SystemControl_PrintKEnDiagnostics))
+<BR><BR>[Stack]<UL><LI>Max Depth = 384<LI>Call Chain = SystemControl_PrintKEnDiagnostics &rArr; DEBUG_Printf &rArr; HAL_UART_Transmit &rArr; UART_WaitOnFlagUntilTimeout
+</UL>
+<BR>[Calls]<UL><LI><a href="#[70]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DEBUG_Printf
+<LI><a href="#[81]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_ReadSW3_STA
+<LI><a href="#[80]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_ReadSW2_STA
+<LI><a href="#[7f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_ReadSW1_STA
+<LI><a href="#[7e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_ReadK3_EN
+<LI><a href="#[7d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_ReadK3_2_STA
+<LI><a href="#[7c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_ReadK3_1_STA
+<LI><a href="#[7b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_ReadK2_EN
+<LI><a href="#[7a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_ReadK2_2_STA
+<LI><a href="#[79]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_ReadK2_1_STA
+<LI><a href="#[78]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_ReadK1_EN
+<LI><a href="#[77]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_ReadK1_2_STA
+<LI><a href="#[75]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_ReadK1_1_STA
+</UL>
+<BR>[Called By]<UL><LI><a href="#[106]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_MainLoopScheduler
+</UL>
+
+<P><STRONG><a name="[10c]"></a>SystemControl_Process</STRONG> (Thumb, 152 bytes, Stack size 8 bytes, system_control.o(i.SystemControl_Process))
+<BR><BR>[Stack]<UL><LI>Max Depth = 616<LI>Call Chain = SystemControl_Process &rArr; SystemControl_MainLoopScheduler &rArr; SystemControl_UpdateDisplay &rArr; DEBUG_Printf &rArr; HAL_UART_Transmit &rArr; UART_WaitOnFlagUntilTimeout
+</UL>
+<BR>[Calls]<UL><LI><a href="#[ed]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_ShowSelfTestBar
+<LI><a href="#[69]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GetTick
+<LI><a href="#[70]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DEBUG_Printf
+<LI><a href="#[10d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_StartSelfTest
+<LI><a href="#[105]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_StartLogoDisplay
+<LI><a href="#[10e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_Reset
+<LI><a href="#[106]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_MainLoopScheduler
+<LI><a href="#[100]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_ExecuteSelfTest
 </UL>
 <BR>[Called By]<UL><LI><a href="#[46]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
 
-<P><STRONG><a name="[104]"></a>SystemControl_Reset</STRONG> (Thumb, 36 bytes, Stack size 8 bytes, system_control.o(i.SystemControl_Reset))
+<P><STRONG><a name="[10e]"></a>SystemControl_Reset</STRONG> (Thumb, 36 bytes, Stack size 8 bytes, system_control.o(i.SystemControl_Reset))
 <BR><BR>[Stack]<UL><LI>Max Depth = 360<LI>Call Chain = SystemControl_Reset &rArr; SystemControl_StartLogoDisplay &rArr; DEBUG_Printf &rArr; HAL_UART_Transmit &rArr; UART_WaitOnFlagUntilTimeout
 </UL>
 <BR>[Calls]<UL><LI><a href="#[69]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GetTick
 <LI><a href="#[70]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DEBUG_Printf
-<LI><a href="#[fe]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_StartLogoDisplay
+<LI><a href="#[105]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_StartLogoDisplay
 <LI><a href="#[d9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memclr4
 </UL>
-<BR>[Called By]<UL><LI><a href="#[102]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_Process
+<BR>[Called By]<UL><LI><a href="#[10c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_Process
 </UL>
 
-<P><STRONG><a name="[fe]"></a>SystemControl_StartLogoDisplay</STRONG> (Thumb, 30 bytes, Stack size 8 bytes, system_control.o(i.SystemControl_StartLogoDisplay))
+<P><STRONG><a name="[105]"></a>SystemControl_StartLogoDisplay</STRONG> (Thumb, 30 bytes, Stack size 8 bytes, system_control.o(i.SystemControl_StartLogoDisplay))
 <BR><BR>[Stack]<UL><LI>Max Depth = 352<LI>Call Chain = SystemControl_StartLogoDisplay &rArr; DEBUG_Printf &rArr; HAL_UART_Transmit &rArr; UART_WaitOnFlagUntilTimeout
 </UL>
-<BR>[Calls]<UL><LI><a href="#[e4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_ShowLogo
+<BR>[Calls]<UL><LI><a href="#[eb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_ShowLogo
 <LI><a href="#[69]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GetTick
 <LI><a href="#[70]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DEBUG_Printf
 </UL>
-<BR>[Called By]<UL><LI><a href="#[104]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_Reset
-<LI><a href="#[102]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_Process
-<LI><a href="#[fd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_Init
+<BR>[Called By]<UL><LI><a href="#[10e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_Reset
+<LI><a href="#[10c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_Process
+<LI><a href="#[104]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_Init
 </UL>
 
-<P><STRONG><a name="[103]"></a>SystemControl_StartSelfTest</STRONG> (Thumb, 30 bytes, Stack size 8 bytes, system_control.o(i.SystemControl_StartSelfTest))
+<P><STRONG><a name="[10d]"></a>SystemControl_StartSelfTest</STRONG> (Thumb, 30 bytes, Stack size 8 bytes, system_control.o(i.SystemControl_StartSelfTest))
 <BR><BR>[Stack]<UL><LI>Max Depth = 352<LI>Call Chain = SystemControl_StartSelfTest &rArr; DEBUG_Printf &rArr; HAL_UART_Transmit &rArr; UART_WaitOnFlagUntilTimeout
 </UL>
-<BR>[Calls]<UL><LI><a href="#[df]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_Clear
+<BR>[Calls]<UL><LI><a href="#[e1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_Clear
 <LI><a href="#[69]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GetTick
 <LI><a href="#[70]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DEBUG_Printf
 </UL>
-<BR>[Called By]<UL><LI><a href="#[102]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_Process
+<BR>[Called By]<UL><LI><a href="#[10c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_Process
 </UL>
 
-<P><STRONG><a name="[101]"></a>SystemControl_UpdateDisplay</STRONG> (Thumb, 216 bytes, Stack size 208 bytes, system_control.o(i.SystemControl_UpdateDisplay))
-<BR><BR>[Stack]<UL><LI>Max Depth = 440<LI>Call Chain = SystemControl_UpdateDisplay &rArr; OLED_ShowMainScreen &rArr; OLED_DrawString &rArr; OLED_Refresh &rArr; OLED_WriteCmd &rArr; HAL_I2C_Mem_Write &rArr; I2C_RequestMemoryWrite &rArr; I2C_WaitOnMasterAddressFlagUntilTimeout
+<P><STRONG><a name="[10b]"></a>SystemControl_UpdateDisplay</STRONG> (Thumb, 380 bytes, Stack size 240 bytes, system_control.o(i.SystemControl_UpdateDisplay))
+<BR><BR>[Stack]<UL><LI>Max Depth = 584<LI>Call Chain = SystemControl_UpdateDisplay &rArr; DEBUG_Printf &rArr; HAL_UART_Transmit &rArr; UART_WaitOnFlagUntilTimeout
 </UL>
-<BR>[Calls]<UL><LI><a href="#[e5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_ShowMainScreen
-<LI><a href="#[f5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_f2d
-<LI><a href="#[f4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TemperatureMonitor_GetInfo
-<LI><a href="#[107]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TemperatureMonitor_GetFanSpeed
-<LI><a href="#[106]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TemperatureMonitor_GetFanPWM
-<LI><a href="#[105]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_GetChannelState
+<BR>[Calls]<UL><LI><a href="#[ec]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_ShowMainScreenDirty
+<LI><a href="#[ea]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_ResetDisplayCache
+<LI><a href="#[fc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_f2d
+<LI><a href="#[fb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TemperatureMonitor_GetInfo
+<LI><a href="#[109]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TemperatureMonitor_GetFanSpeed
+<LI><a href="#[110]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TemperatureMonitor_GetFanPWM
+<LI><a href="#[10f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_GetChannelState
+<LI><a href="#[70]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DEBUG_Printf
+<LI><a href="#[72]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;strlen
 <LI><a href="#[d9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memclr4
-<LI><a href="#[fc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__2sprintf
+<LI><a href="#[103]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__2sprintf
 </UL>
-<BR>[Called By]<UL><LI><a href="#[ff]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_MainLoopScheduler
+<BR>[Called By]<UL><LI><a href="#[106]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_MainLoopScheduler
 </UL>
 
 <P><STRONG><a name="[47]"></a>SystemInit</STRONG> (Thumb, 2 bytes, Stack size 0 bytes, system_stm32f1xx.o(i.SystemInit))
@@ -1821,28 +1961,33 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[bc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_TIM_PWM_ConfigChannel
 </UL>
 
-<P><STRONG><a name="[100]"></a>TemperatureMonitor_CheckAndHandleAlarm</STRONG> (Thumb, 34 bytes, Stack size 16 bytes, temperature_monitor.o(i.TemperatureMonitor_CheckAndHandleAlarm))
+<P><STRONG><a name="[10a]"></a>TemperatureMonitor_CheckAndHandleAlarm</STRONG> (Thumb, 34 bytes, Stack size 16 bytes, temperature_monitor.o(i.TemperatureMonitor_CheckAndHandleAlarm))
 <BR><BR>[Stack]<UL><LI>Max Depth = 360<LI>Call Chain = TemperatureMonitor_CheckAndHandleAlarm &rArr; DEBUG_Printf &rArr; HAL_UART_Transmit &rArr; UART_WaitOnFlagUntilTimeout
 </UL>
 <BR>[Calls]<UL><LI><a href="#[70]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DEBUG_Printf
 </UL>
-<BR>[Called By]<UL><LI><a href="#[ff]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_MainLoopScheduler
+<BR>[Called By]<UL><LI><a href="#[106]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_MainLoopScheduler
 </UL>
 
-<P><STRONG><a name="[106]"></a>TemperatureMonitor_GetFanPWM</STRONG> (Thumb, 6 bytes, Stack size 0 bytes, temperature_monitor.o(i.TemperatureMonitor_GetFanPWM))
-<BR><BR>[Called By]<UL><LI><a href="#[101]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_UpdateDisplay
+<P><STRONG><a name="[108]"></a>TemperatureMonitor_FanSpeed1sHandler</STRONG> (Thumb, 20 bytes, Stack size 0 bytes, temperature_monitor.o(i.TemperatureMonitor_FanSpeed1sHandler))
+<BR><BR>[Called By]<UL><LI><a href="#[106]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_MainLoopScheduler
 </UL>
 
-<P><STRONG><a name="[107]"></a>TemperatureMonitor_GetFanSpeed</STRONG> (Thumb, 12 bytes, Stack size 0 bytes, temperature_monitor.o(i.TemperatureMonitor_GetFanSpeed))
-<BR><BR>[Called By]<UL><LI><a href="#[101]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_UpdateDisplay
+<P><STRONG><a name="[110]"></a>TemperatureMonitor_GetFanPWM</STRONG> (Thumb, 6 bytes, Stack size 0 bytes, temperature_monitor.o(i.TemperatureMonitor_GetFanPWM))
+<BR><BR>[Called By]<UL><LI><a href="#[10b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_UpdateDisplay
 </UL>
 
-<P><STRONG><a name="[f4]"></a>TemperatureMonitor_GetInfo</STRONG> (Thumb, 32 bytes, Stack size 0 bytes, temperature_monitor.o(i.TemperatureMonitor_GetInfo))
-<BR><BR>[Called By]<UL><LI><a href="#[101]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_UpdateDisplay
-<LI><a href="#[f2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_CheckTemperature
+<P><STRONG><a name="[109]"></a>TemperatureMonitor_GetFanSpeed</STRONG> (Thumb, 12 bytes, Stack size 0 bytes, temperature_monitor.o(i.TemperatureMonitor_GetFanSpeed))
+<BR><BR>[Called By]<UL><LI><a href="#[10b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_UpdateDisplay
+<LI><a href="#[106]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_MainLoopScheduler
 </UL>
 
-<P><STRONG><a name="[108]"></a>TemperatureMonitor_Init</STRONG> (Thumb, 58 bytes, Stack size 16 bytes, temperature_monitor.o(i.TemperatureMonitor_Init))
+<P><STRONG><a name="[fb]"></a>TemperatureMonitor_GetInfo</STRONG> (Thumb, 32 bytes, Stack size 0 bytes, temperature_monitor.o(i.TemperatureMonitor_GetInfo))
+<BR><BR>[Called By]<UL><LI><a href="#[10b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_UpdateDisplay
+<LI><a href="#[f9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_CheckTemperature
+</UL>
+
+<P><STRONG><a name="[111]"></a>TemperatureMonitor_Init</STRONG> (Thumb, 58 bytes, Stack size 16 bytes, temperature_monitor.o(i.TemperatureMonitor_Init))
 <BR><BR>[Stack]<UL><LI>Max Depth = 360<LI>Call Chain = TemperatureMonitor_Init &rArr; DEBUG_Printf &rArr; HAL_UART_Transmit &rArr; UART_WaitOnFlagUntilTimeout
 </UL>
 <BR>[Calls]<UL><LI><a href="#[98]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_ADC_Start_DMA
@@ -1851,19 +1996,19 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[46]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
 
-<P><STRONG><a name="[f3]"></a>TemperatureMonitor_UpdateAll</STRONG> (Thumb, 228 bytes, Stack size 48 bytes, temperature_monitor.o(i.TemperatureMonitor_UpdateAll))
+<P><STRONG><a name="[fa]"></a>TemperatureMonitor_UpdateAll</STRONG> (Thumb, 228 bytes, Stack size 48 bytes, temperature_monitor.o(i.TemperatureMonitor_UpdateAll))
 <BR><BR>[Stack]<UL><LI>Max Depth = 392<LI>Call Chain = TemperatureMonitor_UpdateAll &rArr; DEBUG_Printf &rArr; HAL_UART_Transmit &rArr; UART_WaitOnFlagUntilTimeout
 </UL>
 <BR>[Calls]<UL><LI><a href="#[59]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_ui2f
 <LI><a href="#[6f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_fmul
 <LI><a href="#[58]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_fdiv
-<LI><a href="#[f5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_f2d
+<LI><a href="#[fc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_f2d
 <LI><a href="#[dd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;NTC_ResToTemp
 <LI><a href="#[6e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;CalcNTCRes
 <LI><a href="#[70]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DEBUG_Printf
 </UL>
-<BR>[Called By]<UL><LI><a href="#[ff]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_MainLoopScheduler
-<LI><a href="#[f2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_CheckTemperature
+<BR>[Called By]<UL><LI><a href="#[106]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_MainLoopScheduler
+<LI><a href="#[f9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_CheckTemperature
 </UL>
 
 <P><STRONG><a name="[31]"></a>USART3_IRQHandler</STRONG> (Thumb, 6 bytes, Stack size 0 bytes, stm32f1xx_it.o(i.USART3_IRQHandler))
@@ -1880,34 +2025,34 @@ Global Symbols
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> startup_stm32f103xe.o(RESET)
 </UL>
-<P><STRONG><a name="[10b]"></a>__0sprintf</STRONG> (Thumb, 34 bytes, Stack size 24 bytes, printfa.o(i.__0sprintf), UNUSED)
+<P><STRONG><a name="[114]"></a>__0sprintf</STRONG> (Thumb, 34 bytes, Stack size 24 bytes, printfa.o(i.__0sprintf), UNUSED)
 <BR><BR>[Calls]<UL><LI><a href="#[4d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_sputc
-<LI><a href="#[10c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_printf_core
+<LI><a href="#[115]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_printf_core
 </UL>
 
-<P><STRONG><a name="[124]"></a>__1sprintf</STRONG> (Thumb, 0 bytes, Stack size 24 bytes, printfa.o(i.__0sprintf), UNUSED)
+<P><STRONG><a name="[12f]"></a>__1sprintf</STRONG> (Thumb, 0 bytes, Stack size 24 bytes, printfa.o(i.__0sprintf), UNUSED)
 
-<P><STRONG><a name="[fc]"></a>__2sprintf</STRONG> (Thumb, 0 bytes, Stack size 24 bytes, printfa.o(i.__0sprintf))
+<P><STRONG><a name="[103]"></a>__2sprintf</STRONG> (Thumb, 0 bytes, Stack size 24 bytes, printfa.o(i.__0sprintf))
 <BR><BR>[Stack]<UL><LI>Max Depth = 24<LI>Call Chain = __2sprintf
 </UL>
-<BR>[Called By]<UL><LI><a href="#[101]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_UpdateDisplay
-<LI><a href="#[fb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_HandleSelfTestError
+<BR>[Called By]<UL><LI><a href="#[10b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_UpdateDisplay
+<LI><a href="#[102]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_HandleSelfTestError
 </UL>
 
-<P><STRONG><a name="[125]"></a>__c89sprintf</STRONG> (Thumb, 0 bytes, Stack size 24 bytes, printfa.o(i.__0sprintf), UNUSED)
+<P><STRONG><a name="[130]"></a>__c89sprintf</STRONG> (Thumb, 0 bytes, Stack size 24 bytes, printfa.o(i.__0sprintf), UNUSED)
 
-<P><STRONG><a name="[126]"></a>sprintf</STRONG> (Thumb, 0 bytes, Stack size 24 bytes, printfa.o(i.__0sprintf), UNUSED)
+<P><STRONG><a name="[131]"></a>sprintf</STRONG> (Thumb, 0 bytes, Stack size 24 bytes, printfa.o(i.__0sprintf), UNUSED)
 
-<P><STRONG><a name="[10d]"></a>__0vsprintf</STRONG> (Thumb, 30 bytes, Stack size 24 bytes, printfa.o(i.__0vsprintf), UNUSED)
+<P><STRONG><a name="[116]"></a>__0vsprintf</STRONG> (Thumb, 30 bytes, Stack size 24 bytes, printfa.o(i.__0vsprintf), UNUSED)
 <BR><BR>[Calls]<UL><LI><a href="#[4d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_sputc
-<LI><a href="#[10c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_printf_core
+<LI><a href="#[115]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_printf_core
 </UL>
 
-<P><STRONG><a name="[127]"></a>__1vsprintf</STRONG> (Thumb, 0 bytes, Stack size 24 bytes, printfa.o(i.__0vsprintf), UNUSED)
+<P><STRONG><a name="[132]"></a>__1vsprintf</STRONG> (Thumb, 0 bytes, Stack size 24 bytes, printfa.o(i.__0vsprintf), UNUSED)
 
-<P><STRONG><a name="[128]"></a>__2vsprintf</STRONG> (Thumb, 0 bytes, Stack size 24 bytes, printfa.o(i.__0vsprintf), UNUSED)
+<P><STRONG><a name="[133]"></a>__2vsprintf</STRONG> (Thumb, 0 bytes, Stack size 24 bytes, printfa.o(i.__0vsprintf), UNUSED)
 
-<P><STRONG><a name="[129]"></a>__c89vsprintf</STRONG> (Thumb, 0 bytes, Stack size 24 bytes, printfa.o(i.__0vsprintf), UNUSED)
+<P><STRONG><a name="[134]"></a>__c89vsprintf</STRONG> (Thumb, 0 bytes, Stack size 24 bytes, printfa.o(i.__0vsprintf), UNUSED)
 
 <P><STRONG><a name="[71]"></a>vsprintf</STRONG> (Thumb, 0 bytes, Stack size 24 bytes, printfa.o(i.__0vsprintf))
 <BR><BR>[Stack]<UL><LI>Max Depth = 24<LI>Call Chain = vsprintf
@@ -1915,20 +2060,20 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[70]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DEBUG_Printf
 </UL>
 
-<P><STRONG><a name="[12a]"></a>__scatterload_copy</STRONG> (Thumb, 14 bytes, Stack size unknown bytes, handlers.o(i.__scatterload_copy), UNUSED)
+<P><STRONG><a name="[135]"></a>__scatterload_copy</STRONG> (Thumb, 14 bytes, Stack size unknown bytes, handlers.o(i.__scatterload_copy), UNUSED)
 
-<P><STRONG><a name="[12b]"></a>__scatterload_null</STRONG> (Thumb, 2 bytes, Stack size unknown bytes, handlers.o(i.__scatterload_null), UNUSED)
+<P><STRONG><a name="[136]"></a>__scatterload_null</STRONG> (Thumb, 2 bytes, Stack size unknown bytes, handlers.o(i.__scatterload_null), UNUSED)
 
-<P><STRONG><a name="[12c]"></a>__scatterload_zeroinit</STRONG> (Thumb, 14 bytes, Stack size unknown bytes, handlers.o(i.__scatterload_zeroinit), UNUSED)
+<P><STRONG><a name="[137]"></a>__scatterload_zeroinit</STRONG> (Thumb, 14 bytes, Stack size unknown bytes, handlers.o(i.__scatterload_zeroinit), UNUSED)
 
 <P><STRONG><a name="[46]"></a>main</STRONG> (Thumb, 176 bytes, Stack size 0 bytes, main.o(i.main))
-<BR><BR>[Stack]<UL><LI>Max Depth = 480<LI>Call Chain = main &rArr; SystemControl_Process &rArr; SystemControl_MainLoopScheduler &rArr; RelayControl_ProcessPendingActions &rArr; RelayControl_OpenChannel &rArr; RelayControl_CheckChannelFeedback &rArr; DEBUG_Printf &rArr; HAL_UART_Transmit &rArr; UART_WaitOnFlagUntilTimeout
+<BR><BR>[Stack]<UL><LI>Max Depth = 616<LI>Call Chain = main &rArr; SystemControl_Process &rArr; SystemControl_MainLoopScheduler &rArr; SystemControl_UpdateDisplay &rArr; DEBUG_Printf &rArr; HAL_UART_Transmit &rArr; UART_WaitOnFlagUntilTimeout
 </UL>
-<BR>[Calls]<UL><LI><a href="#[e7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_TestConnection
-<LI><a href="#[e2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_Init
-<LI><a href="#[108]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TemperatureMonitor_Init
+<BR>[Calls]<UL><LI><a href="#[ee]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_TestConnection
+<LI><a href="#[e6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_Init
+<LI><a href="#[111]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TemperatureMonitor_Init
 <LI><a href="#[9b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_Delay
-<LI><a href="#[eb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_Init
+<LI><a href="#[f2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_Init
 <LI><a href="#[70]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DEBUG_Printf
 <LI><a href="#[dc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;MX_USART3_UART_Init
 <LI><a href="#[db]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;MX_USART1_UART_Init
@@ -1936,14 +2081,14 @@ Global Symbols
 <LI><a href="#[d7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;MX_SPI2_Init
 <LI><a href="#[d6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;MX_I2C1_Init
 <LI><a href="#[d5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;MX_GPIO_Init
-<LI><a href="#[113]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;MX_DMA_Init
+<LI><a href="#[11c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;MX_DMA_Init
 <LI><a href="#[d3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;MX_ADC1_Init
 <LI><a href="#[c3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_TIM_PWM_Start
 <LI><a href="#[af]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_RCC_GetSysClockFreq
 <LI><a href="#[a7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_Init
-<LI><a href="#[ef]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemClock_Config
-<LI><a href="#[102]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_Process
-<LI><a href="#[fd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_Init
+<LI><a href="#[f6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemClock_Config
+<LI><a href="#[10c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_Process
+<LI><a href="#[104]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_Init
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> entry9a.o(.ARM.Collect$$$$0000000B)
 </UL><P>
@@ -1957,7 +2102,7 @@ Local Symbols
 <LI><a href="#[6f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_fmul
 <LI><a href="#[58]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_fdiv
 </UL>
-<BR>[Called By]<UL><LI><a href="#[f3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TemperatureMonitor_UpdateAll
+<BR>[Called By]<UL><LI><a href="#[fa]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TemperatureMonitor_UpdateAll
 </UL>
 
 <P><STRONG><a name="[dd]"></a>NTC_ResToTemp</STRONG> (Thumb, 110 bytes, Stack size 24 bytes, temperature_monitor.o(i.NTC_ResToTemp))
@@ -1969,16 +2114,17 @@ Local Symbols
 <LI><a href="#[53]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_fadd
 <LI><a href="#[de]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_cfrcmple
 </UL>
-<BR>[Called By]<UL><LI><a href="#[f3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TemperatureMonitor_UpdateAll
+<BR>[Called By]<UL><LI><a href="#[fa]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TemperatureMonitor_UpdateAll
 </UL>
 
-<P><STRONG><a name="[e3]"></a>OLED_WriteCmd</STRONG> (Thumb, 30 bytes, Stack size 24 bytes, oled_display.o(i.OLED_WriteCmd))
+<P><STRONG><a name="[e7]"></a>OLED_WriteCmd</STRONG> (Thumb, 30 bytes, Stack size 24 bytes, oled_display.o(i.OLED_WriteCmd))
 <BR><BR>[Stack]<UL><LI>Max Depth = 152<LI>Call Chain = OLED_WriteCmd &rArr; HAL_I2C_Mem_Write &rArr; I2C_RequestMemoryWrite &rArr; I2C_WaitOnMasterAddressFlagUntilTimeout
 </UL>
 <BR>[Calls]<UL><LI><a href="#[a3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_I2C_Mem_Write
 </UL>
-<BR>[Called By]<UL><LI><a href="#[e0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_Refresh
-<LI><a href="#[e2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_Init
+<BR>[Called By]<UL><LI><a href="#[e8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_RefreshDirtyRegions
+<LI><a href="#[e2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_Refresh
+<LI><a href="#[e6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_Init
 </UL>
 
 <P><STRONG><a name="[9a]"></a>DMA_SetConfig</STRONG> (Thumb, 42 bytes, Stack size 12 bytes, stm32f1xx_hal_dma.o(i.DMA_SetConfig))
@@ -2096,7 +2242,7 @@ Local Symbols
 <P><STRONG><a name="[c6]"></a>UART_Receive_IT</STRONG> (Thumb, 194 bytes, Stack size 8 bytes, stm32f1xx_hal_uart.o(i.UART_Receive_IT))
 <BR><BR>[Stack]<UL><LI>Max Depth = 8<LI>Call Chain = UART_Receive_IT
 </UL>
-<BR>[Calls]<UL><LI><a href="#[109]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UART_RxCpltCallback
+<BR>[Calls]<UL><LI><a href="#[112]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UART_RxCpltCallback
 <LI><a href="#[cb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UARTEx_RxEventCallback
 </UL>
 <BR>[Called By]<UL><LI><a href="#[c5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UART_IRQHandler
@@ -2105,7 +2251,7 @@ Local Symbols
 <P><STRONG><a name="[cf]"></a>UART_SetConfig</STRONG> (Thumb, 178 bytes, Stack size 16 bytes, stm32f1xx_hal_uart.o(i.UART_SetConfig))
 <BR><BR>[Stack]<UL><LI>Max Depth = 16<LI>Call Chain = UART_SetConfig
 </UL>
-<BR>[Calls]<UL><LI><a href="#[10a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_RCC_GetPCLK2Freq
+<BR>[Calls]<UL><LI><a href="#[113]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_RCC_GetPCLK2Freq
 <LI><a href="#[a0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_RCC_GetPCLK1Freq
 </UL>
 <BR>[Called By]<UL><LI><a href="#[cd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UART_Init
@@ -2120,39 +2266,39 @@ Local Symbols
 <BR>[Called By]<UL><LI><a href="#[73]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UART_Transmit
 </UL>
 
-<P><STRONG><a name="[10e]"></a>_fp_digits</STRONG> (Thumb, 366 bytes, Stack size 64 bytes, printfa.o(i._fp_digits), UNUSED)
+<P><STRONG><a name="[117]"></a>_fp_digits</STRONG> (Thumb, 366 bytes, Stack size 64 bytes, printfa.o(i._fp_digits), UNUSED)
 <BR><BR>[Calls]<UL><LI><a href="#[5a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_uldivmod
 <LI><a href="#[63]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_dmul
 <LI><a href="#[64]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_ddiv
 <LI><a href="#[5d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_dadd
 <LI><a href="#[65]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_d2ulz
-<LI><a href="#[10f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_cdrcmple
+<LI><a href="#[118]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_cdrcmple
 </UL>
-<BR>[Called By]<UL><LI><a href="#[10c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_printf_core
+<BR>[Called By]<UL><LI><a href="#[115]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_printf_core
 </UL>
 
-<P><STRONG><a name="[10c]"></a>_printf_core</STRONG> (Thumb, 1704 bytes, Stack size 136 bytes, printfa.o(i._printf_core), UNUSED)
+<P><STRONG><a name="[115]"></a>_printf_core</STRONG> (Thumb, 1704 bytes, Stack size 136 bytes, printfa.o(i._printf_core), UNUSED)
 <BR><BR>[Calls]<UL><LI><a href="#[5a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_uldivmod
-<LI><a href="#[112]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_uidivmod
-<LI><a href="#[110]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_printf_pre_padding
-<LI><a href="#[111]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_printf_post_padding
-<LI><a href="#[10e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_fp_digits
+<LI><a href="#[11b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_uidivmod
+<LI><a href="#[119]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_printf_pre_padding
+<LI><a href="#[11a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_printf_post_padding
+<LI><a href="#[117]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_fp_digits
 </UL>
-<BR>[Called By]<UL><LI><a href="#[10d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__0vsprintf
-<LI><a href="#[10b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__0sprintf
-</UL>
-
-<P><STRONG><a name="[111]"></a>_printf_post_padding</STRONG> (Thumb, 36 bytes, Stack size 24 bytes, printfa.o(i._printf_post_padding), UNUSED)
-<BR><BR>[Called By]<UL><LI><a href="#[10c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_printf_core
+<BR>[Called By]<UL><LI><a href="#[116]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__0vsprintf
+<LI><a href="#[114]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__0sprintf
 </UL>
 
-<P><STRONG><a name="[110]"></a>_printf_pre_padding</STRONG> (Thumb, 46 bytes, Stack size 24 bytes, printfa.o(i._printf_pre_padding), UNUSED)
-<BR><BR>[Called By]<UL><LI><a href="#[10c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_printf_core
+<P><STRONG><a name="[11a]"></a>_printf_post_padding</STRONG> (Thumb, 36 bytes, Stack size 24 bytes, printfa.o(i._printf_post_padding), UNUSED)
+<BR><BR>[Called By]<UL><LI><a href="#[115]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_printf_core
+</UL>
+
+<P><STRONG><a name="[119]"></a>_printf_pre_padding</STRONG> (Thumb, 46 bytes, Stack size 24 bytes, printfa.o(i._printf_pre_padding), UNUSED)
+<BR><BR>[Called By]<UL><LI><a href="#[115]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_printf_core
 </UL>
 
 <P><STRONG><a name="[4d]"></a>_sputc</STRONG> (Thumb, 10 bytes, Stack size 0 bytes, printfa.o(i._sputc))
-<BR><BR>[Called By]<UL><LI><a href="#[10d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__0vsprintf
-<LI><a href="#[10b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__0sprintf
+<BR><BR>[Called By]<UL><LI><a href="#[116]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__0vsprintf
+<LI><a href="#[114]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__0sprintf
 </UL>
 <BR>[Address Reference Count : 2]<UL><LI> printfa.o(i.__0sprintf)
 <LI> printfa.o(i.__0vsprintf)

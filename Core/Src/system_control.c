@@ -248,6 +248,10 @@ uint8_t SystemControl_CheckTemperature(void)
     DEBUG_Printf("温度检测: NTC1=%.1f℃, NTC2=%.1f℃, NTC3=%.1f℃\r\n", 
                 temp1.value_celsius, temp2.value_celsius, temp3.value_celsius);
     
+    // 详细调试：单独输出每个温度值
+    DEBUG_Printf("[温度调试] T1=%.1f℃, T2=%.1f℃, T3=%.1f℃\r\n", 
+                temp1.value_celsius, temp2.value_celsius, temp3.value_celsius);
+    
     // 根据README要求，自检时NTC温度均应在60℃以下
     if(temp1.value_celsius < SELF_TEST_TEMP_THRESHOLD && 
        temp2.value_celsius < SELF_TEST_TEMP_THRESHOLD && 
@@ -270,6 +274,8 @@ void SystemControl_MainLoopScheduler(void)
     static uint32_t lastTempTime = 0;
     static uint32_t lastOledTime = 0;
     static uint32_t lastSafetyTime = 0;
+    static uint32_t lastDiagTime = 0;
+    static uint32_t lastFanSpeedTime = 0;  // 添加风扇转速统计定时器
     
     uint32_t currentTime = HAL_GetTick();
     
@@ -277,6 +283,19 @@ void SystemControl_MainLoopScheduler(void)
     if(currentTime - lastRelayTime >= 10) {
         lastRelayTime = currentTime;
         RelayControl_ProcessPendingActions();
+    }
+    
+    // 每1000ms输出K_EN状态诊断信息
+    if(currentTime - lastDiagTime >= 1000) {
+        lastDiagTime = currentTime;
+        SystemControl_PrintKEnDiagnostics();
+    }
+    
+    // 每1000ms统计风扇转速（解决风扇转速始终显示0RPM问题）
+    if(currentTime - lastFanSpeedTime >= 1000) {
+        lastFanSpeedTime = currentTime;
+        TemperatureMonitor_FanSpeed1sHandler();
+        DEBUG_Printf("[风扇调试] 转速统计完成，当前RPM: %d\\r\\n", (int)TemperatureMonitor_GetFanSpeed().rpm);
     }
     
     // 每100ms执行温度监控
@@ -328,16 +347,40 @@ void SystemControl_UpdateDisplay(void)
         TempInfo_t temp2 = TemperatureMonitor_GetInfo(TEMP_CH2);
         TempInfo_t temp3 = TemperatureMonitor_GetInfo(TEMP_CH3);
         
-        sprintf(temp_info, "T1:%.1f T2:%.1f T3:%.1f", 
+        // 详细调试：单独输出每个温度值
+        DEBUG_Printf("[温度调试] T1=%.1f℃, T2=%.1f℃, T3=%.1f℃\r\n", 
+                    temp1.value_celsius, temp2.value_celsius, temp3.value_celsius);
+        
+        // 测试：使用更短的格式确保T3显示
+        char test_temp_info[32];
+        sprintf(test_temp_info, "T1:%.1f T2:%.1f T3:%.1f", 
                temp1.value_celsius, temp2.value_celsius, temp3.value_celsius);
+        DEBUG_Printf("[显示调试] 原格式: \"%s\" (长度:%d)\r\n", test_temp_info, (int)strlen(test_temp_info));
+        
+        // 强制刷新显示缓存，确保新格式立即生效
+        static uint8_t force_refresh_count = 0;
+        if(force_refresh_count < 5) {  // 只在前5次强制刷新
+            OLED_ResetDisplayCache();
+            force_refresh_count++;
+            DEBUG_Printf("[显示调试] 第%d次强制刷新显示缓存\r\n", force_refresh_count);
+        }
+        
+        // 使用改进的温度显示格式：Temp：**.*|**.*|**.*
+        sprintf(temp_info, "Temp:%.1f|%.1f|%.1f", 
+               temp1.value_celsius, temp2.value_celsius, temp3.value_celsius);
+        DEBUG_Printf("[显示调试] 新格式: \"%s\" (长度:%d)\r\n", temp_info, (int)strlen(temp_info));
         
         // 获取风扇信息
         uint8_t fan_pwm = TemperatureMonitor_GetFanPWM();
         FanSpeedInfo_t fan_speed = TemperatureMonitor_GetFanSpeed();
         sprintf(fan_info, "FAN:%d%% %dRPM", fan_pwm, (int)fan_speed.rpm);
         
-        // 显示主界面
-        OLED_ShowMainScreen(alarm_info, status1, status2, status3, temp_info, fan_info);
+        // 风扇调试：输出详细风扇状态信息
+        DEBUG_Printf("[风扇调试] PWM占空比: %d%%, 转速: %dRPM, 脉冲计数: %d\\r\\n", 
+                    fan_pwm, (int)fan_speed.rpm, (int)fan_speed.pulse_count);
+        
+        // 显示主界面（使用脏区刷新，彻底解决闪烁问题）
+        OLED_ShowMainScreenDirty(alarm_info, status1, status2, status3, temp_info, fan_info);
     }
 }
 
@@ -354,6 +397,10 @@ void SystemControl_EnterNormalState(void)
     
     // 清屏准备显示主界面
     OLED_Clear();
+    
+    // 重置显示缓存，确保状态切换时强制刷新
+    OLED_ResetDisplayCache();
+    OLED_ClearDirtyRegions();  // 清除脏区记录
 }
 
 /**
@@ -372,6 +419,10 @@ void SystemControl_EnterErrorState(const char* error_msg)
     }
     
     DEBUG_Printf("=== 系统进入错误状态: %s ===\r\n", error_msg ? error_msg : "未知错误");
+    
+    // 重置显示缓存，确保状态切换时强制刷新
+    OLED_ResetDisplayCache();
+    OLED_ClearDirtyRegions();  // 清除脏区记录
 }
 
 /**
@@ -384,6 +435,10 @@ void SystemControl_EnterAlarmState(void)
     g_system_control.state_start_time = HAL_GetTick();
     
     DEBUG_Printf("=== 系统进入报警状态 ===\r\n");
+    
+    // 重置显示缓存，确保状态切换时强制刷新
+    OLED_ResetDisplayCache();
+    OLED_ClearDirtyRegions();  // 清除脏区记录
 }
 
 /**
@@ -400,12 +455,15 @@ void SystemControl_HandleSelfTestError(void)
     // 进入错误状态
     SystemControl_EnterErrorState("自检失败");
     
+    // 重置显示缓存，确保异常信息能正确显示
+    OLED_ResetDisplayCache();
+    
     // 在OLED上显示自检异常信息
     OLED_Clear();
     // 这里可以显示具体的异常信息，格式如："N异常:具体原因"
     char display_msg[64];
     sprintf(display_msg, "N异常:%s", g_system_control.self_test.error_info);
-    OLED_DrawString(0, 20, display_msg, 8); // 使用8x16字体显示
+    OLED_DrawString6x8(0, 3, display_msg); // 使用6x8字体显示
     OLED_Refresh();
 }
 
@@ -472,5 +530,32 @@ void SystemControl_DebugPrint(void)
         DEBUG_Printf("错误信息: %s\r\n", g_system_control.self_test.error_info);
     }
     DEBUG_Printf("错误标志: 0x%02X\r\n", g_system_control.error_flags);
+}
+
+/**
+  * @brief  输出K_EN状态诊断信息（每秒调用一次）
+  * @retval 无
+  */
+void SystemControl_PrintKEnDiagnostics(void)
+{
+    // 只在系统正常运行或报警状态下输出诊断信息
+    if(g_system_control.current_state != SYSTEM_STATE_NORMAL && 
+       g_system_control.current_state != SYSTEM_STATE_ALARM) {
+        return;
+    }
+    
+    // 读取K_EN信号状态
+    uint8_t k1_en = GPIO_ReadK1_EN();
+    uint8_t k2_en = GPIO_ReadK2_EN();
+    uint8_t k3_en = GPIO_ReadK3_EN();
+    
+    // 读取STA反馈信号状态
+    uint8_t k1_sta = GPIO_ReadK1_1_STA() && GPIO_ReadK1_2_STA() && GPIO_ReadSW1_STA();
+    uint8_t k2_sta = GPIO_ReadK2_1_STA() && GPIO_ReadK2_2_STA() && GPIO_ReadSW2_STA();
+    uint8_t k3_sta = GPIO_ReadK3_1_STA() && GPIO_ReadK3_2_STA() && GPIO_ReadSW3_STA();
+    
+    // 输出诊断信息
+    DEBUG_Printf("[K_EN诊断] K1_EN=%d K2_EN=%d K3_EN=%d | STA: K1=%d K2=%d K3=%d\r\n", 
+                k1_en, k2_en, k3_en, k1_sta, k2_sta, k3_sta);
 }
 

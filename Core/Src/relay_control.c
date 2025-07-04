@@ -348,49 +348,67 @@ void RelayControl_ClearError(uint8_t channelNum)
 }
 
 /**
-  * @brief  处理使能信号变化（在中断中调用，三重检测，非阻塞）
+  * @brief  处理使能信号变化（已弃用：原中断方式，现改为轮询方式）
   * @param  channelNum: 通道号(1-3)
   * @param  state: 信号状态（0=低电平=开启，1=高电平=关闭）
   * @retval 无
+  * @note   此函数已弃用，现在使用轮询方式检测K_EN信号变化
   */
 void RelayControl_HandleEnableSignal(uint8_t channelNum, uint8_t state)
 {
-    if(channelNum < 1 || channelNum > 3)
-        return;
-
-    relayChannels[channelNum - 1].lastActionTime = HAL_GetTick();
-
-    if(state == 0) {
-        pendingAction[channelNum - 1] = 1;
-        DEBUG_Printf("[中断] 通道%d检测到下降沿，待开启\r\n", channelNum);
-    } else {
-        pendingAction[channelNum - 1] = 2;
-        DEBUG_Printf("[中断] 通道%d检测到上升沿，待关闭\r\n", channelNum);
-    }
+    // 此函数已弃用，现在使用轮询方式在RelayControl_ProcessPendingActions中处理
+    // 保留函数定义以保持兼容性，但不执行任何操作
+    (void)channelNum;
+    (void)state;
+    DEBUG_Printf("[警告] RelayControl_HandleEnableSignal已弃用，请使用轮询方式\r\n");
 }
 
 /**
-  * @brief  处理待处理的继电器动作（在主循环中调用，非中断环境）
+  * @brief  轮询检测K_EN信号并处理继电器动作（在主循环中调用）
   * @retval 无
   */
 void RelayControl_ProcessPendingActions(void)
 {
+    // 轮询检测三个通道的K_EN和STA信号
     for(uint8_t i = 0; i < 3; i++) {
-        if(pendingAction[i] == 1) { // 开启通道
-            pendingAction[i] = 0;
-            uint8_t result = RelayControl_OpenChannel(i + 1);
+        uint8_t channelNum = i + 1;
+        uint8_t k_en = 0;
+        uint8_t sta_all = 0;
+        
+        // 读取对应通道的K_EN信号
+        switch(channelNum) {
+            case 1:
+                k_en = GPIO_ReadK1_EN();
+                sta_all = GPIO_ReadK1_1_STA() && GPIO_ReadK1_2_STA() && GPIO_ReadSW1_STA();
+                break;
+            case 2:
+                k_en = GPIO_ReadK2_EN();
+                sta_all = GPIO_ReadK2_1_STA() && GPIO_ReadK2_2_STA() && GPIO_ReadSW2_STA();
+                break;
+            case 3:
+                k_en = GPIO_ReadK3_EN();
+                sta_all = GPIO_ReadK3_1_STA() && GPIO_ReadK3_2_STA() && GPIO_ReadSW3_STA();
+                break;
+        }
+        
+        // 轮询逻辑：检测K_EN为0且STA也为0，则输出500ms低电平脉冲到ON信号
+        if(k_en == 0 && sta_all == 0) {
+            DEBUG_Printf("[轮询] 通道%d: K_EN=0且STA=0，执行开启动作\r\n", channelNum);
+            uint8_t result = RelayControl_OpenChannel(channelNum);
             if(result == RELAY_ERR_NONE) {
-                DEBUG_Printf("通道%d开启成功\r\n", i + 1);
+                DEBUG_Printf("通道%d开启成功\r\n", channelNum);
             } else {
-                DEBUG_Printf("通道%d开启失败，错误码=%d\r\n", i + 1, result);
+                DEBUG_Printf("通道%d开启失败，错误码=%d\r\n", channelNum, result);
             }
-        } else if(pendingAction[i] == 2) { // 关闭通道
-            pendingAction[i] = 0;
-            uint8_t result = RelayControl_CloseChannel(i + 1);
+        }
+        // 轮询逻辑：检测K_EN为1且STA也为1，则输出500ms低电平脉冲到OFF信号
+        else if(k_en == 1 && sta_all == 1) {
+            DEBUG_Printf("[轮询] 通道%d: K_EN=1且STA=1，执行关闭动作\r\n", channelNum);
+            uint8_t result = RelayControl_CloseChannel(channelNum);
             if(result == RELAY_ERR_NONE) {
-                DEBUG_Printf("通道%d关闭成功\r\n", i + 1);
+                DEBUG_Printf("通道%d关闭成功\r\n", channelNum);
             } else {
-                DEBUG_Printf("通道%d关闭失败，错误码=%d\r\n", i + 1, result);
+                DEBUG_Printf("通道%d关闭失败，错误码=%d\r\n", channelNum, result);
             }
         }
     }
