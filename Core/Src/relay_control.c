@@ -360,7 +360,7 @@ void RelayControl_HandleEnableSignal(uint8_t channelNum, uint8_t state)
     // 保留函数定义以保持兼容性，但不执行任何操作
     (void)channelNum;
     (void)state;
-    DEBUG_Printf("[警告] RelayControl_HandleEnableSignal已弃用，请使用轮询方式\r\n");
+    // DEBUG_Printf("[警告] RelayControl_HandleEnableSignal已弃用，请使用轮询方式\r\n");  // 已注释 - 避免重复输出
 }
 
 /**

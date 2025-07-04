@@ -61,15 +61,17 @@ void GPIO_SetK3_2_ON(uint8_t state)  { HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2, (GPI
 void GPIO_SetK3_2_OFF(uint8_t state) { HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, (GPIO_PinState)state); }
 
 // 报警输出控制
-void GPIO_SetALARM(uint8_t state) {
-    // 控制报警输出（PB4）
-    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, (GPIO_PinState)state);
+void GPIO_SetAlarmOutput(uint8_t state) {
+    // 控制ALARM引脚输出（PB4）
+    // state: 1=低电平输出（报警），0=高电平输出（正常）
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, state ? GPIO_PIN_RESET : GPIO_PIN_SET);
 }
 
 // 蜂鸣器控制
-void GPIO_SetBEEP(uint8_t state) {
+void GPIO_SetBeepOutput(uint8_t state) {
     // 控制蜂鸣器输出（PB3）
-    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_3, (GPIO_PinState)state);
+    // state: 1=低电平输出（蜂鸣），0=高电平输出（静音）
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_3, state ? GPIO_PIN_RESET : GPIO_PIN_SET);
 }
 
 // 风扇PWM控制（如需直接控制PWM引脚）

@@ -53,10 +53,10 @@ void GPIO_SetK3_2_ON(uint8_t state);   // 控制K3_2_ON输出
 void GPIO_SetK3_2_OFF(uint8_t state);  // 控制K3_2_OFF输出
 
 // 报警输出控制
-void GPIO_SetALARM(uint8_t state);     // 控制报警输出
+void GPIO_SetAlarmOutput(uint8_t state);     // 控制ALARM引脚输出（1:低电平 0:高电平）
 
 // 蜂鸣器控制
-void GPIO_SetBEEP(uint8_t state);      // 控制蜂鸣器输出
+void GPIO_SetBeepOutput(uint8_t state);      // 控制蜂鸣器输出（1:低电平 0:高电平）
 
 // 风扇PWM控制（如需直接控制PWM引脚）
 void GPIO_SetFAN_PWM(uint8_t state);   // 控制风扇PWM输出（如有需要）

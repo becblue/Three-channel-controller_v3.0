@@ -28,19 +28,22 @@ typedef enum {
 
 // 自检项目枚举
 typedef enum {
-    SELF_TEST_INPUT_SIGNALS = 0,    // 检测三路输入信号K1_EN、K2_EN、K3_EN
-    SELF_TEST_FEEDBACK_SIGNALS,     // 检测状态反馈信号
-    SELF_TEST_TEMPERATURE,          // 检测NTC温度
-    SELF_TEST_COMPLETE              // 自检完成
+    SELF_TEST_STEP1_EXPECTED_STATE = 0,     // 第一步：期望状态识别
+    SELF_TEST_STEP2_RELAY_CORRECTION,      // 第二步：继电器状态检查与主动纠错
+    SELF_TEST_STEP3_CONTACTOR_CHECK,       // 第三步：接触器状态检查与报错
+    SELF_TEST_STEP4_TEMPERATURE_SAFETY,    // 第四步：温度安全检测
+    SELF_TEST_COMPLETE                     // 自检完成
 } SelfTestItem_t;
 
 // 自检结果结构体
 typedef struct {
-    uint8_t input_signals_ok;       // 输入信号检测结果（1:正常 0:异常）
-    uint8_t feedback_signals_ok;    // 反馈信号检测结果（1:正常 0:异常）
-    uint8_t temperature_ok;         // 温度检测结果（1:正常 0:异常）
-    uint8_t overall_result;         // 总体自检结果（1:通过 0:失败）
-    char error_info[64];            // 错误信息字符串
+    uint8_t step1_expected_state_ok;        // 第一步：期望状态识别结果（1:正常 0:异常）
+    uint8_t step2_relay_correction_ok;      // 第二步：继电器纠错结果（1:正常 0:异常）
+    uint8_t step3_contactor_check_ok;       // 第三步：接触器检查结果（1:正常 0:异常）
+    uint8_t step4_temperature_safety_ok;    // 第四步：温度安全检测结果（1:正常 0:异常）
+    uint8_t overall_result;                 // 总体自检结果（1:通过 0:失败）
+    char error_info[128];                   // 错误信息字符串（增大以容纳更多信息）
+    uint8_t current_step;                   // 当前自检步骤（用于进度条显示）
 } SelfTestResult_t;
 
 // 系统控制结构体
@@ -88,16 +91,34 @@ void SystemControl_StartLogoDisplay(void);
 // 开始自检阶段
 void SystemControl_StartSelfTest(void);
 
-// 执行自检检测
+// 执行通道关断确认（自检前的安全动作）
+void SystemControl_ExecuteChannelShutdown(void);
+
+// 执行自检检测（新的四步流程）
 void SystemControl_ExecuteSelfTest(void);
 
-// 检测输入信号（K1_EN、K2_EN、K3_EN应为高电平）
+// 第一步：识别当前期望状态
+uint8_t SystemControl_SelfTest_Step1_ExpectedState(void);
+
+// 第二步：继电器状态检查与主动纠错
+uint8_t SystemControl_SelfTest_Step2_RelayCorrection(void);
+
+// 第三步：接触器状态检查与报错
+uint8_t SystemControl_SelfTest_Step3_ContactorCheck(void);
+
+// 第四步：温度安全检测
+uint8_t SystemControl_SelfTest_Step4_TemperatureSafety(void);
+
+// 更新自检进度条显示
+void SystemControl_UpdateSelfTestProgress(uint8_t step, uint8_t percent);
+
+// 检测输入信号（K1_EN、K2_EN、K3_EN应为高电平）- 保留备用
 uint8_t SystemControl_CheckInputSignals(void);
 
-// 检测反馈信号（所有状态反馈应为低电平）
+// 检测反馈信号（所有状态反馈应为低电平）- 保留备用
 uint8_t SystemControl_CheckFeedbackSignals(void);
 
-// 检测温度（所有NTC温度应在60℃以下）
+// 检测温度（所有NTC温度应在60℃以下）- 保留备用
 uint8_t SystemControl_CheckTemperature(void);
 
 // ================== 主循环调度函数 ===================
@@ -114,7 +135,7 @@ void SystemControl_ScheduleTemperatureMonitor(void);
 // 调度OLED显示模块
 void SystemControl_ScheduleOLEDDisplay(void);
 
-// 调度安全监控模块（预留）
+// 调度安全监控模块
 void SystemControl_ScheduleSafetyMonitor(void);
 
 // ================== 状态切换与异常处理 ===================

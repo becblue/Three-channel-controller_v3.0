@@ -15,6 +15,7 @@
 "three-channel controller_v3.0\usart.o"
 "three-channel controller_v3.0\stm32f1xx_it.o"
 "three-channel controller_v3.0\stm32f1xx_hal_msp.o"
+"three-channel controller_v3.0\safety_monitor.o"
 "three-channel controller_v3.0\stm32f1xx_hal_gpio_ex.o"
 "three-channel controller_v3.0\stm32f1xx_hal_adc.o"
 "three-channel controller_v3.0\stm32f1xx_hal_adc_ex.o"
