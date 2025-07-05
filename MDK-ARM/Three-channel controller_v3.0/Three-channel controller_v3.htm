@@ -3,7 +3,7 @@
 <title>Static Call Graph - [Three-channel controller_v3.0\Three-channel controller_v3.0]</title></head>
 <body><HR>
 <H1>Static Call Graph for image Three-channel controller_v3.0\Three-channel controller_v3.0</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060960: Last Updated: Sat Jul 05 17:24:51 2025
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060960: Last Updated: Sat Jul 05 23:05:19 2025
 <BR><P>
 <H3>Maximum Stack Usage =        520 bytes + Unknown(Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -1796,10 +1796,11 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[fc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_ProcessPendingActions
 </UL>
 
-<P><STRONG><a name="[fc]"></a>RelayControl_ProcessPendingActions</STRONG> (Thumb, 188 bytes, Stack size 16 bytes, relay_control.o(i.RelayControl_ProcessPendingActions))
+<P><STRONG><a name="[fc]"></a>RelayControl_ProcessPendingActions</STRONG> (Thumb, 254 bytes, Stack size 16 bytes, relay_control.o(i.RelayControl_ProcessPendingActions))
 <BR><BR>[Stack]<UL><LI>Max Depth = 456<LI>Call Chain = RelayControl_ProcessPendingActions &rArr; RelayControl_OpenChannel &rArr; RelayControl_CheckChannelFeedback &rArr; DEBUG_Printf &rArr; HAL_UART_Transmit &rArr; UART_WaitOnFlagUntilTimeout
 </UL>
-<BR>[Calls]<UL><LI><a href="#[fa]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_OpenChannel
+<BR>[Calls]<UL><LI><a href="#[fb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SafetyMonitor_IsAlarmActive
+<LI><a href="#[fa]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_OpenChannel
 <LI><a href="#[f8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_CloseChannel
 <LI><a href="#[71]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DEBUG_Printf
 <LI><a href="#[83]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_ReadSW3_STA
@@ -1977,7 +1978,8 @@ Global Symbols
 </UL>
 
 <P><STRONG><a name="[fb]"></a>SafetyMonitor_IsAlarmActive</STRONG> (Thumb, 24 bytes, Stack size 0 bytes, safety_monitor.o(i.SafetyMonitor_IsAlarmActive))
-<BR><BR>[Called By]<UL><LI><a href="#[fa]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_OpenChannel
+<BR><BR>[Called By]<UL><LI><a href="#[fc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_ProcessPendingActions
+<LI><a href="#[fa]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_OpenChannel
 <LI><a href="#[a2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SafetyMonitor_PowerFailureCallback
 <LI><a href="#[104]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SafetyMonitor_SetAlarmFlag
 <LI><a href="#[129]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_UpdateDisplay

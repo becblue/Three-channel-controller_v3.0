@@ -377,6 +377,19 @@ void RelayControl_HandleEnableSignal(uint8_t channelNum, uint8_t state)
   */
 void RelayControl_ProcessPendingActions(void)
 {
+    // 检查是否存在关键异常，如果存在则停止轮询
+    if(SafetyMonitor_IsAlarmActive(ALARM_FLAG_B) ||  // K1_1_STA工作异常
+       SafetyMonitor_IsAlarmActive(ALARM_FLAG_C) ||  // K2_1_STA工作异常
+       SafetyMonitor_IsAlarmActive(ALARM_FLAG_D) ||  // K3_1_STA工作异常
+       SafetyMonitor_IsAlarmActive(ALARM_FLAG_E) ||  // K1_2_STA工作异常
+       SafetyMonitor_IsAlarmActive(ALARM_FLAG_F) ||  // K2_2_STA工作异常
+       SafetyMonitor_IsAlarmActive(ALARM_FLAG_G) ||  // K3_2_STA工作异常
+       SafetyMonitor_IsAlarmActive(ALARM_FLAG_O)) {  // 外部电源异常（DC_CTRL）
+        // 发生关键异常时停止轮询，保持当前通道状态
+        DEBUG_Printf("[轮询] 检测到关键异常，停止轮询动作\r\n");
+        return;
+    }
+    
     // 轮询检测三个通道的K_EN和STA信号
     for(uint8_t i = 0; i < 3; i++) {
         uint8_t channelNum = i + 1;
