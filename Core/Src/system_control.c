@@ -374,11 +374,11 @@ void SystemControl_MainLoopScheduler(void)
         RelayControl_ProcessPendingActions();
     }
     
-    // 每1000ms输出K_EN状态诊断信息
-    if(currentTime - lastDiagTime >= 1000) {
-        lastDiagTime = currentTime;
-        SystemControl_PrintKEnDiagnostics();
-    }
+    // 每1000ms输出K_EN状态诊断信息（已注释 - 便于查看异常信息）
+    // if(currentTime - lastDiagTime >= 1000) {
+    //     lastDiagTime = currentTime;
+    //     SystemControl_PrintKEnDiagnostics();
+    // }
     
     // 每1000ms统计风扇转速（解决风扇转速始终显示0RPM问题）
     if(currentTime - lastFanSpeedTime >= 1000) {
@@ -401,8 +401,8 @@ void SystemControl_MainLoopScheduler(void)
         SystemControl_UpdateDisplay();
     }
     
-    // 每500ms执行安全监控模块
-    if(currentTime - lastSafetyTime >= 500) {
+    // 每100ms执行安全监控模块（提高响应速度）
+    if(currentTime - lastSafetyTime >= 100) {
         lastSafetyTime = currentTime;
         SafetyMonitor_Process();
         
@@ -467,12 +467,14 @@ void SystemControl_UpdateDisplay(void)
                     }
                 }
                 
-                // 优先级3：A、N类异常（使能冲突、自检异常）
+                // 优先级3：A、N、O类异常（使能冲突、自检异常、电源异常）
                 if(active_alarm == ALARM_FLAG_COUNT) {
                     if(SafetyMonitor_IsAlarmActive(ALARM_FLAG_A)) {
                         active_alarm = ALARM_FLAG_A;
                     } else if(SafetyMonitor_IsAlarmActive(ALARM_FLAG_N)) {
                         active_alarm = ALARM_FLAG_N;
+                    } else if(SafetyMonitor_IsAlarmActive(ALARM_FLAG_O)) {
+                        active_alarm = ALARM_FLAG_O;
                     }
                 }
                 

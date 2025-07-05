@@ -30,7 +30,8 @@ static const char* g_alarm_descriptions[ALARM_FLAG_COUNT] = {
     "NTC_1温度异常",             // K
     "NTC_2温度异常",             // L
     "NTC_3温度异常",             // M
-    "自检异常"                   // N
+    "自检异常",                   // N
+    "外部电源异常"               // O
 };
 
 // 获取异常类型（根据异常标志确定报警类型）
@@ -209,31 +210,25 @@ void SafetyMonitor_UpdateAllAlarmStatus(void)
     // 4. 检测温度异常（K~M类异常）
     SafetyMonitor_CheckTemperatureAlarm();
     
-    // 5. 检查异常解除条件
-    if(SafetyMonitor_IsAlarmActive(ALARM_FLAG_A)) {
-        if(SafetyMonitor_CheckAlarmA_ClearCondition()) {
-            SafetyMonitor_ClearAlarmFlag(ALARM_FLAG_A);
-        }
-    }
+    // 5. 检测电源监控异常（O类异常）
+    SafetyMonitor_CheckPowerMonitor();
     
-    // 检查B~J、N类异常解除条件
-    for(uint8_t i = ALARM_FLAG_B; i <= ALARM_FLAG_J; i++) {
+    // 检查异常解除条件
+    for(uint8_t i = 0; i < ALARM_FLAG_COUNT; i++) {
         if(SafetyMonitor_IsAlarmActive((AlarmFlag_t)i)) {
-            if(SafetyMonitor_CheckAlarmBJN_ClearCondition()) {
-                SafetyMonitor_ClearAlarmFlag((AlarmFlag_t)i);
+            uint8_t can_clear = 0;
+            
+            if(i == ALARM_FLAG_A) {
+                can_clear = SafetyMonitor_CheckAlarmA_ClearCondition();
+            } else if((i >= ALARM_FLAG_B && i <= ALARM_FLAG_J) || i == ALARM_FLAG_N) {
+                can_clear = SafetyMonitor_CheckAlarmBJN_ClearCondition();
+            } else if(i >= ALARM_FLAG_K && i <= ALARM_FLAG_M) {
+                can_clear = SafetyMonitor_CheckAlarmKM_ClearCondition();
+            } else if(i == ALARM_FLAG_O) {
+                can_clear = SafetyMonitor_CheckAlarmO_ClearCondition();
             }
-        }
-    }
-    if(SafetyMonitor_IsAlarmActive(ALARM_FLAG_N)) {
-        if(SafetyMonitor_CheckAlarmBJN_ClearCondition()) {
-            SafetyMonitor_ClearAlarmFlag(ALARM_FLAG_N);
-        }
-    }
-    
-    // 检查K~M类异常解除条件
-    for(uint8_t i = ALARM_FLAG_K; i <= ALARM_FLAG_M; i++) {
-        if(SafetyMonitor_IsAlarmActive((AlarmFlag_t)i)) {
-            if(SafetyMonitor_CheckAlarmKM_ClearCondition()) {
+            
+            if(can_clear) {
                 SafetyMonitor_ClearAlarmFlag((AlarmFlag_t)i);
             }
         }
@@ -298,7 +293,8 @@ void SafetyMonitor_UpdateBeepState(void)
               SafetyMonitor_IsAlarmActive(ALARM_FLAG_J)) {
         new_state = BEEP_STATE_PULSE_50MS;  // 50ms间隔脉冲
     } else if(SafetyMonitor_IsAlarmActive(ALARM_FLAG_A) || 
-              SafetyMonitor_IsAlarmActive(ALARM_FLAG_N)) {
+              SafetyMonitor_IsAlarmActive(ALARM_FLAG_N) ||
+              SafetyMonitor_IsAlarmActive(ALARM_FLAG_O)) {  // 添加O类异常处理
         new_state = BEEP_STATE_PULSE_1S;    // 1秒间隔脉冲
     }
     
@@ -334,8 +330,8 @@ void SafetyMonitor_ProcessBeep(void)
     switch(g_safety_monitor.beep_state) {
         case BEEP_STATE_PULSE_1S:
             // 1秒间隔脉冲：25ms低电平，975ms高电平
-            if(!g_safety_monitor.beep_current_level && elapsed_time >= BEEP_PULSE_DURATION) {
-                // 结束低电平脉冲
+            if(g_safety_monitor.beep_current_level == 1 && elapsed_time >= BEEP_PULSE_DURATION) {
+                // 结束低电平脉冲，切换到高电平
                 GPIO_SetBeepOutput(0);
                 g_safety_monitor.beep_current_level = 0;
                 g_safety_monitor.beep_last_toggle_time = current_time;
@@ -413,10 +409,36 @@ void SafetyMonitor_PowerFailureCallback(void)
 {
     if(!g_safety_monitor.power_monitor_enabled) return;
     
-    DEBUG_Printf("[安全监控] 检测到电源异常！\r\n");
+    // 读取DC_CTRL当前状态
+    uint8_t dc_ctrl_state = GPIO_ReadDC_CTRL();
     
-    // 可以在这里添加电源异常处理逻辑
-    // 例如：紧急关闭所有继电器、保存关键数据等
+    DEBUG_Printf("[安全监控] DC_CTRL中断触发，当前状态: %s\r\n", dc_ctrl_state ? "高电平" : "低电平");
+    
+    // 修正逻辑：根据实际硬件设计
+    // 有DC24V供电时：DC_CTRL为低电平（正常状态）
+    // 没有DC24V供电时：DC_CTRL为高电平（异常状态）
+    if(dc_ctrl_state == 1) {
+        // 检测到电源异常（高电平 = 没有DC24V供电）
+        if(!SafetyMonitor_IsAlarmActive(ALARM_FLAG_O)) {
+            DEBUG_Printf("[安全监控] 检测到外部电源异常！DC24V供电中断\r\n");
+            SafetyMonitor_SetAlarmFlag(ALARM_FLAG_O, "DC24V电源中断");
+            
+            // 电源异常时保持当前通道状态，不强制关闭
+            // 继电器在DC24V断电时会自然断开，无需主动控制
+            DEBUG_Printf("[安全监控] 电源异常时保持当前通道状态，继电器将自然断开\r\n");
+            
+            // 立即更新报警输出和蜂鸣器状态
+            SafetyMonitor_UpdateAlarmOutput();
+            SafetyMonitor_UpdateBeepState();
+            
+            // 强制立即处理蜂鸣器脉冲（确保蜂鸣器立即响起）
+            SafetyMonitor_ProcessBeep();
+        }
+    } else {
+        // 电源恢复正常（低电平 = 有DC24V供电）
+        DEBUG_Printf("[安全监控] 外部电源恢复正常，准备解除O类异常\r\n");
+        // 电源恢复后会在主循环中通过CheckAlarmO_ClearCondition自动解除异常
+    }
 }
 
 // ================== 异常检测函数 ===================
@@ -569,6 +591,38 @@ void SafetyMonitor_CheckTemperatureAlarm(void)
     }
 }
 
+/**
+  * @brief  检测电源监控异常（O类异常）
+  * @retval 无
+  */
+void SafetyMonitor_CheckPowerMonitor(void)
+{
+    if(!g_safety_monitor.power_monitor_enabled) return;
+    
+    // 读取DC_CTRL状态
+    uint8_t dc_ctrl_state = GPIO_ReadDC_CTRL();
+    
+    // 修正逻辑：根据实际硬件设计
+    // 有DC24V供电时：DC_CTRL为低电平（正常状态）
+    // 没有DC24V供电时：DC_CTRL为高电平（异常状态）
+    if(dc_ctrl_state == 1) {
+        // 检测到电源异常（高电平 = 没有DC24V供电）
+        if(!SafetyMonitor_IsAlarmActive(ALARM_FLAG_O)) {
+            DEBUG_Printf("[安全监控] 电源监控检测到DC24V异常\r\n");
+            SafetyMonitor_SetAlarmFlag(ALARM_FLAG_O, "DC24V电源异常");
+            
+            // 电源异常时保持当前通道状态，不强制关闭
+            // 继电器在DC24V断电时会自然断开，无需主动控制
+            DEBUG_Printf("[安全监控] 电源异常时保持当前通道状态，继电器将自然断开\r\n");
+            
+            // 立即更新报警输出和蜂鸣器状态
+            SafetyMonitor_UpdateAlarmOutput();
+            SafetyMonitor_UpdateBeepState();
+            SafetyMonitor_ProcessBeep();
+        }
+    }
+}
+
 // ================== 异常解除检查 ===================
 
 /**
@@ -657,17 +711,44 @@ uint8_t SafetyMonitor_CheckAlarmKM_ClearCondition(void)
     TempInfo_t temp2 = TemperatureMonitor_GetInfo(TEMP_CH2);
     TempInfo_t temp3 = TemperatureMonitor_GetInfo(TEMP_CH3);
     
-    // K~M异常解除条件：温度回降到58℃以下（考虑2℃回差）
-    uint8_t temp1_ok = (temp1.value_celsius < TEMP_ALARM_CLEAR_THRESHOLD) ? 1 : 0;
-    uint8_t temp2_ok = (temp2.value_celsius < TEMP_ALARM_CLEAR_THRESHOLD) ? 1 : 0;
-    uint8_t temp3_ok = (temp3.value_celsius < TEMP_ALARM_CLEAR_THRESHOLD) ? 1 : 0;
+    // K~M异常解除条件：温度回降到58℃以下（考虑到2℃回差）
+    uint8_t can_clear = 1;
+    if(SafetyMonitor_IsAlarmActive(ALARM_FLAG_K) && temp1.value_celsius >= TEMP_ALARM_CLEAR_THRESHOLD) {
+        can_clear = 0;
+    }
+    if(SafetyMonitor_IsAlarmActive(ALARM_FLAG_L) && temp2.value_celsius >= TEMP_ALARM_CLEAR_THRESHOLD) {
+        can_clear = 0;
+    }
+    if(SafetyMonitor_IsAlarmActive(ALARM_FLAG_M) && temp3.value_celsius >= TEMP_ALARM_CLEAR_THRESHOLD) {
+        can_clear = 0;
+    }
     
-    // 分别检查每个温度通道
-    if(SafetyMonitor_IsAlarmActive(ALARM_FLAG_K) && !temp1_ok) return 0;
-    if(SafetyMonitor_IsAlarmActive(ALARM_FLAG_L) && !temp2_ok) return 0;
-    if(SafetyMonitor_IsAlarmActive(ALARM_FLAG_M) && !temp3_ok) return 0;
+    return can_clear;
+}
+
+/**
+  * @brief  检查O类异常解除条件
+  * @retval 1:可以解除 0:不能解除
+  */
+uint8_t SafetyMonitor_CheckAlarmO_ClearCondition(void)
+{
+    if(!g_safety_monitor.power_monitor_enabled) return 1;
     
-    return 1;  // 所有激活的温度异常都满足解除条件
+    // 读取DC_CTRL状态
+    uint8_t dc_ctrl_state = GPIO_ReadDC_CTRL();
+    
+    // 修正逻辑：O类异常解除条件是DC_CTRL恢复到低电平（电源正常）
+    // 有DC24V供电时：DC_CTRL为低电平（正常状态）
+    // 没有DC24V供电时：DC_CTRL为高电平（异常状态）
+    
+    // 简化逻辑：只要DC_CTRL为低电平就可以解除异常，不需要延时确认
+    // 因为中断已经能够及时检测到状态变化
+    if(dc_ctrl_state == 0) {
+        DEBUG_Printf("[安全监控] 电源恢复正常，解除O类异常\r\n");
+        return 1;
+    }
+    
+    return 0;
 }
 
 // ================== 调试和状态查询 ===================
@@ -743,14 +824,13 @@ void SafetyMonitor_DebugPrint(void)
   */
 static AlarmType_t SafetyMonitor_GetAlarmType(AlarmFlag_t flag)
 {
-    if(flag == ALARM_FLAG_A || flag == ALARM_FLAG_N) {
-        return ALARM_TYPE_AN;   // A、N类异常
+    if(flag == ALARM_FLAG_A || flag == ALARM_FLAG_N || flag == ALARM_FLAG_O) {
+        return ALARM_TYPE_AN;  // A、N、O类异常：1秒间隔脉冲
     } else if(flag >= ALARM_FLAG_B && flag <= ALARM_FLAG_J) {
-        return ALARM_TYPE_BJ;   // B~J类异常
+        return ALARM_TYPE_BJ;  // B~J类异常：50ms间隔脉冲
     } else if(flag >= ALARM_FLAG_K && flag <= ALARM_FLAG_M) {
-        return ALARM_TYPE_KM;   // K~M类异常
-    } else {
-        return ALARM_TYPE_AN;   // 默认类型
+        return ALARM_TYPE_KM;  // K~M类异常：持续低电平
     }
+    return ALARM_TYPE_AN;  // 默认类型
 } 
 

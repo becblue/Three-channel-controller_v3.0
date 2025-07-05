@@ -15,7 +15,7 @@ extern "C" {
  * 4. 异常优先级和解除机制
  * 
  * 严格按照README要求：
- * - A、N类异常：蜂鸣器1秒间隔脉冲
+ * - A、N、O类异常：蜂鸣器1秒间隔脉冲
  * - B~J类异常：蜂鸣器50ms间隔脉冲
  * - K~M类异常：蜂鸣器持续低电平
  * - ALARM引脚：所有异常均输出持续低电平
@@ -37,12 +37,13 @@ typedef enum {
     ALARM_FLAG_L,           // NTC_2温度异常
     ALARM_FLAG_M,           // NTC_3温度异常
     ALARM_FLAG_N,           // 自检异常
+    ALARM_FLAG_O,           // 外部电源异常（DC_CTRL）
     ALARM_FLAG_COUNT        // 异常标志总数
 } AlarmFlag_t;
 
 // 异常类型枚举
 typedef enum {
-    ALARM_TYPE_AN = 0,      // A、N类异常：1秒间隔脉冲
+    ALARM_TYPE_AN = 0,      // A、N、O类异常：1秒间隔脉冲
     ALARM_TYPE_BJ,          // B~J类异常：50ms间隔脉冲
     ALARM_TYPE_KM           // K~M类异常：持续低电平
 } AlarmType_t;
@@ -158,6 +159,9 @@ void SafetyMonitor_CheckContactorStatus(void);
 // 检测温度异常（K~M类异常）
 void SafetyMonitor_CheckTemperatureAlarm(void);
 
+// 检测电源监控异常（O类异常）
+void SafetyMonitor_CheckPowerMonitor(void);
+
 // ================== 异常解除检查 ===================
 
 // 检查A类异常解除条件
@@ -168,6 +172,9 @@ uint8_t SafetyMonitor_CheckAlarmBJN_ClearCondition(void);
 
 // 检查K~M类异常解除条件
 uint8_t SafetyMonitor_CheckAlarmKM_ClearCondition(void);
+
+// 检查O类异常解除条件
+uint8_t SafetyMonitor_CheckAlarmO_ClearCondition(void);
 
 // ================== 调试和状态查询 ===================
 

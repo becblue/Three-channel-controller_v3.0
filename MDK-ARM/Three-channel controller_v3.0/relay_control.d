@@ -34,4 +34,5 @@ three-channel controller_v3.0\relay_control.o: ../Drivers/STM32F1xx_HAL_Driver/I
 three-channel controller_v3.0\relay_control.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim_ex.h
 three-channel controller_v3.0\relay_control.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h
 three-channel controller_v3.0\relay_control.o: ../Core/Inc/gpio_control.h
+three-channel controller_v3.0\relay_control.o: ../Core/Inc/safety_monitor.h
 three-channel controller_v3.0\relay_control.o: ../Core/Inc/usart.h

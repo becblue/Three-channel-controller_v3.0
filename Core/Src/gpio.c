@@ -24,6 +24,7 @@
 /* USER CODE BEGIN 0 */
 extern volatile uint32_t fan_pulse_count;
 #include "relay_control.h"
+#include "safety_monitor.h"
 #include "usart.h"
 /* USER CODE END 0 */
 
@@ -137,7 +138,7 @@ void MX_GPIO_Init(void)
 
   /*Configure GPIO pin : PtPin */
   GPIO_InitStruct.Pin = DC_CTRL_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(DC_CTRL_GPIO_Port, &GPIO_InitStruct);
 
@@ -178,8 +179,9 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
             break;
             
         case DC_CTRL_Pin:
-            // 电源监控中断处理（预留，后续3.2阶段实现）
+            // 电源监控中断处理：调用安全监控模块的电源异常回调
             DEBUG_Printf("DC_CTRL中断触发\r\n");
+            SafetyMonitor_PowerFailureCallback();
             break;
             
         case GPIO_PIN_12: // PC12风扇测速

@@ -1,5 +1,6 @@
 #include "relay_control.h"
 #include "gpio_control.h"
+#include "safety_monitor.h"
 #include "usart.h"
 
 /************************************************************
@@ -198,6 +199,13 @@ uint8_t RelayControl_OpenChannel(uint8_t channelNum)
 {
     if(channelNum < 1 || channelNum > 3)
         return RELAY_ERR_INVALID_CHANNEL;
+    
+    // 检查是否存在O类异常（电源异常）
+    if(SafetyMonitor_IsAlarmActive(ALARM_FLAG_O)) {
+        DEBUG_Printf("通道%d开启被阻止：检测到O类异常（电源异常）\r\n", channelNum);
+        return RELAY_ERR_POWER_FAILURE;
+    }
+    
     uint8_t idx = channelNum - 1;
     // 检查互锁
     if(RelayControl_CheckInterlock(channelNum)) {
