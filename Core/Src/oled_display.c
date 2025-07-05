@@ -362,25 +362,102 @@ void OLED_ShowLogo(void)
 // 显示自检进度条（percent:0~100）
 void OLED_ShowSelfTestBar(uint8_t percent)
 {
-    // 清除进度条区域（假设Y=32~39，8像素高）
+    // 清除进度条区域（Y=32~39，8像素高）
     for(uint8_t y=32/8; y<=39/8; y++)
-        for(uint8_t x=16; x<112; x++)
+        for(uint8_t x=16; x<=111; x++)
             OLED_GRAM[y][x] = 0x00;
-    // 绘制进度条边框
-    for(uint8_t x=16; x<112; x++)
+    
+    // 绘制进度条边框（与新版本保持一致的修正版本）
+    // 进度条外框：左上角(16,32) 到 右下角(111,39)，总宽度96像素，高度8像素
+    
+    // 绘制上下边框（水平线）
+    for(uint8_t x=16; x<=111; x++)
     {
-        OLED_GRAM[32/8][x] = 0x01; // 上边框
-        OLED_GRAM[39/8][x] = 0x80; // 下边框
+        OLED_GRAM[32/8][x] |= 0x01; // 上边框（Y=32对应第4页的最低位）
+        OLED_GRAM[39/8][x] |= 0x80; // 下边框（Y=39对应第4页的最高位）
     }
+    
+    // 绘制左右边框（垂直线），注意避免角落重复
     for(uint8_t y=32/8; y<=39/8; y++)
     {
-        OLED_GRAM[y][16] |= 0x01; // 左边框
-        OLED_GRAM[y][111] |= 0x01; // 右边框
+        OLED_GRAM[y][16] |= 0xFF; // 左边框（完整的垂直线）
+        OLED_GRAM[y][111] |= 0xFF; // 右边框（完整的垂直线）
     }
+    
     // 填充进度条
     uint8_t bar_len = (uint8_t)((percent * 94) / 100); // 进度条长度（94像素）
     for(uint8_t x=17; x<17+bar_len; x++)
         OLED_GRAM[33/8][x] = 0xFF;
+    OLED_Refresh();
+}
+
+// 显示自检进度条和步骤描述（新增功能）
+void OLED_ShowSelfTestBarWithStep(uint8_t percent, uint8_t step)
+{
+    // 清除整个显示区域
+    // 文字区域：Y=16~23（第2页），间隔4行像素：Y=24~31，进度条区域：Y=32~39（第4页）
+    for(uint8_t y=16/8; y<=39/8; y++)
+        for(uint8_t x=0; x<128; x++)
+            OLED_GRAM[y][x] = 0x00;
+    
+    // 定义英文步骤名称（简短版本）
+    const char* step_names[] = {
+        "",
+        "Expected State",    // 期望状态识别 (14字符)
+        "Relay Correct",     // 继电器纠错 (12字符) 
+        "Contact Check",     // 接触器检查 (12字符)
+        "Temp Safety"       // 温度安全检测 (11字符)
+    };
+    
+    // 显示步骤描述（使用完整的页显示，确保文字完整）
+    // 文字显示在第2页（Y=16~23），与进度条（Y=32~39）间隔8行像素
+    if(step >= 1 && step <= 4) {
+        const char* step_text = step_names[step];
+        uint8_t str_len = strlen(step_text);
+        uint8_t str_width = str_len * 6;  // 6x8字体宽度
+        uint8_t center_x = (128 - str_width) / 2;  // 居中X坐标
+        
+        // 直接在第2页显示文字（Y=16~23对应页索引2）
+        uint8_t text_page = 2;  // 第2页
+        
+        // 绘制步骤文字（使用标准6x8字体显示方式）
+        for(uint8_t i = 0; i < str_len && (center_x + i * 6) < 128; i++) {
+            char c = step_text[i];
+            if(c >= 0x20 && c <= 0x7E) {
+                uint8_t idx = c - 0x20;
+                for(uint8_t j = 0; j < 6; j++) {
+                    uint8_t x_pos = center_x + i * 6 + j;
+                    if(x_pos < 128) {
+                        // 直接写入字体数据到指定页
+                        OLED_GRAM[text_page][x_pos] = Font6x8[idx][j];
+                    }
+                }
+            }
+        }
+    }
+    
+    // 绘制进度条边框（Y=32~39，第4页）
+    // 进度条外框：左上角(16,32) 到 右下角(111,39)，总宽度96像素，高度8像素
+    
+    // 绘制上下边框（水平线）
+    for(uint8_t x=16; x<=111; x++)
+    {
+        OLED_GRAM[32/8][x] |= 0x01; // 上边框（Y=32对应第4页的最低位）
+        OLED_GRAM[39/8][x] |= 0x80; // 下边框（Y=39对应第4页的最高位）
+    }
+    
+    // 绘制左右边框（垂直线），注意避免角落重复
+    for(uint8_t y=32/8; y<=39/8; y++)
+    {
+        OLED_GRAM[y][16] |= 0xFF; // 左边框（完整的垂直线）
+        OLED_GRAM[y][111] |= 0xFF; // 右边框（完整的垂直线）
+    }
+    
+    // 填充进度条
+    uint8_t bar_len = (uint8_t)((percent * 94) / 100); // 进度条长度（94像素）
+    for(uint8_t x=17; x<17+bar_len; x++)
+        OLED_GRAM[33/8][x] = 0xFF;
+    
     OLED_Refresh();
 }
 

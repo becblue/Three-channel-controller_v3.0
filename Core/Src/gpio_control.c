@@ -26,8 +26,12 @@ uint8_t GPIO_ReadK3_EN(void) {
 uint8_t GPIO_ReadK1_1_STA(void) { 
     return HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_4); 
 }
-uint8_t GPIO_ReadK1_2_STA(void) { return HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_1); }
-uint8_t GPIO_ReadK2_1_STA(void) { return HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_5); }
+uint8_t GPIO_ReadK1_2_STA(void) { 
+    return HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_1); 
+}
+uint8_t GPIO_ReadK2_1_STA(void) { 
+    return HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_5); 
+}
 uint8_t GPIO_ReadK2_2_STA(void) { return HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_10); }
 uint8_t GPIO_ReadK3_1_STA(void) { return HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_0); }
 uint8_t GPIO_ReadK3_2_STA(void) { return HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_11); }

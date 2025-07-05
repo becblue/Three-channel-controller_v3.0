@@ -41,6 +41,8 @@ void OLED_Refresh(void);
 void OLED_ShowLogo(void);
 // 显示自检进度条
 void OLED_ShowSelfTestBar(uint8_t percent);
+// 显示自检进度条和步骤描述
+void OLED_ShowSelfTestBarWithStep(uint8_t percent, uint8_t step);
 // 显示主界面三分区内容
 void OLED_ShowMainScreen(const char* alarm, const char* status1, const char* status2, const char* status3, const char* tempInfo, const char* fanInfo);
 // 滚动显示报警信息

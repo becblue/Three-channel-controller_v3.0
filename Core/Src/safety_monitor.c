@@ -15,23 +15,23 @@
 // 全局安全监控结构体
 static SafetyMonitor_t g_safety_monitor;
 
-// 异常标志描述字符串（按照README定义）
+// 异常标志描述字符串（英文版本，适配OLED显示）
 static const char* g_alarm_descriptions[ALARM_FLAG_COUNT] = {
-    "K1_EN/K2_EN/K3_EN使能冲突",  // A
-    "K1_1_STA工作异常",          // B
-    "K2_1_STA工作异常",          // C
-    "K3_1_STA工作异常",          // D
-    "K1_2_STA工作异常",          // E
-    "K2_2_STA工作异常",          // F
-    "K3_2_STA工作异常",          // G
-    "SW1_STA工作异常",           // H
-    "SW2_STA工作异常",           // I
-    "SW3_STA工作异常",           // J
-    "NTC_1温度异常",             // K
-    "NTC_2温度异常",             // L
-    "NTC_3温度异常",             // M
-    "自检异常",                   // N
-    "外部电源异常"               // O
+    "EN Conflict",           // A - K1_EN/K2_EN/K3_EN使能冲突 (11字符)
+    "K1_1_STA Error",        // B - K1_1_STA工作异常 (13字符)
+    "K2_1_STA Error",        // C - K2_1_STA工作异常 (13字符)
+    "K3_1_STA Error",        // D - K3_1_STA工作异常 (13字符)
+    "K1_2_STA Error",        // E - K1_2_STA工作异常 (13字符)
+    "K2_2_STA Error",        // F - K2_2_STA工作异常 (13字符)
+    "K3_2_STA Error",        // G - K3_2_STA工作异常 (13字符)
+    "SW1_STA Error",         // H - SW1_STA工作异常 (12字符)
+    "SW2_STA Error",         // I - SW2_STA工作异常 (12字符)
+    "SW3_STA Error",         // J - SW3_STA工作异常 (12字符)
+    "NTC1 Overheat",         // K - NTC_1温度异常 (12字符)
+    "NTC2 Overheat",         // L - NTC_2温度异常 (12字符)
+    "NTC3 Overheat",         // M - NTC_3温度异常 (12字符)
+    "Self-Test Fail",        // N - 自检异常 (13字符)
+    "Power Failure"          // O - 外部电源异常 (12字符)
 };
 
 // 获取异常类型（根据异常标志确定报警类型）
@@ -421,7 +421,7 @@ void SafetyMonitor_PowerFailureCallback(void)
         // 检测到电源异常（高电平 = 没有DC24V供电）
         if(!SafetyMonitor_IsAlarmActive(ALARM_FLAG_O)) {
             DEBUG_Printf("[安全监控] 检测到外部电源异常！DC24V供电中断\r\n");
-            SafetyMonitor_SetAlarmFlag(ALARM_FLAG_O, "DC24V电源中断");
+            SafetyMonitor_SetAlarmFlag(ALARM_FLAG_O, "DC24V Loss");  // 英文版本，10字符
             
             // 电源异常时保持当前通道状态，不强制关闭
             // 继电器在DC24V断电时会自然断开，无需主动控制
@@ -462,7 +462,7 @@ void SafetyMonitor_CheckEnableConflict(void)
     // 如果有多于1个信号为低电平，则产生A类异常
     if(low_count > 1) {
         char conflict_desc[64];
-        sprintf(conflict_desc, "使能冲突:K1=%d,K2=%d,K3=%d", k1_en, k2_en, k3_en);
+        sprintf(conflict_desc, "Multi EN Active");  // 简化版本，14字符，加上"A:"总共16字符
         SafetyMonitor_SetAlarmFlag(ALARM_FLAG_A, conflict_desc);
     }
 }
@@ -572,21 +572,21 @@ void SafetyMonitor_CheckTemperatureAlarm(void)
     // 检查NTC_1温度异常（K类）
     if(temp1.value_celsius >= TEMP_ALARM_THRESHOLD) {
         char temp_desc[32];
-        sprintf(temp_desc, "NTC1温度%.1f℃超限", temp1.value_celsius);
+        sprintf(temp_desc, "NTC1 %.1fC", temp1.value_celsius);  // 英文版本，约10字符
         SafetyMonitor_SetAlarmFlag(ALARM_FLAG_K, temp_desc);
     }
     
     // 检查NTC_2温度异常（L类）
     if(temp2.value_celsius >= TEMP_ALARM_THRESHOLD) {
         char temp_desc[32];
-        sprintf(temp_desc, "NTC2温度%.1f℃超限", temp2.value_celsius);
+        sprintf(temp_desc, "NTC2 %.1fC", temp2.value_celsius);  // 英文版本，约10字符
         SafetyMonitor_SetAlarmFlag(ALARM_FLAG_L, temp_desc);
     }
     
     // 检查NTC_3温度异常（M类）
     if(temp3.value_celsius >= TEMP_ALARM_THRESHOLD) {
         char temp_desc[32];
-        sprintf(temp_desc, "NTC3温度%.1f℃超限", temp3.value_celsius);
+        sprintf(temp_desc, "NTC3 %.1fC", temp3.value_celsius);  // 英文版本，约10字符
         SafetyMonitor_SetAlarmFlag(ALARM_FLAG_M, temp_desc);
     }
 }
@@ -609,7 +609,7 @@ void SafetyMonitor_CheckPowerMonitor(void)
         // 检测到电源异常（高电平 = 没有DC24V供电）
         if(!SafetyMonitor_IsAlarmActive(ALARM_FLAG_O)) {
             DEBUG_Printf("[安全监控] 电源监控检测到DC24V异常\r\n");
-            SafetyMonitor_SetAlarmFlag(ALARM_FLAG_O, "DC24V电源异常");
+            SafetyMonitor_SetAlarmFlag(ALARM_FLAG_O, "DC24V Loss");  // 英文版本，10字符
             
             // 电源异常时保持当前通道状态，不强制关闭
             // 继电器在DC24V断电时会自然断开，无需主动控制

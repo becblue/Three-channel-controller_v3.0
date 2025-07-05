@@ -483,9 +483,9 @@ void SystemControl_UpdateDisplay(void)
                     AlarmInfo_t alarm_detail = SafetyMonitor_GetAlarmInfo(active_alarm);
                     const char* alarm_desc = SafetyMonitor_GetAlarmDescription(active_alarm);
                     
-                    // 格式：异常标志+描述，例如："A异常:使能冲突" 或 "K异常:NTC1超温"
+                    // 格式：异常标志+描述，例如："A:EN Conflict" 或 "K:NTC1 60.5C"
                     char alarm_letter = 'A' + active_alarm;  // 转换为字母
-                    snprintf(alarm_info, sizeof(alarm_info), "%c异常:%s", alarm_letter, 
+                    snprintf(alarm_info, sizeof(alarm_info), "%c:%s", alarm_letter, 
                             alarm_detail.description[0] ? alarm_detail.description : alarm_desc);
                 } else {
                     // 如果没有找到具体异常，显示通用报警信息
@@ -613,9 +613,9 @@ void SystemControl_HandleSelfTestError(void)
     
     // 在OLED上显示自检异常信息
     OLED_Clear();
-    // 这里可以显示具体的异常信息，格式如："N异常:具体原因"
+    // 这里可以显示具体的异常信息，格式如："N:Self-Test Fail"
     char display_msg[64];
-    sprintf(display_msg, "N异常:%s", g_system_control.self_test.error_info);
+    sprintf(display_msg, "N:%s", g_system_control.self_test.error_info);
     OLED_DrawString6x8(0, 3, display_msg); // 使用6x8字体显示
     OLED_Refresh();
 }
@@ -724,10 +724,10 @@ void SystemControl_UpdateSelfTestProgress(uint8_t step, uint8_t percent)
 {
     g_system_control.self_test.current_step = step;
     
-    // 显示进度条
-    OLED_ShowSelfTestBar(percent);
+    // 显示进度条和步骤描述
+    OLED_ShowSelfTestBarWithStep(percent, step);
     
-    // 输出步骤信息
+    // 输出步骤信息（保留中文用于串口调试）
     const char* step_names[] = {
         "",
         "期望状态识别",
