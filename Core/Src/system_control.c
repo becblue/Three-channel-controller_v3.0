@@ -17,6 +17,9 @@
 // 全局系统控制结构体
 static SystemControl_t g_system_control;
 
+// 自检进度显示状态标志
+static uint8_t g_self_test_progress_first_call = 1;
+
 /**
   * @brief  系统控制模块初始化
   * @retval 无
@@ -28,6 +31,9 @@ void SystemControl_Init(void)
     g_system_control.current_state = SYSTEM_STATE_INIT;
     g_system_control.last_state = SYSTEM_STATE_INIT;
     g_system_control.state_start_time = HAL_GetTick();
+    
+    // 重置自检进度显示状态
+    SystemControl_ResetSelfTestProgressState();
     
     DEBUG_Printf("系统控制模块初始化完成\r\n");
     
@@ -63,9 +69,9 @@ void SystemControl_Process(void)
         case SYSTEM_STATE_SELF_TEST:
             // 自检进度条显示阶段，持续3秒
             if(elapsed_time < SELF_TEST_TIME_MS) {
-                // 更新进度条
+                // 更新进度条（带公司LOGO）
                 uint8_t percent = (elapsed_time * 100) / SELF_TEST_TIME_MS;
-                OLED_ShowSelfTestBar(percent);
+                OLED_ShowSelfTestBarWithCompanyLogo(percent);
                 DEBUG_Printf("自检进度: %d%%\r\n", percent);
             } else {
                 // 进入自检检测阶段
@@ -222,7 +228,7 @@ void SystemControl_ExecuteSelfTest(void)
     SystemControl_UpdateSelfTestProgress(1, 25);
     g_system_control.self_test.step1_expected_state_ok = SystemControl_SelfTest_Step1_ExpectedState();
     if(!g_system_control.self_test.step1_expected_state_ok) {
-        strcat(g_system_control.self_test.error_info, "期望状态识别异常;");
+        strcat(g_system_control.self_test.error_info, "Step1 Fail;");  // 英文错误信息
         g_system_control.self_test.overall_result = 0;
     }
     HAL_Delay(500); // 每步之间停顿500ms，让用户看到进度
@@ -231,7 +237,7 @@ void SystemControl_ExecuteSelfTest(void)
     SystemControl_UpdateSelfTestProgress(2, 50);
     g_system_control.self_test.step2_relay_correction_ok = SystemControl_SelfTest_Step2_RelayCorrection();
     if(!g_system_control.self_test.step2_relay_correction_ok) {
-        strcat(g_system_control.self_test.error_info, "继电器纠错异常;");
+        strcat(g_system_control.self_test.error_info, "Step2 Fail;");  // 英文错误信息
         g_system_control.self_test.overall_result = 0;
     }
     HAL_Delay(500);
@@ -240,7 +246,7 @@ void SystemControl_ExecuteSelfTest(void)
     SystemControl_UpdateSelfTestProgress(3, 75);
     g_system_control.self_test.step3_contactor_check_ok = SystemControl_SelfTest_Step3_ContactorCheck();
     if(!g_system_control.self_test.step3_contactor_check_ok) {
-        strcat(g_system_control.self_test.error_info, "接触器检查异常;");
+        strcat(g_system_control.self_test.error_info, "Step3 Fail;");  // 英文错误信息
         g_system_control.self_test.overall_result = 0;
     }
     HAL_Delay(500);
@@ -249,7 +255,7 @@ void SystemControl_ExecuteSelfTest(void)
     SystemControl_UpdateSelfTestProgress(4, 100);
     g_system_control.self_test.step4_temperature_safety_ok = SystemControl_SelfTest_Step4_TemperatureSafety();
     if(!g_system_control.self_test.step4_temperature_safety_ok) {
-        strcat(g_system_control.self_test.error_info, "温度安全检测异常;");
+        strcat(g_system_control.self_test.error_info, "Step4 Fail;");  // 英文错误信息
         g_system_control.self_test.overall_result = 0;
     }
     HAL_Delay(500);
@@ -566,12 +572,15 @@ void SystemControl_EnterErrorState(const char* error_msg)
     g_system_control.current_state = SYSTEM_STATE_ERROR;
     g_system_control.state_start_time = HAL_GetTick();
     
-    if(error_msg) {
+    // 修复BUG：不要覆盖自检过程中构建的详细错误信息
+    // 只有当error_info为空时才设置通用错误信息
+    if(error_msg && strlen(g_system_control.self_test.error_info) == 0) {
         strncpy(g_system_control.self_test.error_info, error_msg, 
                 sizeof(g_system_control.self_test.error_info) - 1);
     }
     
     DEBUG_Printf("=== 系统进入错误状态: %s ===\r\n", error_msg ? error_msg : "未知错误");
+    DEBUG_Printf("保留的错误信息: [%s]\r\n", g_system_control.self_test.error_info);
     
     // 重置显示缓存，确保状态切换时强制刷新
     OLED_ResetDisplayCache();
@@ -602,20 +611,29 @@ void SystemControl_HandleSelfTestError(void)
 {
     DEBUG_Printf("=== 自检异常，产生N异常标志 ===\r\n");
     
+    // 调试输出：显示当前error_info内容
+    DEBUG_Printf("自检错误信息: [%s]\r\n", g_system_control.self_test.error_info);
+    DEBUG_Printf("错误信息长度: %d\r\n", (int)strlen(g_system_control.self_test.error_info));
+    
     // 使用安全监控模块设置N异常标志
     SafetyMonitor_SetAlarmFlag(ALARM_FLAG_N, g_system_control.self_test.error_info);
     
-    // 进入错误状态
-    SystemControl_EnterErrorState("自检失败");
+    // 进入错误状态（修复中文字符串）
+    SystemControl_EnterErrorState("Self-Test Fail");
     
     // 重置显示缓存，确保异常信息能正确显示
     OLED_ResetDisplayCache();
     
     // 在OLED上显示自检异常信息
     OLED_Clear();
-    // 这里可以显示具体的异常信息，格式如："N:Self-Test Fail"
+    // 显示具体的异常信息，格式如："N:Step1 Fail;Step2 Fail;"
     char display_msg[64];
     sprintf(display_msg, "N:%s", g_system_control.self_test.error_info);
+    
+    // 调试输出：显示最终的显示信息
+    DEBUG_Printf("OLED显示信息: [%s]\r\n", display_msg);
+    DEBUG_Printf("显示信息长度: %d\r\n", (int)strlen(display_msg));
+    
     OLED_DrawString6x8(0, 3, display_msg); // 使用6x8字体显示
     OLED_Refresh();
 }
@@ -664,6 +682,9 @@ void SystemControl_Reset(void)
     memset(&g_system_control, 0, sizeof(SystemControl_t));
     g_system_control.current_state = SYSTEM_STATE_INIT;
     g_system_control.state_start_time = HAL_GetTick();
+    
+    // 重置自检进度显示状态
+    SystemControl_ResetSelfTestProgressState();
     
     // 重新开始LOGO显示
     SystemControl_StartLogoDisplay();
@@ -724,6 +745,14 @@ void SystemControl_UpdateSelfTestProgress(uint8_t step, uint8_t percent)
 {
     g_system_control.self_test.current_step = step;
     
+    // 第一次调用时，重置第一个进度条状态并清屏
+    if(g_self_test_progress_first_call) {
+        OLED_ResetSelfTestBarState();  // 重置第一个进度条状态
+        OLED_Clear();                  // 清屏，移除第一个进度条的残留内容
+        g_self_test_progress_first_call = 0;
+        DEBUG_Printf("=== 切换到自检检测阶段，清除第一个进度条残留 ===\r\n");
+    }
+    
     // 显示进度条和步骤描述
     OLED_ShowSelfTestBarWithStep(percent, step);
     
@@ -742,6 +771,19 @@ void SystemControl_UpdateSelfTestProgress(uint8_t step, uint8_t percent)
 }
 
 /**
+  * @brief  重置自检进度显示状态
+  * @retval 无
+  */
+void SystemControl_ResetSelfTestProgressState(void)
+{
+    // 重置自检进度显示标志
+    g_self_test_progress_first_call = 1;
+    
+    // 同时重置OLED进度条状态
+    OLED_ResetSelfTestBarState();
+}
+
+/**
   * @brief  第一步：识别当前期望状态
   * @retval 1:正常 0:异常
   */
@@ -754,6 +796,19 @@ uint8_t SystemControl_SelfTest_Step1_ExpectedState(void)
     uint8_t k3_en = GPIO_ReadK3_EN();
     
     DEBUG_Printf("K_EN信号状态: K1_EN=%d, K2_EN=%d, K3_EN=%d\r\n", k1_en, k2_en, k3_en);
+    
+    // 关键修复：立即检测A类异常（使能冲突）
+    uint8_t low_count = 0;
+    if(k1_en == 0) low_count++;
+    if(k2_en == 0) low_count++;
+    if(k3_en == 0) low_count++;
+    
+    if(low_count > 1) {
+        DEBUG_Printf("检测到使能冲突：%d路EN同时为低电平，立即触发A类异常\r\n", low_count);
+        // 立即触发A类异常
+        SafetyMonitor_SetAlarmFlag(ALARM_FLAG_A, "Multi EN Active");
+        return 0;  // 使能冲突，自检失败
+    }
     
     // 根据真值表识别期望状态
     if(k1_en == 1 && k2_en == 1 && k3_en == 1) {
@@ -838,28 +893,19 @@ uint8_t SystemControl_SelfTest_Step2_RelayCorrection(void)
         // 关断K1（如果目标不是开启K1）
         if(expected_k1_1 == 0 && (k1_1_sta == 1 || k1_2_sta == 1)) {
             DEBUG_Printf("[安全纠错] 关断Channel_1继电器\\r\\n");
-            GPIO_SetK1_1_OFF(0); GPIO_SetK1_2_OFF(0);
-            HAL_Delay(50);  // 短暂的信号建立时间
-            GPIO_SetK1_1_OFF(1); GPIO_SetK1_2_OFF(1);
-            HAL_Delay(500); // 等待继电器动作完成
+            RelayControl_CloseChannel(1);  // 使用继电器控制函数，确保状态同步
         }
         
         // 关断K2（如果目标不是开启K2）
         if(expected_k2_1 == 0 && (k2_1_sta == 1 || k2_2_sta == 1)) {
             DEBUG_Printf("[安全纠错] 关断Channel_2继电器\\r\\n");
-            GPIO_SetK2_1_OFF(0); GPIO_SetK2_2_OFF(0);
-            HAL_Delay(50);
-            GPIO_SetK2_1_OFF(1); GPIO_SetK2_2_OFF(1);
-            HAL_Delay(500);
+            RelayControl_CloseChannel(2);  // 使用继电器控制函数，确保状态同步
         }
         
         // 关断K3（如果目标不是开启K3）
         if(expected_k3_1 == 0 && (k3_1_sta == 1 || k3_2_sta == 1)) {
             DEBUG_Printf("[安全纠错] 关断Channel_3继电器\\r\\n");
-            GPIO_SetK3_1_OFF(0); GPIO_SetK3_2_OFF(0);
-            HAL_Delay(50);
-            GPIO_SetK3_1_OFF(1); GPIO_SetK3_2_OFF(1);
-            HAL_Delay(500);
+            RelayControl_CloseChannel(3);  // 使用继电器控制函数，确保状态同步
         }
         
         // 第二阶段：开启目标通道
@@ -868,28 +914,19 @@ uint8_t SystemControl_SelfTest_Step2_RelayCorrection(void)
         // 开启K1（如果目标是开启K1）
         if(expected_k1_1 == 1) {
             DEBUG_Printf("[安全纠错] 开启Channel_1继电器\\r\\n");
-            GPIO_SetK1_1_ON(0); GPIO_SetK1_2_ON(0);
-            HAL_Delay(50);
-            GPIO_SetK1_1_ON(1); GPIO_SetK1_2_ON(1);
-            HAL_Delay(500);
+            RelayControl_OpenChannel(1);  // 使用继电器控制函数，确保状态同步
         }
         
         // 开启K2（如果目标是开启K2）
         if(expected_k2_1 == 1) {
             DEBUG_Printf("[安全纠错] 开启Channel_2继电器\\r\\n");
-            GPIO_SetK2_1_ON(0); GPIO_SetK2_2_ON(0);
-            HAL_Delay(50);
-            GPIO_SetK2_1_ON(1); GPIO_SetK2_2_ON(1);
-            HAL_Delay(500);
+            RelayControl_OpenChannel(2);  // 使用继电器控制函数，确保状态同步
         }
         
         // 开启K3（如果目标是开启K3）
         if(expected_k3_1 == 1) {
             DEBUG_Printf("[安全纠错] 开启Channel_3继电器\\r\\n");
-            GPIO_SetK3_1_ON(0); GPIO_SetK3_2_ON(0);
-            HAL_Delay(50);
-            GPIO_SetK3_1_ON(1); GPIO_SetK3_2_ON(1);
-            HAL_Delay(500);
+            RelayControl_OpenChannel(3);  // 使用继电器控制函数，确保状态同步
         }
         
         // 第三阶段：验证纠错结果

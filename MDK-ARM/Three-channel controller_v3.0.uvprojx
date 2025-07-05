@@ -473,6 +473,11 @@
               <FileType>1</FileType>
               <FilePath>..\Core\Src\safety_monitor.c</FilePath>
             </File>
+            <File>
+              <FileName>minyerlogo.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Core\Src\minyerlogo.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

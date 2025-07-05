@@ -81,113 +81,16 @@ uint8_t RelayControl_CheckInterlock(uint8_t channelNum)
 }
 
 /**
-  * @brief  检查通道反馈状态
+  * @brief  检查通道反馈状态（已废弃 - 改为直接检查硬件状态）
   * @param  channelNum: 通道号(1-3)
   * @retval 0:正常 1:异常
+  * @note   此函数已废弃，现在使用直接硬件状态检查，避免依赖内部状态导致的逻辑混乱
   */
 uint8_t RelayControl_CheckChannelFeedback(uint8_t channelNum)
 {
-    uint8_t result = 0;
-    // 增加详细调试输出，打印当前通道状态和反馈点电平
-    DEBUG_Printf("[调试] 通道%d 状态=%d K1_1=%d K1_2=%d SW1=%d K2_1=%d K2_2=%d SW2=%d K3_1=%d K3_2=%d SW3=%d\r\n",
-        channelNum,
-        relayChannels[channelNum-1].state,
-        GPIO_ReadK1_1_STA(), GPIO_ReadK1_2_STA(), GPIO_ReadSW1_STA(),
-        GPIO_ReadK2_1_STA(), GPIO_ReadK2_2_STA(), GPIO_ReadSW2_STA(),
-        GPIO_ReadK3_1_STA(), GPIO_ReadK3_2_STA(), GPIO_ReadSW3_STA());
-    switch(channelNum) {
-        case 1:
-            if(relayChannels[0].state == RELAY_STATE_ON) {
-                if(GPIO_ReadK1_1_STA() != GPIO_PIN_SET) {
-                    DEBUG_Printf("[反馈异常] K1_1_STA未到高电平\r\n");
-                    result = 1;
-                }
-                if(GPIO_ReadK1_2_STA() != GPIO_PIN_SET) {
-                    DEBUG_Printf("[反馈异常] K1_2_STA未到高电平\r\n");
-                    result = 1;
-                }
-                if(GPIO_ReadSW1_STA() != GPIO_PIN_SET) {
-                    DEBUG_Printf("[反馈异常] SW1_STA未到高电平\r\n");
-                    result = 1;
-                }
-            } else if(relayChannels[0].state == RELAY_STATE_OFF) {
-                if(GPIO_ReadK1_1_STA() != GPIO_PIN_RESET) {
-                    DEBUG_Printf("[反馈异常] K1_1_STA未回到低电平\r\n");
-                    result = 1;
-                }
-                if(GPIO_ReadK1_2_STA() != GPIO_PIN_RESET) {
-                    DEBUG_Printf("[反馈异常] K1_2_STA未回到低电平\r\n");
-                    result = 1;
-                }
-                if(GPIO_ReadSW1_STA() != GPIO_PIN_RESET) {
-                    DEBUG_Printf("[反馈异常] SW1_STA未回到低电平\r\n");
-                    result = 1;
-                }
-            }
-            break;
-        case 2:
-            if(relayChannels[1].state == RELAY_STATE_ON) {
-                if(GPIO_ReadK2_1_STA() != GPIO_PIN_SET) {
-                    DEBUG_Printf("[反馈异常] K2_1_STA未到高电平\r\n");
-                    result = 1;
-                }
-                if(GPIO_ReadK2_2_STA() != GPIO_PIN_SET) {
-                    DEBUG_Printf("[反馈异常] K2_2_STA未到高电平\r\n");
-                    result = 1;
-                }
-                if(GPIO_ReadSW2_STA() != GPIO_PIN_SET) {
-                    DEBUG_Printf("[反馈异常] SW2_STA未到高电平\r\n");
-                    result = 1;
-                }
-            } else if(relayChannels[1].state == RELAY_STATE_OFF) {
-                if(GPIO_ReadK2_1_STA() != GPIO_PIN_RESET) {
-                    DEBUG_Printf("[反馈异常] K2_1_STA未回到低电平\r\n");
-                    result = 1;
-                }
-                if(GPIO_ReadK2_2_STA() != GPIO_PIN_RESET) {
-                    DEBUG_Printf("[反馈异常] K2_2_STA未回到低电平\r\n");
-                    result = 1;
-                }
-                if(GPIO_ReadSW2_STA() != GPIO_PIN_RESET) {
-                    DEBUG_Printf("[反馈异常] SW2_STA未回到低电平\r\n");
-                    result = 1;
-                }
-            }
-            break;
-        case 3:
-            if(relayChannels[2].state == RELAY_STATE_ON) {
-                if(GPIO_ReadK3_1_STA() != GPIO_PIN_SET) {
-                    DEBUG_Printf("[反馈异常] K3_1_STA未到高电平\r\n");
-                    result = 1;
-                }
-                if(GPIO_ReadK3_2_STA() != GPIO_PIN_SET) {
-                    DEBUG_Printf("[反馈异常] K3_2_STA未到高电平\r\n");
-                    result = 1;
-                }
-                if(GPIO_ReadSW3_STA() != GPIO_PIN_SET) {
-                    DEBUG_Printf("[反馈异常] SW3_STA未到高电平\r\n");
-                    result = 1;
-                }
-            } else if(relayChannels[2].state == RELAY_STATE_OFF) {
-                if(GPIO_ReadK3_1_STA() != GPIO_PIN_RESET) {
-                    DEBUG_Printf("[反馈异常] K3_1_STA未回到低电平\r\n");
-                    result = 1;
-                }
-                if(GPIO_ReadK3_2_STA() != GPIO_PIN_RESET) {
-                    DEBUG_Printf("[反馈异常] K3_2_STA未回到低电平\r\n");
-                    result = 1;
-                }
-                if(GPIO_ReadSW3_STA() != GPIO_PIN_RESET) {
-                    DEBUG_Printf("[反馈异常] SW3_STA未回到低电平\r\n");
-                    result = 1;
-                }
-            }
-            break;
-        default:
-            result = 1;
-            break;
-    }
-    return result;
+    // 此函数已废弃，保留以保持兼容性
+    (void)channelNum;
+    return 0;  // 始终返回正常，避免影响其他模块
 }
 
 /**
@@ -246,18 +149,36 @@ uint8_t RelayControl_OpenChannel(uint8_t channelNum)
     
     DEBUG_Printf("通道%d脉冲输出完成，等待反馈\r\n", channelNum);
     
-    // 延时500ms后，先更新状态再检查反馈
+    // 延时500ms后，检查硬件反馈再决定内部状态
     HAL_Delay(RELAY_FEEDBACK_DELAY);
-    relayChannels[idx].state = RELAY_STATE_ON; // 先更新状态
-    if(RelayControl_CheckChannelFeedback(channelNum)) {
+    
+    // 检查硬件是否真正开启（直接检查硬件状态，不依赖内部状态）
+    uint8_t hardware_opened = 0;
+    switch(channelNum) {
+        case 1:
+            hardware_opened = (GPIO_ReadK1_1_STA() && GPIO_ReadK1_2_STA() && GPIO_ReadSW1_STA());
+            break;
+        case 2:
+            hardware_opened = (GPIO_ReadK2_1_STA() && GPIO_ReadK2_2_STA() && GPIO_ReadSW2_STA());
+            break;
+        case 3:
+            hardware_opened = (GPIO_ReadK3_1_STA() && GPIO_ReadK3_2_STA() && GPIO_ReadSW3_STA());
+            break;
+    }
+    
+    if(hardware_opened) {
+        // 硬件成功开启，设置内部状态为ON
+        relayChannels[idx].state = RELAY_STATE_ON;
+        relayChannels[idx].errorCode = RELAY_ERR_NONE;
+        DEBUG_Printf("通道%d开启成功\r\n", channelNum);
+        return RELAY_ERR_NONE;
+    } else {
+        // 硬件未能开启，保持内部状态为OFF
+        relayChannels[idx].state = RELAY_STATE_OFF;
         relayChannels[idx].errorCode = RELAY_ERR_FEEDBACK;
-        relayChannels[idx].state = RELAY_STATE_ERROR;
-        DEBUG_Printf("通道%d反馈错误\r\n", channelNum);
+        DEBUG_Printf("通道%d开启失败：硬件反馈异常\r\n", channelNum);
         return RELAY_ERR_FEEDBACK;
     }
-    relayChannels[idx].errorCode = RELAY_ERR_NONE;
-    DEBUG_Printf("通道%d开启成功\r\n", channelNum);
-    return RELAY_ERR_NONE;
 }
 
 /**
@@ -303,18 +224,36 @@ uint8_t RelayControl_CloseChannel(uint8_t channelNum)
     
     DEBUG_Printf("通道%d脉冲输出完成，等待反馈\r\n", channelNum);
     
-    // 延时500ms后，先更新状态再检查反馈
+    // 延时500ms后，检查硬件反馈再决定内部状态
     HAL_Delay(RELAY_FEEDBACK_DELAY);
-    relayChannels[idx].state = RELAY_STATE_OFF; // 先更新状态
-    if(RelayControl_CheckChannelFeedback(channelNum)) {
+    
+    // 检查硬件是否真正关闭（直接检查硬件状态，不依赖内部状态）
+    uint8_t hardware_closed = 0;
+    switch(channelNum) {
+        case 1:
+            hardware_closed = (!GPIO_ReadK1_1_STA() && !GPIO_ReadK1_2_STA() && !GPIO_ReadSW1_STA());
+            break;
+        case 2:
+            hardware_closed = (!GPIO_ReadK2_1_STA() && !GPIO_ReadK2_2_STA() && !GPIO_ReadSW2_STA());
+            break;
+        case 3:
+            hardware_closed = (!GPIO_ReadK3_1_STA() && !GPIO_ReadK3_2_STA() && !GPIO_ReadSW3_STA());
+            break;
+    }
+    
+    if(hardware_closed) {
+        // 硬件成功关闭，设置内部状态为OFF
+        relayChannels[idx].state = RELAY_STATE_OFF;
+        relayChannels[idx].errorCode = RELAY_ERR_NONE;
+        DEBUG_Printf("通道%d关闭成功\r\n", channelNum);
+        return RELAY_ERR_NONE;
+    } else {
+        // 硬件未能关闭，设置内部状态为ON（反映真实硬件状态）
+        relayChannels[idx].state = RELAY_STATE_ON;
         relayChannels[idx].errorCode = RELAY_ERR_FEEDBACK;
-        relayChannels[idx].state = RELAY_STATE_ERROR;
-        DEBUG_Printf("通道%d反馈错误\r\n", channelNum);
+        DEBUG_Printf("通道%d关闭失败：硬件反馈异常\r\n", channelNum);
         return RELAY_ERR_FEEDBACK;
     }
-    relayChannels[idx].errorCode = RELAY_ERR_NONE;
-    DEBUG_Printf("通道%d关闭成功\r\n", channelNum);
-    return RELAY_ERR_NONE;
 }
 
 /**

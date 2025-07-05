@@ -43,6 +43,15 @@ void OLED_ShowLogo(void);
 void OLED_ShowSelfTestBar(uint8_t percent);
 // 显示自检进度条和步骤描述
 void OLED_ShowSelfTestBarWithStep(uint8_t percent, uint8_t step);
+// 显示公司LOGO（小尺寸，用于自检界面）
+void OLED_ShowCompanyLogo(void);
+
+// 外部声明：公司LOGO图像数据
+extern const unsigned char gImage_minyerlogo[411];
+// 显示自检进度条和公司LOGO
+void OLED_ShowSelfTestBarWithCompanyLogo(uint8_t percent);
+// 重置自检进度条的状态（用于切换到第二个进度条时）
+void OLED_ResetSelfTestBarState(void);
 // 显示主界面三分区内容
 void OLED_ShowMainScreen(const char* alarm, const char* status1, const char* status2, const char* status3, const char* tempInfo, const char* fanInfo);
 // 滚动显示报警信息

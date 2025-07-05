@@ -111,6 +111,8 @@ uint8_t SystemControl_SelfTest_Step4_TemperatureSafety(void);
 
 // 更新自检进度条显示
 void SystemControl_UpdateSelfTestProgress(uint8_t step, uint8_t percent);
+// 重置自检进度显示状态
+void SystemControl_ResetSelfTestProgressState(void);
 
 // 检测输入信号（K1_EN、K2_EN、K3_EN应为高电平）- 保留备用
 uint8_t SystemControl_CheckInputSignals(void);

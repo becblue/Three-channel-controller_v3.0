@@ -3,6 +3,9 @@
 #include <string.h>
 #include <stdio.h>  // 为snprintf函数添加
 
+// 外部公司LOGO数据声明
+extern const unsigned char gImage_minyerlogo[411];
+
 // SSD1309 I2C地址（7位地址0x3C，发送时自动左移1位变成0x78）
 #define OLED_I2C_ADDR 0x78  // 可能需要尝试 0x7A (0x3D<<1)
 
@@ -461,6 +464,180 @@ void OLED_ShowSelfTestBarWithStep(uint8_t percent, uint8_t step)
     OLED_Refresh();
 }
 
+// 显示公司LOGO（小尺寸，用于自检界面）
+void OLED_ShowCompanyLogo(void)
+{
+    // 第二阶段：解析真正的LOGO数据
+    // 首先解析头部信息
+    uint16_t logo_width = gImage_minyerlogo[2];   // 115像素
+    uint16_t logo_height = gImage_minyerlogo[4];  // 27像素
+    
+    // 计算显示位置（在屏幕上方居中）
+    uint8_t logo_x = (128 - logo_width) / 2;     // 水平居中，约6像素
+    uint8_t logo_y = 2;                          // 垂直偏移2像素
+    
+    // 清除LOGO区域
+    for(uint8_t y = 0; y < 4; y++) {  // 前4页
+        for(uint8_t x = 0; x < 128; x++) {
+            OLED_GRAM[y][x] = 0x00;
+        }
+    }
+    
+    // 跳过头部6字节，从第7字节开始是实际图像数据
+    const uint8_t* logo_data = &gImage_minyerlogo[6];
+    
+    // 计算每行的字节数（按8位对齐）
+    uint16_t bytes_per_row = (logo_width + 7) / 8;  // 115像素需要15个字节
+    
+    // 逐行解析LOGO数据
+    for(uint16_t row = 0; row < logo_height; row++) {
+        for(uint16_t col = 0; col < bytes_per_row; col++) {
+            uint8_t data_byte = logo_data[row * bytes_per_row + col];
+            
+            // 每个字节表示8个像素点
+            for(uint8_t bit = 0; bit < 8; bit++) {
+                uint16_t pixel_x = logo_x + col * 8 + bit;
+                uint16_t pixel_y = logo_y + row;
+                
+                // 检查是否超出屏幕或LOGO边界
+                if(pixel_x >= 128 || pixel_y >= 64 || (col * 8 + bit) >= logo_width) {
+                    continue;
+                }
+                
+                // 判断该像素是否点亮（MSB first，即最高位先）
+                if(data_byte & (0x80 >> bit)) {
+                    // 点亮像素，设置GRAM对应位
+                    OLED_GRAM[pixel_y / 8][pixel_x] |= (1 << (pixel_y % 8));
+                } else {
+                    // 熄灭像素，清除GRAM对应位
+                    OLED_GRAM[pixel_y / 8][pixel_x] &= ~(1 << (pixel_y % 8));
+                }
+            }
+        }
+    }
+    
+    // LOGO显示完成，无需调试信息
+}
+
+// 显示自检进度条和公司LOGO（使用脏区刷新，避免闪烁）
+void OLED_ShowSelfTestBarWithCompanyLogo(uint8_t percent)
+{
+    static uint8_t last_percent = 255;  // 记录上次的百分比，255表示首次调用
+    static uint8_t logo_initialized = 0;  // LOGO是否已初始化
+    
+    // 处理重置信号（percent == 255）
+    if(percent == 255) {
+        last_percent = 255;
+        logo_initialized = 0;
+        return;  // 重置完成，直接返回
+    }
+    
+    // 首次调用时，清屏并显示LOGO
+    if(last_percent == 255) {
+        OLED_Clear();
+        logo_initialized = 0;
+        last_percent = 0;
+    }
+    
+    // 显示公司LOGO（只在首次或LOGO未初始化时显示）
+    if(!logo_initialized) {
+        OLED_ShowCompanyLogo();
+        
+        // 标记LOGO区域为脏区，确保刷新到屏幕
+        OLED_AddDirtyRegion(0, 0, 128, 4);  // LOGO区域（前4页）
+        
+        logo_initialized = 1;
+        
+        // 绘制进度条边框（简化设计：进度条位于第5页，Y=40~47）
+        uint8_t bar_page = 5;  // 进度条位于第5页
+        uint8_t bar_x_start = 16;
+        uint8_t bar_x_end = 111;
+        
+        // 绘制进度条边框（矩形边框）
+        // 上边框
+        for(uint8_t x = bar_x_start; x <= bar_x_end; x++) {
+            OLED_GRAM[bar_page][x] |= 0x01;  // 第5页的最低位（Y=40）
+        }
+        
+        // 下边框
+        for(uint8_t x = bar_x_start; x <= bar_x_end; x++) {
+            OLED_GRAM[bar_page][x] |= 0x80;  // 第5页的最高位（Y=47）
+        }
+        
+        // 左边框
+        for(uint8_t y_bit = 0; y_bit <= 7; y_bit++) {
+            OLED_GRAM[bar_page][bar_x_start] |= (1 << y_bit);
+        }
+        
+        // 右边框
+        for(uint8_t y_bit = 0; y_bit <= 7; y_bit++) {
+            OLED_GRAM[bar_page][bar_x_end] |= (1 << y_bit);
+        }
+    }
+    
+    // 只有进度变化时才更新进度条和百分比
+    if(percent != last_percent) {
+        uint8_t bar_page = 5;  // 进度条位于第5页
+        uint8_t bar_x_start = 16;
+        uint8_t bar_x_end = 111;
+        
+        // 清除进度条内部区域（保留边框）
+        for(uint8_t x = bar_x_start + 1; x < bar_x_end; x++) {
+            OLED_GRAM[bar_page][x] &= 0x81;  // 只保留最高位和最低位（上下边框）
+        }
+        
+        // 填充新的进度条
+        uint8_t bar_len = (uint8_t)((percent * (bar_x_end - bar_x_start - 1)) / 100); // 进度条长度
+        for(uint8_t x = bar_x_start + 1; x < bar_x_start + 1 + bar_len; x++) {
+            if(x < bar_x_end) {
+                OLED_GRAM[bar_page][x] |= 0x7E;  // 填充中间6位（Y=41~46）
+            }
+        }
+        
+        // 清除原百分比显示区域（第7页）
+        for(uint8_t x = 0; x < 128; x++) {
+            OLED_GRAM[7][x] = 0x00;
+        }
+        
+        // 显示新的百分比
+        char percent_str[8];
+        sprintf(percent_str, "%d%%", percent);
+        uint8_t str_len = strlen(percent_str);
+        uint8_t str_width = str_len * 6;
+        uint8_t text_x = (128 - str_width) / 2;  // 居中显示
+        
+        // 显示百分比文字在第7页（Y=56~63）
+        for(uint8_t i = 0; i < str_len && (text_x + i * 6) < 128; i++) {
+            char c = percent_str[i];
+            if(c >= 0x20 && c <= 0x7E) {
+                uint8_t idx = c - 0x20;
+                for(uint8_t j = 0; j < 6; j++) {
+                    uint8_t x_pos = text_x + i * 6 + j;
+                    if(x_pos < 128) {
+                        OLED_GRAM[7][x_pos] = Font6x8[idx][j];  // 第7页显示百分比
+                    }
+                }
+            }
+        }
+        
+        // 标记脏区：进度条区域和百分比区域
+        OLED_AddDirtyRegion(16, bar_page, 96, 1);  // 进度条区域
+        OLED_AddDirtyRegion(0, 7, 128, 1);         // 百分比区域
+        
+        last_percent = percent;
+    }
+    
+    // 只刷新脏区
+    OLED_RefreshDirtyRegions();
+}
+
+// 重置自检进度条的状态（用于切换到第二个进度条时）
+void OLED_ResetSelfTestBarState(void)
+{
+    // 通过特殊值255触发重置
+    OLED_ShowSelfTestBarWithCompanyLogo(255);
+}
+
 // ========== OLED_DrawString字体显示函数 =============
 // 支持6x8和8x16两种字体，默认使用6x8字体，8x16字体作为备用
 // x:起始列，y:起始页，str:字符串，fontSize:字体大小(6或8)
@@ -832,6 +1009,7 @@ void OLED_ShowMainScreenDirty(const char* alarm, const char* status1, const char
     // 只刷新脏区到屏幕
     OLED_RefreshDirtyRegions();
 }
+
 
 
 
