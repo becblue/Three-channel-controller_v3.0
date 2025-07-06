@@ -33,6 +33,7 @@ three-channel controller_v3.0\oled_display.o: ../Drivers/STM32F1xx_HAL_Driver/In
 three-channel controller_v3.0\oled_display.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim.h
 three-channel controller_v3.0\oled_display.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim_ex.h
 three-channel controller_v3.0\oled_display.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h
-three-channel controller_v3.0\oled_display.o: ../Core/Inc/i2c.h
-three-channel controller_v3.0\oled_display.o: D:\Program Files\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
+three-channel controller_v3.0\oled_display.o: D:\Program Files\Keil_v5\ARM\ARMCC\Bin\..\include\stdarg.h
 three-channel controller_v3.0\oled_display.o: D:\Program Files\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
+three-channel controller_v3.0\oled_display.o: D:\Program Files\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
+three-channel controller_v3.0\oled_display.o: ../Core/Inc/i2c.h

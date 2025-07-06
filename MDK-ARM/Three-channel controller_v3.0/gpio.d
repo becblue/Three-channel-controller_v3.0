@@ -33,6 +33,9 @@ three-channel controller_v3.0\gpio.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f
 three-channel controller_v3.0\gpio.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim.h
 three-channel controller_v3.0\gpio.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim_ex.h
 three-channel controller_v3.0\gpio.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h
+three-channel controller_v3.0\gpio.o: D:\Program Files\Keil_v5\ARM\ARMCC\Bin\..\include\stdarg.h
+three-channel controller_v3.0\gpio.o: D:\Program Files\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
+three-channel controller_v3.0\gpio.o: D:\Program Files\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
 three-channel controller_v3.0\gpio.o: ../Core/Inc/relay_control.h
 three-channel controller_v3.0\gpio.o: ../Core/Inc/safety_monitor.h
 three-channel controller_v3.0\gpio.o: ../Core/Inc/usart.h

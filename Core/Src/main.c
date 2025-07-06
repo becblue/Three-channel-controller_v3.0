@@ -25,6 +25,7 @@
 #include "tim.h"
 #include "usart.h"
 #include "gpio.h"
+#include "iwdg.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -36,6 +37,8 @@
 #include "oled_display.h"
 #include "system_control.h"
 #include "usart.h"
+#include "iwdg_control.h"  // 包含IWDG看门狗控制模块
+#include "iwdg.h"          // 包含IWDG外设驱动
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -159,6 +162,13 @@ int main(void)
   // 系统控制模块初始化（开始2秒LOGO显示）
   SystemControl_Init();
   DEBUG_Printf("系统控制模块初始化完成，开始执行自检流程\r\n");
+  
+  // IWDG看门狗控制模块初始化
+  IwdgControl_Init();
+  DEBUG_Printf("IWDG看门狗控制模块初始化完成\r\n");
+  
+  // 注意：IWDG将在系统进入正常状态后自动启动，无需在此处阻塞延时
+  DEBUG_Printf("系统初始化完成，开始状态机循环\r\n");
 
 
 
@@ -174,6 +184,13 @@ int main(void)
     
     // 系统控制模块状态机处理（包含自检、主循环调度等）
     SystemControl_Process();
+    
+    // 简化的看门狗喂狗：在正常状态和报警状态下都喂狗
+    SystemState_t current_state = SystemControl_GetState();
+    if(current_state == SYSTEM_STATE_NORMAL || current_state == SYSTEM_STATE_ALARM) {
+        // 正常状态和报警状态都需要喂狗，只有错误状态才停止喂狗
+        IWDG_Refresh();
+    }
     
     // 主循环延时1ms，避免CPU占用过高
     HAL_Delay(1);

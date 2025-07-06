@@ -5,6 +5,8 @@
 #include "gpio_control.h"
 #include "safety_monitor.h"
 #include "usart.h"
+#include "iwdg.h"
+#include "smart_delay.h"  // 智能延时函数
 #include <string.h>
 #include <stdio.h>
 
@@ -187,7 +189,7 @@ void SystemControl_ExecuteChannelShutdown(void)
     if(need_shutdown) {
         // 如果执行了关断操作，等待1秒让继电器动作完成
         DEBUG_Printf("等待继电器关断动作完成...\r\n");
-        HAL_Delay(1000);
+        SmartDelayWithForceFeed(1000);
         
         // 重新检查状态确认关断成功
         k1_sta_all = GPIO_ReadK1_1_STA() && GPIO_ReadK1_2_STA() && GPIO_ReadSW1_STA();
@@ -231,7 +233,7 @@ void SystemControl_ExecuteSelfTest(void)
         strcat(g_system_control.self_test.error_info, "Step1 Fail;");  // 英文错误信息
         g_system_control.self_test.overall_result = 0;
     }
-    HAL_Delay(500); // 每步之间停顿500ms，让用户看到进度
+    SmartDelayWithDebug(500, "自检步骤1完成"); // 每步之间停顿500ms，让用户看到进度
     
     // 第二步：继电器状态检查与主动纠错（安全先关后开）
     SystemControl_UpdateSelfTestProgress(2, 50);
@@ -240,7 +242,7 @@ void SystemControl_ExecuteSelfTest(void)
         strcat(g_system_control.self_test.error_info, "Step2 Fail;");  // 英文错误信息
         g_system_control.self_test.overall_result = 0;
     }
-    HAL_Delay(500);
+    SmartDelayWithDebug(500, "自检步骤2完成");
     
     // 第三步：接触器状态检查与报错（进度75%）
     SystemControl_UpdateSelfTestProgress(3, 75);
@@ -249,7 +251,7 @@ void SystemControl_ExecuteSelfTest(void)
         strcat(g_system_control.self_test.error_info, "Step3 Fail;");  // 英文错误信息
         g_system_control.self_test.overall_result = 0;
     }
-    HAL_Delay(500);
+    SmartDelayWithDebug(500, "自检步骤3完成");
     
     // 第四步：温度安全检测（进度100%）
     SystemControl_UpdateSelfTestProgress(4, 100);
@@ -258,7 +260,7 @@ void SystemControl_ExecuteSelfTest(void)
         strcat(g_system_control.self_test.error_info, "Step4 Fail;");  // 英文错误信息
         g_system_control.self_test.overall_result = 0;
     }
-    HAL_Delay(500);
+    SmartDelayWithDebug(500, "自检步骤4完成");
     
     // 输出自检结果
     DEBUG_Printf("自检结果: %s\r\n", g_system_control.self_test.overall_result ? "通过" : "失败");
@@ -369,8 +371,8 @@ void SystemControl_MainLoopScheduler(void)
     static uint32_t lastTempTime = 0;
     static uint32_t lastOledTime = 0;
     static uint32_t lastSafetyTime = 0;
-    static uint32_t lastDiagTime = 0;
     static uint32_t lastFanSpeedTime = 0;  // 添加风扇转速统计定时器
+    static uint32_t lastIwdgTime = 0;      // 添加IWDG看门狗处理定时器
     
     uint32_t currentTime = HAL_GetTick();
     
@@ -428,6 +430,14 @@ void SystemControl_MainLoopScheduler(void)
                 SystemControl_EnterNormalState();
             }
         }
+    }
+    
+    // 每500ms处理IWDG看门狗安全监控（不再自动喂狗，由主循环直接喂狗）
+    if(currentTime - lastIwdgTime >= 500) {
+        lastIwdgTime = currentTime;
+        
+        // 与安全监控系统集成（仅监控，不喂狗）
+        IwdgControl_SafetyMonitorIntegration();
     }
 }
 
@@ -553,6 +563,12 @@ void SystemControl_EnterNormalState(void)
     g_system_control.state_start_time = HAL_GetTick();
     
     DEBUG_Printf("=== 系统进入正常运行状态 ===\r\n");
+    
+    // 启动IWDG看门狗（自检完成后系统已稳定，可以安全启动看门狗）
+    DEBUG_Printf("自检完成，启动IWDG看门狗保护\r\n");
+    // 直接初始化并启动看门狗，由主循环负责喂狗
+    MX_IWDG_Init();
+    IWDG_Refresh(); // 立即喂狗一次
     
     // 清屏准备显示主界面
     OLED_Clear();
@@ -838,7 +854,6 @@ uint8_t SystemControl_SelfTest_Step2_RelayCorrection(void)
     DEBUG_Printf("=== 第二步：继电器状态检查与主动纠错（安全先关后开） ===\r\n");
     
     uint8_t result = 1;
-    uint8_t correction_needed = 0;
     
     // 读取期望状态
     uint8_t k1_en = GPIO_ReadK1_EN();
@@ -884,7 +899,6 @@ uint8_t SystemControl_SelfTest_Step2_RelayCorrection(void)
     uint8_t k3_need_correction = (k3_1_sta != expected_k3_1 || k3_2_sta != expected_k3_2);
     
     if(k1_need_correction || k2_need_correction || k3_need_correction) {
-        correction_needed = 1;
         DEBUG_Printf("检测到继电器状态错误，开始安全纠错流程\\r\\n");
         
         // 第一阶段：安全关断所有不需要开启的通道

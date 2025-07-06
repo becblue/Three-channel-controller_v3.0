@@ -49,7 +49,7 @@
 #define HAL_I2C_MODULE_ENABLED
 /*#define HAL_I2S_MODULE_ENABLED   */
 /*#define HAL_IRDA_MODULE_ENABLED   */
-/*#define HAL_IWDG_MODULE_ENABLED   */
+#define HAL_IWDG_MODULE_ENABLED
 /*#define HAL_NOR_MODULE_ENABLED   */
 /*#define HAL_NAND_MODULE_ENABLED   */
 /*#define HAL_PCCARD_MODULE_ENABLED   */
@@ -302,9 +302,9 @@
 #include "stm32f1xx_hal_i2s.h"
 #endif /* HAL_I2S_MODULE_ENABLED */
 
-#ifdef HAL_IWDG_MODULE_ENABLED
+/*#ifdef HAL_IWDG_MODULE_ENABLED
 #include "stm32f1xx_hal_iwdg.h"
-#endif /* HAL_IWDG_MODULE_ENABLED */
+#endif*/ /* HAL_IWDG_MODULE_ENABLED */
 
 #ifdef HAL_PWR_MODULE_ENABLED
 #include "stm32f1xx_hal_pwr.h"

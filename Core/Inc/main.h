@@ -31,6 +31,12 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include <stdarg.h>
+#include <stdio.h>
+#include <string.h>
+
+// 调试信息输出函数声明
+void DEBUG_Printf(const char *format, ...);
 
 /* USER CODE END Includes */
 

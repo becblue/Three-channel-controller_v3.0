@@ -33,11 +33,15 @@ three-channel controller_v3.0\system_control.o: ../Drivers/STM32F1xx_HAL_Driver/
 three-channel controller_v3.0\system_control.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim.h
 three-channel controller_v3.0\system_control.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim_ex.h
 three-channel controller_v3.0\system_control.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h
+three-channel controller_v3.0\system_control.o: D:\Program Files\Keil_v5\ARM\ARMCC\Bin\..\include\stdarg.h
+three-channel controller_v3.0\system_control.o: D:\Program Files\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
+three-channel controller_v3.0\system_control.o: D:\Program Files\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
+three-channel controller_v3.0\system_control.o: ../Core/Inc/iwdg_control.h
 three-channel controller_v3.0\system_control.o: ../Core/Inc/relay_control.h
 three-channel controller_v3.0\system_control.o: ../Core/Inc/temperature_monitor.h
 three-channel controller_v3.0\system_control.o: ../Core/Inc/oled_display.h
 three-channel controller_v3.0\system_control.o: ../Core/Inc/gpio_control.h
 three-channel controller_v3.0\system_control.o: ../Core/Inc/safety_monitor.h
 three-channel controller_v3.0\system_control.o: ../Core/Inc/usart.h
-three-channel controller_v3.0\system_control.o: D:\Program Files\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
-three-channel controller_v3.0\system_control.o: D:\Program Files\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
+three-channel controller_v3.0\system_control.o: ../Core/Inc/iwdg.h
+three-channel controller_v3.0\system_control.o: ../Core/Inc/smart_delay.h

@@ -478,6 +478,26 @@
               <FileType>1</FileType>
               <FilePath>..\Core\Src\minyerlogo.c</FilePath>
             </File>
+            <File>
+              <FileName>iwdg.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../Core/Src/iwdg.c</FilePath>
+            </File>
+            <File>
+              <FileName>iwdg_control.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Core\Src\iwdg_control.c</FilePath>
+            </File>
+            <File>
+              <FileName>iwdg_test.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Core\Src\iwdg_test.c</FilePath>
+            </File>
+            <File>
+              <FileName>smart_delay.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Core\Src\smart_delay.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

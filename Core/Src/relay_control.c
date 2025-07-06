@@ -2,6 +2,7 @@
 #include "gpio_control.h"
 #include "safety_monitor.h"
 #include "usart.h"
+#include "smart_delay.h"  // 智能延时函数
 
 /************************************************************
  * 继电器控制模块源文件
@@ -10,8 +11,6 @@
 
 // 三个继电器通道实例
 static RelayChannel_t relayChannels[3];
-static uint8_t enableCheckCount[3] = {0}; // 三重检测计数器
-static uint8_t pendingAction[3] = {0}; // 待处理的动作：0=无动作，1=开启，2=关闭
 
 /**
   * @brief  继电器控制模块初始化
@@ -24,8 +23,6 @@ void RelayControl_Init(void)
         relayChannels[i].state = RELAY_STATE_OFF;
         relayChannels[i].lastActionTime = 0;
         relayChannels[i].errorCode = RELAY_ERR_NONE;
-        enableCheckCount[i] = 0;
-        pendingAction[i] = 0;
         
         // 初始化所有继电器控制信号为高电平（三极管截止，继电器不动作）
         switch(i+1) {
@@ -132,7 +129,7 @@ uint8_t RelayControl_OpenChannel(uint8_t channelNum)
             break;
     }
     relayChannels[idx].lastActionTime = HAL_GetTick();
-    HAL_Delay(RELAY_PULSE_WIDTH);
+    SmartDelayWithDebug(RELAY_PULSE_WIDTH, "继电器开启脉冲");
     
     // 脉冲结束，恢复高电平（三极管截止）
     switch(channelNum) {
@@ -150,7 +147,7 @@ uint8_t RelayControl_OpenChannel(uint8_t channelNum)
     DEBUG_Printf("通道%d脉冲输出完成，等待反馈\r\n", channelNum);
     
     // 延时500ms后，检查硬件反馈再决定内部状态
-    HAL_Delay(RELAY_FEEDBACK_DELAY);
+    SmartDelayWithDebug(RELAY_FEEDBACK_DELAY, "继电器开启反馈等待");
     
     // 检查硬件是否真正开启（直接检查硬件状态，不依赖内部状态）
     uint8_t hardware_opened = 0;
@@ -207,7 +204,7 @@ uint8_t RelayControl_CloseChannel(uint8_t channelNum)
             break;
     }
     relayChannels[idx].lastActionTime = HAL_GetTick();
-    HAL_Delay(RELAY_PULSE_WIDTH);
+    SmartDelayWithDebug(RELAY_PULSE_WIDTH, "继电器关闭脉冲");
     
     // 脉冲结束，恢复高电平（三极管截止）
     switch(channelNum) {
@@ -225,7 +222,7 @@ uint8_t RelayControl_CloseChannel(uint8_t channelNum)
     DEBUG_Printf("通道%d脉冲输出完成，等待反馈\r\n", channelNum);
     
     // 延时500ms后，检查硬件反馈再决定内部状态
-    HAL_Delay(RELAY_FEEDBACK_DELAY);
+    SmartDelayWithDebug(RELAY_FEEDBACK_DELAY, "继电器关闭反馈等待");
     
     // 检查硬件是否真正关闭（直接检查硬件状态，不依赖内部状态）
     uint8_t hardware_closed = 0;
@@ -316,6 +313,14 @@ void RelayControl_HandleEnableSignal(uint8_t channelNum, uint8_t state)
   */
 void RelayControl_ProcessPendingActions(void)
 {
+    // 检查系统状态，如果处于报警状态则停止轮询
+    extern SystemState_t SystemControl_GetState(void);
+    SystemState_t system_state = SystemControl_GetState();
+    if(system_state == SYSTEM_STATE_ALARM) {
+        // 报警状态下停止继电器轮询操作，避免阻塞主循环导致看门狗复位
+        return;
+    }
+    
     // 检查是否存在关键异常，如果存在则停止轮询
     if(SafetyMonitor_IsAlarmActive(ALARM_FLAG_B) ||  // K1_1_STA工作异常
        SafetyMonitor_IsAlarmActive(ALARM_FLAG_C) ||  // K2_1_STA工作异常

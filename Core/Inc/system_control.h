@@ -6,6 +6,7 @@ extern "C" {
 #endif
 
 #include "main.h"
+#include "iwdg_control.h"
 
 /************************************************************
  * 系统控制模块头文件
