@@ -692,6 +692,128 @@ LogSystemStatus_t LogSystem_Reset(void)
     return LOG_SYSTEM_OK;
 }
 
+/**
+  * @brief  获取日志数量（分批输出支持）
+  * @param  None
+  * @retval uint32_t 日志条目数量
+  */
+uint32_t LogSystem_GetLogCount(void)
+{
+    return flash_manager.total_entries;
+}
+
+/**
+  * @brief  输出日志头信息（分批输出支持）
+  * @param  None
+  * @retval LogSystemStatus_t 操作状态
+  */
+LogSystemStatus_t LogSystem_OutputHeader(void)
+{
+    /* 检查初始化状态 */
+    if (!flash_manager.is_initialized) {
+        return LOG_SYSTEM_NOT_INIT;
+    }
+    
+    /* 输出头部信息 */
+    DEBUG_Printf("========== 系统运行日志 ==========\r\n");
+    DEBUG_Printf("总日志条数: %d\r\n", flash_manager.total_entries);
+    DEBUG_Printf("存储使用: %.1f%%\r\n", (float)flash_manager.used_size * 100.0f / flash_manager.total_size);
+    DEBUG_Printf("Flash健康度: %d%%\r\n", flash_manager.health_percentage);
+    DEBUG_Printf("========================================\r\n");
+    
+    return LOG_SYSTEM_OK;
+}
+
+/**
+  * @brief  输出单条日志（分批输出支持）
+  * @param  entry_index: 日志条目索引
+  * @param  format: 输出格式
+  * @retval LogSystemStatus_t 操作状态
+  */
+LogSystemStatus_t LogSystem_OutputSingle(uint32_t entry_index, LogFormat_t format)
+{
+    LogEntry_t entry;
+    
+    /* 检查初始化状态 */
+    if (!flash_manager.is_initialized) {
+        return LOG_SYSTEM_NOT_INIT;
+    }
+    
+    /* 检查索引有效性 */
+    if (entry_index >= flash_manager.total_entries) {
+        return LOG_SYSTEM_ERROR;
+    }
+    
+    /* 读取日志条目 */
+    uint32_t entry_address = LogSystem_GetEntryAddress(entry_index);
+    if (W25Q128_ReadData(entry_address, (uint8_t*)&entry, sizeof(LogEntry_t)) != W25Q128_OK) {
+        DEBUG_Printf("读取日志失败：地址 0x%08X\r\n", entry_address);
+        return LOG_SYSTEM_ERROR;
+    }
+    
+    /* 验证日志条目 */
+    if (!LogSystem_VerifyEntry(&entry)) {
+        DEBUG_Printf("日志验证失败：条目 %lu\r\n", entry_index);
+        return LOG_SYSTEM_ERROR;
+    }
+    
+    /* 格式化时间戳 */
+    char time_str[16];
+    LogSystem_FormatTimestamp(entry.timestamp, time_str, sizeof(time_str));
+    
+    /* 根据格式输出 */
+    switch (format) {
+        case LOG_FORMAT_SIMPLE:
+            DEBUG_Printf("[%06lu] %s [%s] %s\r\n", 
+                        entry_index + 1,
+                        time_str,
+                        LogSystem_GetTypeString(entry.log_type),
+                        entry.message);
+            break;
+            
+        case LOG_FORMAT_DETAILED:
+            DEBUG_Printf("[%06lu] %s [%s] CH%d E:0x%04X %s\r\n", 
+                        entry_index + 1,
+                        time_str,
+                        LogSystem_GetTypeString(entry.log_type),
+                        entry.channel,
+                        entry.event_code,
+                        entry.message);
+            break;
+            
+        case LOG_FORMAT_CSV:
+            DEBUG_Printf("%lu,%s,%s,%d,0x%04X,%s\r\n", 
+                        entry_index + 1,
+                        time_str,
+                        LogSystem_GetTypeString(entry.log_type),
+                        entry.channel,
+                        entry.event_code,
+                        entry.message);
+            break;
+    }
+    
+    return LOG_SYSTEM_OK;
+}
+
+/**
+  * @brief  输出日志尾信息（分批输出支持）
+  * @param  None
+  * @retval LogSystemStatus_t 操作状态
+  */
+LogSystemStatus_t LogSystem_OutputFooter(void)
+{
+    /* 检查初始化状态 */
+    if (!flash_manager.is_initialized) {
+        return LOG_SYSTEM_NOT_INIT;
+    }
+    
+    /* 输出尾部信息 */
+    DEBUG_Printf("========================================\r\n");
+    DEBUG_Printf("日志输出完成，共 %d 条\r\n", flash_manager.total_entries);
+    
+    return LOG_SYSTEM_OK;
+}
+
 /* USER CODE BEGIN 4 */
 
 /* USER CODE END 4 */ 

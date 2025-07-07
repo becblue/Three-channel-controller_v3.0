@@ -178,6 +178,12 @@ LogSystemStatus_t LogSystem_OutputByType(LogType_t log_type, LogFormat_t format)
 LogSystemStatus_t LogSystem_OutputByChannel(uint8_t channel, LogFormat_t format);
 LogSystemStatus_t LogSystem_OutputLatest(uint32_t count, LogFormat_t format);
 
+/* 分批输出支持函数 */
+uint32_t LogSystem_GetLogCount(void);
+LogSystemStatus_t LogSystem_OutputHeader(void);
+LogSystemStatus_t LogSystem_OutputSingle(uint32_t entry_index, LogFormat_t format);
+LogSystemStatus_t LogSystem_OutputFooter(void);
+
 /* 系统状态函数 */
 uint32_t LogSystem_GetEntryCount(void);
 uint32_t LogSystem_GetUsedSize(void);

@@ -61,16 +61,24 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-
-/* 引用外部定义的按键检测变量 */
-extern volatile uint32_t key1_press_start_time;
+// 外部变量声明（这些变量在其他文件中定义）
 extern volatile uint8_t key1_pressed;
-extern volatile uint8_t key1_long_press_triggered;
-
-/* 引用外部定义的KEY2按键检测变量 */
-extern volatile uint32_t key2_press_start_time;
 extern volatile uint8_t key2_pressed;
+extern volatile uint32_t key1_press_start_time;
+extern volatile uint32_t key2_press_start_time;
+extern volatile uint8_t key1_long_press_triggered;
 extern volatile uint8_t key2_long_press_triggered;
+extern volatile uint32_t fan_pulse_count;
+
+// 新增：日志输出状态管理
+typedef struct {
+    uint8_t is_outputting;      // 是否正在输出日志
+    uint32_t current_index;     // 当前输出索引
+    uint32_t total_logs;        // 总日志数量
+    uint32_t last_output_time;  // 上次输出时间
+} LogOutputState_t;
+
+static LogOutputState_t log_output_state = {0};
 
 /* USER CODE END PV */
 
@@ -220,14 +228,48 @@ int main(void)
             key1_long_press_triggered = 1;
             DEBUG_Printf("\r\n=== 检测到PC13长按，开始输出日志 ===\r\n");
             
-            // 输出所有日志
-            if (LogSystem_IsInitialized()) {
-                LogSystem_OutputAll(LOG_FORMAT_DETAILED);
-            } else {
+            // 启动分批日志输出
+            if (LogSystem_IsInitialized() && !log_output_state.is_outputting) {
+                log_output_state.is_outputting = 1;
+                log_output_state.current_index = 0;
+                log_output_state.total_logs = LogSystem_GetLogCount();
+                log_output_state.last_output_time = HAL_GetTick();
+                
+                // 输出日志头信息
+                LogSystem_OutputHeader();
+                
+                DEBUG_Printf("开始分批输出 %lu 条日志...\r\n", log_output_state.total_logs);
+            } else if (!LogSystem_IsInitialized()) {
                 DEBUG_Printf("日志系统未初始化，无法输出日志\r\n");
+                DEBUG_Printf("=== 日志输出完成 ===\r\n");
             }
-            
-            DEBUG_Printf("=== 日志输出完成 ===\r\n");
+        }
+    }
+    
+    // 分批日志输出处理（非阻塞）
+    if (log_output_state.is_outputting) {
+        uint32_t current_time = HAL_GetTick();
+        
+        // 每10ms输出一条日志，避免阻塞主循环
+        if (current_time - log_output_state.last_output_time >= 10) {
+            if (log_output_state.current_index < log_output_state.total_logs) {
+                // 输出单条日志
+                LogSystem_OutputSingle(log_output_state.current_index, LOG_FORMAT_DETAILED);
+                log_output_state.current_index++;
+                log_output_state.last_output_time = current_time;
+                
+                // 每10条日志输出一次进度
+                if (log_output_state.current_index % 10 == 0) {
+                    DEBUG_Printf("输出进度: %lu/%lu\r\n", 
+                                log_output_state.current_index, 
+                                log_output_state.total_logs);
+                }
+            } else {
+                // 输出完成
+                LogSystem_OutputFooter();
+                DEBUG_Printf("=== 日志输出完成 ===\r\n");
+                log_output_state.is_outputting = 0;
+            }
         }
     }
     

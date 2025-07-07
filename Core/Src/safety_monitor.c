@@ -16,6 +16,9 @@
 // 全局安全监控结构体
 static SafetyMonitor_t g_safety_monitor;
 
+// 新增：异常日志记录标志
+static uint16_t g_alarm_log_flags = 0;  // 待记录日志的异常标志
+
 // 异常标志描述字符串（英文版本，适配OLED显示）
 static const char* g_alarm_descriptions[ALARM_FLAG_COUNT] = {
     "EN Conflict",           // A - K1_EN/K2_EN/K3_EN使能冲突 (11字符)
@@ -84,13 +87,28 @@ void SafetyMonitor_Process(void)
     // 1. 检查并更新所有异常状态
     SafetyMonitor_UpdateAllAlarmStatus();
     
-    // 2. 更新ALARM引脚输出
+    // 2. 处理待记录的异常日志（在主循环中安全执行）
+    if(g_alarm_log_flags != 0) {
+        for(uint8_t i = 0; i < ALARM_FLAG_COUNT; i++) {
+            if((g_alarm_log_flags & (1 << i)) && LogSystem_IsInitialized()) {
+                char log_msg[48];
+                snprintf(log_msg, sizeof(log_msg), "%c-type: %s", 'A' + i, 
+                         g_safety_monitor.alarm_info[i].description);
+                LogSystem_Record(LOG_TYPE_ERROR, 0, LOG_EVENT_EXCEPTION, log_msg);
+                
+                // 清除已记录的标志
+                g_alarm_log_flags &= ~(1 << i);
+            }
+        }
+    }
+    
+    // 3. 更新ALARM引脚输出
     SafetyMonitor_UpdateAlarmOutput();
     
-    // 3. 更新蜂鸣器状态
+    // 4. 更新蜂鸣器状态
     SafetyMonitor_UpdateBeepState();
     
-    // 4. 处理蜂鸣器脉冲
+    // 5. 处理蜂鸣器脉冲
     SafetyMonitor_ProcessBeep();
 }
 
@@ -157,13 +175,8 @@ void SafetyMonitor_SetAlarmFlag(AlarmFlag_t flag, const char* description)
     DEBUG_Printf("[安全监控] 异常标志设置: %c类异常 - %s\r\n", 
                 'A' + flag, g_safety_monitor.alarm_info[flag].description);
     
-    // 记录异常日志
-    if(LogSystem_IsInitialized()) {
-        char log_msg[48];
-        snprintf(log_msg, sizeof(log_msg), "%c-type: %s", 'A' + flag, 
-                 g_safety_monitor.alarm_info[flag].description);
-        LogSystem_Record(LOG_TYPE_ERROR, 0, LOG_EVENT_EXCEPTION, log_msg);
-    }
+    // 设置日志记录标志，延迟到主循环中记录（避免在中断中执行耗时操作）
+    g_alarm_log_flags |= (1 << flag);
 }
 
 /**
