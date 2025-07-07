@@ -2,9 +2,13 @@
 #include "i2c.h" // 假设CubeMX已配置I2C并生成i2c.h
 #include <string.h>
 #include <stdio.h>  // 为snprintf函数添加
+#include "log_system.h"  // 包含日志系统，用于健康度显示
 
 // 外部公司LOGO数据声明
 extern const unsigned char gImage_minyerlogo[411];
+
+// Flash健康度警告显示变量
+uint8_t oled_show_flash_warning = 0;
 
 // SSD1309 I2C地址（7位地址0x3C，发送时自动左移1位变成0x78）
 #define OLED_I2C_ADDR 0x78  // 可能需要尝试 0x7A (0x3D<<1)
@@ -973,6 +977,14 @@ void OLED_ShowMainScreenDirty(const char* alarm, const char* status1, const char
         OLED_DrawStringDirty(0, 0, alarm, FONT_SIZE_6X8);
     } else {
         OLED_DrawStringDirty(0, 0, "System Normal", FONT_SIZE_6X8);
+    }
+    
+    // Flash健康度显示（在报警信息行右侧）
+    if(oled_show_flash_warning && LogSystem_IsInitialized()) {
+        uint8_t health = LogSystem_GetHealthPercentage();
+        char health_str[16];
+        snprintf(health_str, sizeof(health_str), "F:%d%%", health);
+        OLED_DrawStringDirty(88, 0, health_str, FONT_SIZE_6X8);  // 右上角显示
     }
     
     // 第二分区：三通道状态区（居中显示）

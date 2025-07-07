@@ -1,3 +1,4 @@
+/* USER CODE BEGIN Header */
 /**
   ******************************************************************************
   * @file    iwdg.h
@@ -15,7 +16,7 @@
   *
   ******************************************************************************
   */
-
+/* USER CODE END Header */
 /* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __IWDG_H__
 #define __IWDG_H__
@@ -31,16 +32,18 @@ extern "C" {
 
 /* USER CODE END Includes */
 
-extern IWDG_TypeDef* hiwdg_instance;
+extern IWDG_HandleTypeDef hiwdg;
 
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */
 
 void MX_IWDG_Init(void);
-void IWDG_Refresh(void);
 
 /* USER CODE BEGIN Prototypes */
+
+// IWDG看门狗喂狗函数声明
+void IWDG_Refresh(void);
 
 /* USER CODE END Prototypes */
 
@@ -48,5 +51,5 @@ void IWDG_Refresh(void);
 }
 #endif
 
-#endif /* __IWDG_H__ */ 
+#endif /* __IWDG_H__ */
 

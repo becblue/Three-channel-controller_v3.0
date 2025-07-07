@@ -3,6 +3,7 @@
 #include "safety_monitor.h"
 #include "usart.h"
 #include "smart_delay.h"  // 智能延时函数
+#include "log_system.h"   // 日志系统
 
 /************************************************************
  * 继电器控制模块源文件
@@ -168,12 +169,24 @@ uint8_t RelayControl_OpenChannel(uint8_t channelNum)
         relayChannels[idx].state = RELAY_STATE_ON;
         relayChannels[idx].errorCode = RELAY_ERR_NONE;
         DEBUG_Printf("通道%d开启成功\r\n", channelNum);
+        
+        // 记录通道开启日志
+        if(LogSystem_IsInitialized()) {
+            LOG_CHANNEL_OPEN(channelNum);
+        }
+        
         return RELAY_ERR_NONE;
     } else {
         // 硬件未能开启，保持内部状态为OFF
         relayChannels[idx].state = RELAY_STATE_OFF;
         relayChannels[idx].errorCode = RELAY_ERR_FEEDBACK;
         DEBUG_Printf("通道%d开启失败：硬件反馈异常\r\n", channelNum);
+        
+        // 记录通道开启失败日志
+        if(LogSystem_IsInitialized()) {
+            LOG_CHANNEL_ERROR(channelNum, "Open failed: feedback error");
+        }
+        
         return RELAY_ERR_FEEDBACK;
     }
 }
@@ -243,12 +256,24 @@ uint8_t RelayControl_CloseChannel(uint8_t channelNum)
         relayChannels[idx].state = RELAY_STATE_OFF;
         relayChannels[idx].errorCode = RELAY_ERR_NONE;
         DEBUG_Printf("通道%d关闭成功\r\n", channelNum);
+        
+        // 记录通道关闭日志
+        if(LogSystem_IsInitialized()) {
+            LOG_CHANNEL_CLOSE(channelNum);
+        }
+        
         return RELAY_ERR_NONE;
     } else {
         // 硬件未能关闭，设置内部状态为ON（反映真实硬件状态）
         relayChannels[idx].state = RELAY_STATE_ON;
         relayChannels[idx].errorCode = RELAY_ERR_FEEDBACK;
         DEBUG_Printf("通道%d关闭失败：硬件反馈异常\r\n", channelNum);
+        
+        // 记录通道关闭失败日志
+        if(LogSystem_IsInitialized()) {
+            LOG_CHANNEL_ERROR(channelNum, "Close failed: feedback error");
+        }
+        
         return RELAY_ERR_FEEDBACK;
     }
 }

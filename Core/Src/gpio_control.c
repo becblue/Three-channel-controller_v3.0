@@ -58,7 +58,7 @@ uint8_t GPIO_ReadFAN_SEN(void) {
 // ¼ÌµçÆ÷¿ØÖÆÐÅºÅ
 void GPIO_SetK1_1_ON(uint8_t state)  { HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0, (GPIO_PinState)state); }
 void GPIO_SetK1_1_OFF(uint8_t state) { HAL_GPIO_WritePin(GPIOC, GPIO_PIN_1, (GPIO_PinState)state); }
-void GPIO_SetK1_2_ON(uint8_t state)  { HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, (GPIO_PinState)state); }
+void GPIO_SetK1_2_ON(uint8_t state)  { HAL_GPIO_WritePin(GPIOA, GPIO_PIN_12, (GPIO_PinState)state); }
 void GPIO_SetK1_2_OFF(uint8_t state) { HAL_GPIO_WritePin(GPIOA, GPIO_PIN_3, (GPIO_PinState)state); }
 void GPIO_SetK2_1_ON(uint8_t state)  { HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, (GPIO_PinState)state); }
 void GPIO_SetK2_1_OFF(uint8_t state) { HAL_GPIO_WritePin(GPIOC, GPIO_PIN_3, (GPIO_PinState)state); }

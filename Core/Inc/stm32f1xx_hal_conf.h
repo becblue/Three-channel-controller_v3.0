@@ -302,9 +302,9 @@
 #include "stm32f1xx_hal_i2s.h"
 #endif /* HAL_I2S_MODULE_ENABLED */
 
-/*#ifdef HAL_IWDG_MODULE_ENABLED
+#ifdef HAL_IWDG_MODULE_ENABLED
 #include "stm32f1xx_hal_iwdg.h"
-#endif*/ /* HAL_IWDG_MODULE_ENABLED */
+#endif /* HAL_IWDG_MODULE_ENABLED */
 
 #ifdef HAL_PWR_MODULE_ENABLED
 #include "stm32f1xx_hal_pwr.h"

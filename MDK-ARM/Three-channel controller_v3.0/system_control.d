@@ -28,6 +28,7 @@ three-channel controller_v3.0\system_control.o: ../Drivers/STM32F1xx_HAL_Driver/
 three-channel controller_v3.0\system_control.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_flash.h
 three-channel controller_v3.0\system_control.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_flash_ex.h
 three-channel controller_v3.0\system_control.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h
+three-channel controller_v3.0\system_control.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_iwdg.h
 three-channel controller_v3.0\system_control.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pwr.h
 three-channel controller_v3.0\system_control.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_spi.h
 three-channel controller_v3.0\system_control.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim.h
@@ -45,3 +46,6 @@ three-channel controller_v3.0\system_control.o: ../Core/Inc/safety_monitor.h
 three-channel controller_v3.0\system_control.o: ../Core/Inc/usart.h
 three-channel controller_v3.0\system_control.o: ../Core/Inc/iwdg.h
 three-channel controller_v3.0\system_control.o: ../Core/Inc/smart_delay.h
+three-channel controller_v3.0\system_control.o: ../Core/Inc/log_system.h
+three-channel controller_v3.0\system_control.o: ../Core/Inc/w25q128_driver.h
+three-channel controller_v3.0\system_control.o: ../Core/Inc/spi.h

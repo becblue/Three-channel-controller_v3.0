@@ -26,6 +26,17 @@ extern volatile uint32_t fan_pulse_count;
 #include "relay_control.h"
 #include "safety_monitor.h"
 #include "usart.h"
+#include "log_system.h"
+
+/* PC13按键长按检测变量 */
+volatile uint32_t key1_press_start_time = 0;
+volatile uint8_t key1_pressed = 0;
+volatile uint8_t key1_long_press_triggered = 0;
+
+/* PC14按键长按检测变量 */
+volatile uint32_t key2_press_start_time = 0;
+volatile uint8_t key2_pressed = 0;
+volatile uint8_t key2_long_press_triggered = 0;
 /* USER CODE END 0 */
 
 /*----------------------------------------------------------------------------*/
@@ -58,10 +69,11 @@ void MX_GPIO_Init(void)
                           |K3_1_OFF_Pin|K3_1_ON_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, K1_2_OFF_Pin|K2_2_ON_Pin|K2_2_OFF_Pin|K3_2_OFF_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(GPIOA, K1_2_OFF_Pin|K2_2_ON_Pin|K2_2_OFF_Pin|K3_2_OFF_Pin
+                          |K1_2_ON_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, K1_2_ON_Pin|BEEP_Pin|ALARM_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(GPIOB, FLASH_CS_Pin|BEEP_Pin|ALARM_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(RS485_EN_GPIO_Port, RS485_EN_Pin, GPIO_PIN_RESET);
@@ -69,9 +81,9 @@ void MX_GPIO_Init(void)
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(K3_2_ON_GPIO_Port, K3_2_ON_Pin, GPIO_PIN_SET);
 
-  /*Configure GPIO pins : PCPin PCPin PCPin */
-  GPIO_InitStruct.Pin = KEY1_Pin|KEY2_Pin|FAN_SEN_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+  /*Configure GPIO pins : PCPin PCPin */
+  GPIO_InitStruct.Pin = KEY1_Pin|KEY2_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
@@ -84,8 +96,10 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PAPin PAPin PAPin PAPin */
-  GPIO_InitStruct.Pin = K1_2_OFF_Pin|K2_2_ON_Pin|K2_2_OFF_Pin|K3_2_OFF_Pin;
+  /*Configure GPIO pins : PAPin PAPin PAPin PAPin
+                           PAPin */
+  GPIO_InitStruct.Pin = K1_2_OFF_Pin|K2_2_ON_Pin|K2_2_OFF_Pin|K3_2_OFF_Pin
+                          |K1_2_ON_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
@@ -103,12 +117,12 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_PULLDOWN;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PBPin PBPin PBPin */
-  GPIO_InitStruct.Pin = K1_2_ON_Pin|BEEP_Pin|ALARM_Pin;
+  /*Configure GPIO pin : PtPin */
+  GPIO_InitStruct.Pin = FLASH_CS_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+  HAL_GPIO_Init(FLASH_CS_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : PtPin */
   GPIO_InitStruct.Pin = SW1_STA_Pin;
@@ -130,20 +144,27 @@ void MX_GPIO_Init(void)
   HAL_GPIO_Init(K3_EN_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : PtPin */
+  GPIO_InitStruct.Pin = FAN_SEN_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(FAN_SEN_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PtPin */
   GPIO_InitStruct.Pin = K3_2_ON_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
   HAL_GPIO_Init(K3_2_ON_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : PtPin */
-  GPIO_InitStruct.Pin = DC_CTRL_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
-  GPIO_InitStruct.Pull = GPIO_PULLUP;
-  HAL_GPIO_Init(DC_CTRL_GPIO_Port, &GPIO_InitStruct);
-
   /*Configure GPIO pins : PBPin PBPin */
-  GPIO_InitStruct.Pin = K2_EN_Pin|K1_EN_Pin;
+  GPIO_InitStruct.Pin = BEEP_Pin|ALARM_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : PBPin PBPin PBPin */
+  GPIO_InitStruct.Pin = DC_CTRL_Pin|K2_EN_Pin|K1_EN_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
@@ -182,6 +203,34 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
             // 电源监控中断处理：调用安全监控模块的电源异常回调
             DEBUG_Printf("DC_CTRL中断触发\r\n");
             SafetyMonitor_PowerFailureCallback();
+            break;
+            
+        case KEY1_Pin: // PC13按键中断处理
+            // 检测按键状态
+            if (HAL_GPIO_ReadPin(KEY1_GPIO_Port, KEY1_Pin) == GPIO_PIN_RESET) {
+                // 按键按下（下降沿）
+                key1_pressed = 1;
+                key1_press_start_time = HAL_GetTick();
+                key1_long_press_triggered = 0;
+            } else {
+                // 按键松开（上升沿）
+                key1_pressed = 0;
+                key1_long_press_triggered = 0;
+            }
+            break;
+            
+        case KEY2_Pin: // PC14按键中断处理
+            // 检测按键状态
+            if (HAL_GPIO_ReadPin(KEY2_GPIO_Port, KEY2_Pin) == GPIO_PIN_RESET) {
+                // 按键按下（下降沿）
+                key2_pressed = 1;
+                key2_press_start_time = HAL_GetTick();
+                key2_long_press_triggered = 0;
+            } else {
+                // 按键松开（上升沿）
+                key2_pressed = 0;
+                key2_long_press_triggered = 0;
+            }
             break;
             
         case GPIO_PIN_12: // PC12风扇测速

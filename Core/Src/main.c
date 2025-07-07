@@ -21,11 +21,11 @@
 #include "adc.h"
 #include "dma.h"
 #include "i2c.h"
+#include "iwdg.h"
 #include "spi.h"
 #include "tim.h"
 #include "usart.h"
 #include "gpio.h"
-#include "iwdg.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -39,6 +39,8 @@
 #include "usart.h"
 #include "iwdg_control.h"  // 包含IWDG看门狗控制模块
 #include "iwdg.h"          // 包含IWDG外设驱动
+#include "log_system.h"    // 包含日志系统模块
+#include "w25q128_driver.h" // 包含W25Q128 Flash驱动模块
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -59,6 +61,16 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
+
+/* 引用外部定义的按键检测变量 */
+extern volatile uint32_t key1_press_start_time;
+extern volatile uint8_t key1_pressed;
+extern volatile uint8_t key1_long_press_triggered;
+
+/* 引用外部定义的KEY2按键检测变量 */
+extern volatile uint32_t key2_press_start_time;
+extern volatile uint8_t key2_pressed;
+extern volatile uint8_t key2_long_press_triggered;
 
 /* USER CODE END PV */
 
@@ -120,6 +132,7 @@ int main(void)
   MX_DMA_Init();
   MX_ADC1_Init();
   MX_I2C1_Init();
+  MX_IWDG_Init();
   MX_SPI2_Init();
   MX_TIM3_Init();
   MX_USART1_UART_Init();
@@ -167,6 +180,21 @@ int main(void)
   IwdgControl_Init();
   DEBUG_Printf("IWDG看门狗控制模块初始化完成\r\n");
   
+  // Flash连接测试（调试用）
+  DEBUG_Printf("开始Flash连接测试...\r\n");
+  if(W25Q128_TestConnection() == W25Q128_OK) {
+    DEBUG_Printf("Flash连接测试通过\r\n");
+  } else {
+    DEBUG_Printf("Flash连接测试失败\r\n");
+  }
+  
+  // 日志系统模块初始化
+  if(LogSystem_Init() == LOG_SYSTEM_OK) {
+    DEBUG_Printf("日志系统初始化完成\r\n");
+  } else {
+    DEBUG_Printf("日志系统初始化失败\r\n");
+  }
+  
   // 注意：IWDG将在系统进入正常状态后自动启动，无需在此处阻塞延时
   DEBUG_Printf("系统初始化完成，开始状态机循环\r\n");
 
@@ -185,10 +213,54 @@ int main(void)
     // 系统控制模块状态机处理（包含自检、主循环调度等）
     SystemControl_Process();
     
-    // 简化的看门狗喂狗：在正常状态和报警状态下都喂狗
+    // PC13按键长按检测逻辑（3秒长按输出日志）
+    if (key1_pressed && !key1_long_press_triggered) {
+        uint32_t current_time = HAL_GetTick();
+        if (current_time - key1_press_start_time >= 3000) {  // 3秒长按
+            key1_long_press_triggered = 1;
+            DEBUG_Printf("\r\n=== 检测到PC13长按，开始输出日志 ===\r\n");
+            
+            // 输出所有日志
+            if (LogSystem_IsInitialized()) {
+                LogSystem_OutputAll(LOG_FORMAT_DETAILED);
+            } else {
+                DEBUG_Printf("日志系统未初始化，无法输出日志\r\n");
+            }
+            
+            DEBUG_Printf("=== 日志输出完成 ===\r\n");
+        }
+    }
+    
+    // PC14按键长按检测逻辑（3秒长按清空日志）
+    if (key2_pressed && !key2_long_press_triggered) {
+        uint32_t current_time = HAL_GetTick();
+        if (current_time - key2_press_start_time >= 3000) {  // 3秒长按
+            key2_long_press_triggered = 1;
+            DEBUG_Printf("\r\n=== 检测到PC14长按，开始清空日志 ===\r\n");
+            
+            // 清空所有日志
+            if (LogSystem_IsInitialized()) {
+                LogSystemStatus_t status = LogSystem_Reset();  // 使用快速重置方式
+                if (status == LOG_SYSTEM_OK) {
+                    DEBUG_Printf("已清空\r\n");  // 用户要求的反馈信息
+                } else {
+                    DEBUG_Printf("日志清空失败\r\n");
+                }
+            } else {
+                DEBUG_Printf("日志系统未初始化，无法清空日志\r\n");
+            }
+            
+            DEBUG_Printf("=== 日志清空操作完成 ===\r\n");
+        }
+    }
+    
+    // 简化的看门狗喂狗：在正常状态、报警状态和自检阶段都喂狗
     SystemState_t current_state = SystemControl_GetState();
-    if(current_state == SYSTEM_STATE_NORMAL || current_state == SYSTEM_STATE_ALARM) {
-        // 正常状态和报警状态都需要喂狗，只有错误状态才停止喂狗
+    if(current_state == SYSTEM_STATE_NORMAL || 
+       current_state == SYSTEM_STATE_ALARM ||
+       current_state == SYSTEM_STATE_SELF_TEST ||
+       current_state == SYSTEM_STATE_SELF_TEST_CHECK) {
+        // 正常状态、报警状态和自检阶段都需要喂狗，只有错误状态才停止喂狗
         IWDG_Refresh();
     }
     
@@ -212,10 +284,11 @@ void SystemClock_Config(void)
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSI|RCC_OSCILLATORTYPE_HSE;
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
   RCC_OscInitStruct.HSEPredivValue = RCC_HSE_PREDIV_DIV1;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+  RCC_OscInitStruct.LSIState = RCC_LSI_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
   RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL9;

@@ -43,8 +43,11 @@ uint8_t SmartDelay_ShouldFeedWatchdog(void)
 {
     SystemState_t current_state = SystemControl_GetState();
     
-    // 在正常状态和报警状态下需要喂狗
-    if(current_state == SYSTEM_STATE_NORMAL || current_state == SYSTEM_STATE_ALARM) {
+    // 在正常状态、报警状态和自检阶段都需要喂狗
+    if(current_state == SYSTEM_STATE_NORMAL || 
+       current_state == SYSTEM_STATE_ALARM ||
+       current_state == SYSTEM_STATE_SELF_TEST ||
+       current_state == SYSTEM_STATE_SELF_TEST_CHECK) {
         return 1;
     }
     

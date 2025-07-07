@@ -7,6 +7,7 @@
 #include "usart.h"
 #include "iwdg.h"
 #include "smart_delay.h"  // 智能延时函数
+#include "log_system.h"    // 日志系统
 #include <string.h>
 #include <stdio.h>
 
@@ -670,11 +671,25 @@ SystemState_t SystemControl_GetState(void)
   */
 void SystemControl_SetState(SystemState_t new_state)
 {
+    SystemState_t old_state = g_system_control.current_state;
     g_system_control.last_state = g_system_control.current_state;
     g_system_control.current_state = new_state;
     g_system_control.state_start_time = HAL_GetTick();
     
     DEBUG_Printf("系统状态切换: %d -> %d\r\n", g_system_control.last_state, new_state);
+    
+    // 记录系统状态变化日志
+    if(LogSystem_IsInitialized()) {
+        const char* state_names[] = {
+            "INIT", "LOGO", "SELF_TEST", "SELF_TEST_CHECK", 
+            "NORMAL", "ERROR", "ALARM"
+        };
+        char log_msg[48];
+        const char* old_name = (old_state < 7) ? state_names[old_state] : "UNKNOWN";
+        const char* new_name = (new_state < 7) ? state_names[new_state] : "UNKNOWN";
+        snprintf(log_msg, sizeof(log_msg), "State: %s -> %s", old_name, new_name);
+        LogSystem_Record(LOG_TYPE_SYSTEM, 0, LOG_EVENT_SYSTEM_START, log_msg);
+    }
 }
 
 /**

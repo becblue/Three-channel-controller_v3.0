@@ -3,6 +3,7 @@
 #include "relay_control.h"
 #include "temperature_monitor.h"
 #include "usart.h"
+#include "log_system.h"   // 日志系统
 #include <string.h>
 #include <stdio.h>
 
@@ -155,6 +156,14 @@ void SafetyMonitor_SetAlarmFlag(AlarmFlag_t flag, const char* description)
     
     DEBUG_Printf("[安全监控] 异常标志设置: %c类异常 - %s\r\n", 
                 'A' + flag, g_safety_monitor.alarm_info[flag].description);
+    
+    // 记录异常日志
+    if(LogSystem_IsInitialized()) {
+        char log_msg[48];
+        snprintf(log_msg, sizeof(log_msg), "%c-type: %s", 'A' + flag, 
+                 g_safety_monitor.alarm_info[flag].description);
+        LogSystem_Record(LOG_TYPE_ERROR, 0, LOG_EVENT_EXCEPTION, log_msg);
+    }
 }
 
 /**

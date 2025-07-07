@@ -97,8 +97,8 @@ void Error_Handler(void);
 #define K2_2_STA_GPIO_Port GPIOB
 #define K3_2_STA_Pin GPIO_PIN_11
 #define K3_2_STA_GPIO_Port GPIOB
-#define K1_2_ON_Pin GPIO_PIN_12
-#define K1_2_ON_GPIO_Port GPIOB
+#define FLASH_CS_Pin GPIO_PIN_12
+#define FLASH_CS_GPIO_Port GPIOB
 #define K3_1_OFF_Pin GPIO_PIN_6
 #define K3_1_OFF_GPIO_Port GPIOC
 #define K3_1_ON_Pin GPIO_PIN_7
@@ -111,6 +111,8 @@ void Error_Handler(void);
 #define SW1_STA_GPIO_Port GPIOA
 #define RS485_EN_Pin GPIO_PIN_11
 #define RS485_EN_GPIO_Port GPIOA
+#define K1_2_ON_Pin GPIO_PIN_12
+#define K1_2_ON_GPIO_Port GPIOA
 #define K3_EN_Pin GPIO_PIN_15
 #define K3_EN_GPIO_Port GPIOA
 #define K3_EN_EXTI_IRQn EXTI15_10_IRQn
@@ -134,6 +136,8 @@ void Error_Handler(void);
 #define K1_EN_EXTI_IRQn EXTI9_5_IRQn
 
 /* USER CODE BEGIN Private defines */
+
+
 
 /* USER CODE END Private defines */
 
