@@ -165,6 +165,29 @@ void SystemControl_UpdateDisplay(void);
 // K_EN状态诊断信息输出（每秒调用一次）
 void SystemControl_PrintKEnDiagnostics(void);
 
+// ================== FLASH测试和管理功能 ===================
+
+// FLASH快速写满测试函数（写入10000条测试数据）
+void SystemControl_FlashQuickFillTest(void);
+
+// FLASH完整写满测试函数（真正写满15MB，测试循环记录功能）
+void SystemControl_FlashFillTest(void);
+
+// FLASH读取测试函数（测试大文件读取功能）
+void SystemControl_FlashReadTest(void);
+
+// 获取FLASH状态信息
+void SystemControl_PrintFlashStatus(void);
+
+// 获取复位统计信息
+void SystemControl_PrintResetStatistics(void);
+
+// 完全清空FLASH日志（真正擦除所有数据）
+void SystemControl_FlashCompleteErase(void);
+
+// FLASH性能基准测试函数（测试优化后的传输速度）
+void SystemControl_FlashSpeedBenchmark(void);
+
 #ifdef __cplusplus
 }
 #endif

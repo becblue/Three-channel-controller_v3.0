@@ -2,8 +2,8 @@
 #include "gpio_control.h"
 #include "relay_control.h"
 #include "temperature_monitor.h"
+#include "log_system.h"
 #include "usart.h"
-#include "log_system.h"   // 日志系统
 #include <string.h>
 #include <stdio.h>
 
@@ -87,28 +87,13 @@ void SafetyMonitor_Process(void)
     // 1. 检查并更新所有异常状态
     SafetyMonitor_UpdateAllAlarmStatus();
     
-    // 2. 处理待记录的异常日志（在主循环中安全执行）
-    if(g_alarm_log_flags != 0) {
-        for(uint8_t i = 0; i < ALARM_FLAG_COUNT; i++) {
-            if((g_alarm_log_flags & (1 << i)) && LogSystem_IsInitialized()) {
-                char log_msg[48];
-                snprintf(log_msg, sizeof(log_msg), "%c-type: %s", 'A' + i, 
-                         g_safety_monitor.alarm_info[i].description);
-                LogSystem_Record(LOG_TYPE_ERROR, 0, LOG_EVENT_EXCEPTION, log_msg);
-                
-                // 清除已记录的标志
-                g_alarm_log_flags &= ~(1 << i);
-            }
-        }
-    }
-    
-    // 3. 更新ALARM引脚输出
+    // 2. 更新ALARM引脚输出
     SafetyMonitor_UpdateAlarmOutput();
     
-    // 4. 更新蜂鸣器状态
+    // 3. 更新蜂鸣器状态
     SafetyMonitor_UpdateBeepState();
     
-    // 5. 处理蜂鸣器脉冲
+    // 4. 处理蜂鸣器脉冲
     SafetyMonitor_ProcessBeep();
 }
 
@@ -175,8 +160,59 @@ void SafetyMonitor_SetAlarmFlag(AlarmFlag_t flag, const char* description)
     DEBUG_Printf("[安全监控] 异常标志设置: %c类异常 - %s\r\n", 
                 'A' + flag, g_safety_monitor.alarm_info[flag].description);
     
-    // 设置日志记录标志，延迟到主循环中记录（避免在中断中执行耗时操作）
-    g_alarm_log_flags |= (1 << flag);
+    // 记录异常事件到日志系统
+    char log_msg[48];
+    snprintf(log_msg, sizeof(log_msg), "%c类异常:%s", 'A' + flag, g_safety_monitor.alarm_info[flag].description);
+    
+    switch(flag) {
+        case ALARM_FLAG_A:
+            LOG_SAFETY_ALARM_A(log_msg);
+            break;
+        case ALARM_FLAG_B:
+            LOG_SAFETY_ALARM_B(log_msg);
+            break;
+        case ALARM_FLAG_C:
+            LOG_SAFETY_ALARM_C(log_msg);
+            break;
+        case ALARM_FLAG_D:
+            LOG_SAFETY_ALARM_D(log_msg);
+            break;
+        case ALARM_FLAG_E:
+            LOG_SAFETY_ALARM_E(log_msg);
+            break;
+        case ALARM_FLAG_F:
+            LOG_SAFETY_ALARM_F(log_msg);
+            break;
+        case ALARM_FLAG_G:
+            LOG_SAFETY_ALARM_G(log_msg);
+            break;
+        case ALARM_FLAG_H:
+            LOG_SAFETY_ALARM_H(log_msg);
+            break;
+        case ALARM_FLAG_I:
+            LOG_SAFETY_ALARM_I(log_msg);
+            break;
+        case ALARM_FLAG_J:
+            LOG_SAFETY_ALARM_J(log_msg);
+            break;
+        case ALARM_FLAG_K:
+            LOG_SAFETY_ALARM_K(1, log_msg);  // NTC1温度异常
+            break;
+        case ALARM_FLAG_L:
+            LOG_SAFETY_ALARM_L(2, log_msg);  // NTC2温度异常
+            break;
+        case ALARM_FLAG_M:
+            LOG_SAFETY_ALARM_M(3, log_msg);  // NTC3温度异常
+            break;
+        case ALARM_FLAG_N:
+            LOG_SAFETY_ALARM_N(log_msg);
+            break;
+        case ALARM_FLAG_O:
+            LOG_SAFETY_ALARM_O(log_msg);
+            break;
+        default:
+            break;
+    }
 }
 
 /**
@@ -198,6 +234,60 @@ void SafetyMonitor_ClearAlarmFlag(AlarmFlag_t flag)
     g_safety_monitor.alarm_info[flag].is_active = 0;
     
     DEBUG_Printf("[安全监控] 异常标志清除: %c类异常解除\r\n", 'A' + flag);
+    
+    // 记录异常解除事件到日志系统
+    char log_msg[48];
+    snprintf(log_msg, sizeof(log_msg), "%c类异常解除", 'A' + flag);
+    
+    switch(flag) {
+        case ALARM_FLAG_A:
+            LOG_SAFETY_RESOLVED_A(log_msg);
+            break;
+        case ALARM_FLAG_B:
+            LOG_SAFETY_RESOLVED_B(log_msg);
+            break;
+        case ALARM_FLAG_C:
+            LOG_SAFETY_RESOLVED_C(log_msg);
+            break;
+        case ALARM_FLAG_D:
+            LOG_SAFETY_RESOLVED_D(log_msg);
+            break;
+        case ALARM_FLAG_E:
+            LOG_SAFETY_RESOLVED_E(log_msg);
+            break;
+        case ALARM_FLAG_F:
+            LOG_SAFETY_RESOLVED_F(log_msg);
+            break;
+        case ALARM_FLAG_G:
+            LOG_SAFETY_RESOLVED_G(log_msg);
+            break;
+        case ALARM_FLAG_H:
+            LOG_SAFETY_RESOLVED_H(log_msg);
+            break;
+        case ALARM_FLAG_I:
+            LOG_SAFETY_RESOLVED_I(log_msg);
+            break;
+        case ALARM_FLAG_J:
+            LOG_SAFETY_RESOLVED_J(log_msg);
+            break;
+        case ALARM_FLAG_K:
+            LOG_SAFETY_RESOLVED_K(1, log_msg);  // NTC1温度异常解除
+            break;
+        case ALARM_FLAG_L:
+            LOG_SAFETY_RESOLVED_L(2, log_msg);  // NTC2温度异常解除
+            break;
+        case ALARM_FLAG_M:
+            LOG_SAFETY_RESOLVED_M(3, log_msg);  // NTC3温度异常解除
+            break;
+        case ALARM_FLAG_N:
+            LOG_SAFETY_RESOLVED_N(log_msg);
+            break;
+        case ALARM_FLAG_O:
+            LOG_SAFETY_RESOLVED_O(log_msg);
+            break;
+        default:
+            break;
+    }
 }
 
 /**

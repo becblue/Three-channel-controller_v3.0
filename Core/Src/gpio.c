@@ -209,13 +209,15 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
             // 检测按键状态
             if (HAL_GPIO_ReadPin(KEY1_GPIO_Port, KEY1_Pin) == GPIO_PIN_RESET) {
                 // 按键按下（下降沿）
+                if (!key1_pressed) {  // 防止重复触发
                 key1_pressed = 1;
                 key1_press_start_time = HAL_GetTick();
-                key1_long_press_triggered = 0;
+                    // 注意：不在这里重置key1_long_press_triggered
+                }
             } else {
                 // 按键松开（上升沿）
                 key1_pressed = 0;
-                key1_long_press_triggered = 0;
+                // 注意：不在这里重置key1_long_press_triggered，由main.c处理
             }
             break;
             
@@ -223,13 +225,15 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
             // 检测按键状态
             if (HAL_GPIO_ReadPin(KEY2_GPIO_Port, KEY2_Pin) == GPIO_PIN_RESET) {
                 // 按键按下（下降沿）
+                if (!key2_pressed) {  // 防止重复触发
                 key2_pressed = 1;
                 key2_press_start_time = HAL_GetTick();
-                key2_long_press_triggered = 0;
+                    // 注意：不在这里重置key2_long_press_triggered
+                }
             } else {
                 // 按键松开（上升沿）
                 key2_pressed = 0;
-                key2_long_press_triggered = 0;
+                // 注意：不在这里重置key2_long_press_triggered，由main.c处理
             }
             break;
             

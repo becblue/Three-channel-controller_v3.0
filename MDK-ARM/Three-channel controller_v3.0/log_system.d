@@ -43,3 +43,4 @@ three-channel controller_v3.0\log_system.o: ../Core/Inc/smart_delay.h
 three-channel controller_v3.0\log_system.o: ../Core/Inc/system_control.h
 three-channel controller_v3.0\log_system.o: ../Core/Inc/iwdg_control.h
 three-channel controller_v3.0\log_system.o: ../Core/Inc/usart.h
+three-channel controller_v3.0\log_system.o: ../Core/Inc/iwdg.h

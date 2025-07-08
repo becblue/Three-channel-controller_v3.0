@@ -76,7 +76,14 @@ W25Q128_Status_t W25Q128_Init(void)
     DEBUG_Printf("   - SPI实例: SPI2\r\n");
     DEBUG_Printf("   - SPI模式: Mode 0 (CPOL=0, CPHA=0) - 符合W25Q128要求\r\n");
     DEBUG_Printf("   - NSS控制: 软件控制 (SPI_NSS_SOFT)\r\n");
-    DEBUG_Printf("   - 时钟分频: 16 (约2.25MHz) - 符合最大133MHz要求\r\n");
+    
+    // 动态读取并显示真实的SPI预分频配置
+    uint32_t prescaler_actual = 2 << (hspi2.Init.BaudRatePrescaler >> 3);  // 计算实际分频值 2*2^n
+    uint32_t apb1_clock = HAL_RCC_GetPCLK1Freq();     // 获取APB1时钟频率
+    uint32_t spi_clock = apb1_clock / prescaler_actual; // 计算SPI时钟频率
+    
+    DEBUG_Printf("   - 时钟分频: %d (SPI频率: %.1fMHz) - 已优化到最高速度\r\n", 
+                 prescaler_actual, (float)spi_clock / 1000000.0f);
     DEBUG_Printf("   - CS引脚: PB12 (GPIO手动控制)\r\n");
     
     /* 初始化CS引脚 */

@@ -58,6 +58,7 @@ void RelayControl_HandleEnableSignal(uint8_t channelNum, uint8_t state);
 #define RELAY_ERR_INVALID_CHANNEL   0x04    // 无效通道
 #define RELAY_ERR_INVALID_STATE     0x05    // 无效状态
 #define RELAY_ERR_POWER_FAILURE     0x06    // 电源异常错误
+#define RELAY_ERR_HARDWARE_FAILURE  0x07    // 硬件反馈异常错误
 
 // 时间常量定义
 #define RELAY_CHECK_INTERVAL        50      // 使能信号检测间隔(ms)

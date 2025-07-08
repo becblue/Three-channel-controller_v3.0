@@ -24,6 +24,7 @@
 #include "iwdg.h"
 #include "safety_monitor.h"
 #include "system_control.h"
+#include "log_system.h"
 #include "usart.h"
 #include "smart_delay.h"  // 智能延时函数
 #include <stdio.h>
@@ -192,6 +193,13 @@ void IwdgControl_Suspend(void)
     DEBUG_Printf("=== IWDG自动喂狗已暂停 ===\r\n");
     DEBUG_Printf("暂停计数: %lu, 系统将在%lums后复位\r\n", 
                 g_iwdg_control.statistics.suspend_count, g_iwdg_control.timeout_value);
+    
+    // 记录系统保护事件到日志系统
+    if(LogSystem_IsInitialized()) {
+        char msg[48];
+        snprintf(msg, sizeof(msg), "看门狗暂停，系统保护启动，暂停次数:%lu", g_iwdg_control.statistics.suspend_count);
+        LOG_SYSTEM_LOCK(msg);
+    }
 }
 
 /**
@@ -532,9 +540,17 @@ static void IwdgControl_AnalyzeResetReason(void)
     if(__HAL_RCC_GET_FLAG(RCC_FLAG_IWDGRST)) {
         g_iwdg_control.statistics.last_reset_reason = IWDG_RESET_WATCHDOG;
         __HAL_RCC_CLEAR_RESET_FLAGS();
+        // 记录看门狗复位到日志系统
+        if(LogSystem_IsInitialized()) {
+            LOG_WATCHDOG_RESET();
+        }
     } else if(__HAL_RCC_GET_FLAG(RCC_FLAG_WWDGRST)) {
         g_iwdg_control.statistics.last_reset_reason = IWDG_RESET_WINDOW_WATCHDOG;
         __HAL_RCC_CLEAR_RESET_FLAGS();
+        // 记录窗口看门狗复位到日志系统
+        if(LogSystem_IsInitialized()) {
+            LOG_WATCHDOG_RESET();
+        }
     } else if(__HAL_RCC_GET_FLAG(RCC_FLAG_PORRST)) {
         g_iwdg_control.statistics.last_reset_reason = IWDG_RESET_POWER_ON;
         __HAL_RCC_CLEAR_RESET_FLAGS();

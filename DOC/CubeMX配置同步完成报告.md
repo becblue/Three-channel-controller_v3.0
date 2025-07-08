@@ -15,15 +15,16 @@
 - 从 `GPIO_MODE_IT_FALLING` 改为 `GPIO_MODE_IT_RISING_FALLING`
 - 确保与代码中的长按检测逻辑一致
 
-### 2. SPI2波特率配置修复
-**问题描述**：
-- CubeMX配置：SPI2波特率预分频器为16 (`SPI_BAUDRATEPRESCALER_16`)
-- 代码配置：SPI2波特率预分频器为64 (`SPI_BAUDRATEPRESCALER_64`)
+### 2. SPI2波特率优化升级
+**优化描述**：
+- 原配置：SPI2波特率预分频器为16 (`SPI_BAUDRATEPRESCALER_16`) - 2.25MHz
+- 优化配置：SPI2波特率预分频器为2 (`SPI_BAUDRATEPRESCALER_2`) - 18MHz
 
-**修复措施**：
-- 修改CubeMX配置文件中SPI2的波特率预分频器
-- 从 `SPI_BAUDRATEPRESCALER_16` 改为 `SPI_BAUDRATEPRESCALER_64`
-- 同时更新计算的波特率从2.25 MBits/s到1.125 MBits/s
+**优化措施**：
+- 修改CubeMX配置文件和代码中SPI2的波特率预分频器
+- 从 `SPI_BAUDRATEPRESCALER_16` 优化为 `SPI_BAUDRATEPRESCALER_2`
+- 同时更新计算的波特率从2.25 MBits/s到18.0 MBits/s
+- **性能提升**：FLASH传输速度提升8倍 (0.28MB/s → 2.25MB/s)
 
 ## 确认一致的配置
 
@@ -41,7 +42,7 @@
 - PB13: SPI2_SCK
 - PB14: SPI2_MISO
 - PB15: SPI2_MOSI
-- 波特率预分频器：64
+- 波特率预分频器：2 (优化后，18MHz高速传输)
 - 模式：主机模式，全双工
 
 ? **I2C1配置**：
@@ -77,12 +78,12 @@
 - PC13-TAMPER-RTC.GPIO_ModeDefaultEXTI=GPIO_MODE_IT_FALLING
 + PC13-TAMPER-RTC.GPIO_ModeDefaultEXTI=GPIO_MODE_IT_RISING_FALLING
 
-# SPI2波特率配置修改
+# SPI2波特率配置优化 (FLASH速度提升)
 - SPI2.BaudRatePrescaler=SPI_BAUDRATEPRESCALER_16
-+ SPI2.BaudRatePrescaler=SPI_BAUDRATEPRESCALER_64
++ SPI2.BaudRatePrescaler=SPI_BAUDRATEPRESCALER_2
 
 - SPI2.CalculateBaudRate=2.25 MBits/s
-+ SPI2.CalculateBaudRate=1.125 MBits/s
++ SPI2.CalculateBaudRate=18.0 MBits/s
 ```
 
 ## 建议

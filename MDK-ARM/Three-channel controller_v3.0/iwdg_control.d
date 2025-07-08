@@ -40,5 +40,8 @@ three-channel controller_v3.0\iwdg_control.o: D:\Program Files\Keil_v5\ARM\ARMCC
 three-channel controller_v3.0\iwdg_control.o: ../Core/Inc/iwdg.h
 three-channel controller_v3.0\iwdg_control.o: ../Core/Inc/safety_monitor.h
 three-channel controller_v3.0\iwdg_control.o: ../Core/Inc/system_control.h
-three-channel controller_v3.0\iwdg_control.o: ../Core/Inc/usart.h
+three-channel controller_v3.0\iwdg_control.o: ../Core/Inc/log_system.h
+three-channel controller_v3.0\iwdg_control.o: ../Core/Inc/w25q128_driver.h
+three-channel controller_v3.0\iwdg_control.o: ../Core/Inc/spi.h
 three-channel controller_v3.0\iwdg_control.o: ../Core/Inc/smart_delay.h
+three-channel controller_v3.0\iwdg_control.o: ../Core/Inc/usart.h

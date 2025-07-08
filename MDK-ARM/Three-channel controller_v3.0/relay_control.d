@@ -39,10 +39,10 @@ three-channel controller_v3.0\relay_control.o: D:\Program Files\Keil_v5\ARM\ARMC
 three-channel controller_v3.0\relay_control.o: D:\Program Files\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
 three-channel controller_v3.0\relay_control.o: ../Core/Inc/gpio_control.h
 three-channel controller_v3.0\relay_control.o: ../Core/Inc/safety_monitor.h
-three-channel controller_v3.0\relay_control.o: ../Core/Inc/usart.h
 three-channel controller_v3.0\relay_control.o: ../Core/Inc/smart_delay.h
 three-channel controller_v3.0\relay_control.o: ../Core/Inc/system_control.h
 three-channel controller_v3.0\relay_control.o: ../Core/Inc/iwdg_control.h
+three-channel controller_v3.0\relay_control.o: ../Core/Inc/usart.h
 three-channel controller_v3.0\relay_control.o: ../Core/Inc/log_system.h
 three-channel controller_v3.0\relay_control.o: ../Core/Inc/w25q128_driver.h
 three-channel controller_v3.0\relay_control.o: ../Core/Inc/spi.h

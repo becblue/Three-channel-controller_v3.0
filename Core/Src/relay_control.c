@@ -1,9 +1,10 @@
 #include "relay_control.h"
 #include "gpio_control.h"
 #include "safety_monitor.h"
-#include "usart.h"
 #include "smart_delay.h"  // 智能延时函数
+#include "usart.h"
 #include "log_system.h"   // 日志系统
+#include <stdio.h>
 
 /************************************************************
  * 继电器控制模块源文件
@@ -42,6 +43,9 @@ void RelayControl_Init(void)
         }
     }
     DEBUG_Printf("继电器控制模块初始化完成，所有控制信号设为高电平（三极管截止）\r\n");
+    
+    // 记录继电器模块初始化日志
+    LogSystem_Record(LOG_CATEGORY_SYSTEM, 0, LOG_EVENT_SYSTEM_START, "继电器控制模块初始化完成");
 }
 
 /**
@@ -104,6 +108,12 @@ uint8_t RelayControl_OpenChannel(uint8_t channelNum)
     // 检查是否存在O类异常（电源异常）
     if(SafetyMonitor_IsAlarmActive(ALARM_FLAG_O)) {
         DEBUG_Printf("通道%d开启被阻止：检测到O类异常（电源异常）\r\n", channelNum);
+        
+        // 记录电源异常阻止开启日志
+        char log_msg[64];
+        snprintf(log_msg, sizeof(log_msg), "通道%d开启被阻止-电源异常", channelNum);
+        LogSystem_Record(LOG_CATEGORY_SAFETY, channelNum, LOG_EVENT_POWER_FAILURE, log_msg);
+        
         return RELAY_ERR_POWER_FAILURE;
     }
     
@@ -112,6 +122,12 @@ uint8_t RelayControl_OpenChannel(uint8_t channelNum)
     if(RelayControl_CheckInterlock(channelNum)) {
         relayChannels[idx].errorCode = RELAY_ERR_INTERLOCK;
         DEBUG_Printf("通道%d互锁错误\r\n", channelNum);
+        
+        // 记录互锁错误日志（这是安全关键异常）
+        char log_msg[64];
+        snprintf(log_msg, sizeof(log_msg), "通道%d互锁错误", channelNum);
+        LogSystem_Record(LOG_CATEGORY_SAFETY, channelNum, LOG_EVENT_SAFETY_ALARM_A, log_msg);
+        
         return RELAY_ERR_INTERLOCK;
     }
     
@@ -170,24 +186,77 @@ uint8_t RelayControl_OpenChannel(uint8_t channelNum)
         relayChannels[idx].errorCode = RELAY_ERR_NONE;
         DEBUG_Printf("通道%d开启成功\r\n", channelNum);
         
-        // 记录通道开启日志
-        if(LogSystem_IsInitialized()) {
-            LOG_CHANNEL_OPEN(channelNum);
-        }
-        
         return RELAY_ERR_NONE;
     } else {
-        // 硬件未能开启，保持内部状态为OFF
-        relayChannels[idx].state = RELAY_STATE_OFF;
-        relayChannels[idx].errorCode = RELAY_ERR_FEEDBACK;
-        DEBUG_Printf("通道%d开启失败：硬件反馈异常\r\n", channelNum);
+        // 硬件开启失败，记录错误
+        relayChannels[idx].state = RELAY_STATE_ERROR;
+        relayChannels[idx].errorCode = RELAY_ERR_HARDWARE_FAILURE;
+        DEBUG_Printf("通道%d开启失败 - 硬件反馈异常\r\n", channelNum);
         
-        // 记录通道开启失败日志
-        if(LogSystem_IsInitialized()) {
-            LOG_CHANNEL_ERROR(channelNum, "Open failed: feedback error");
+        // 精确检测每个继电器和接触器的异常状态并记录相应日志
+        char log_msg[64];
+        uint8_t k1_sta = 0, k2_sta = 0, sw_sta = 0;
+        
+        switch(channelNum) {
+            case 1:
+                k1_sta = GPIO_ReadK1_1_STA();
+                k2_sta = GPIO_ReadK1_2_STA();
+                sw_sta = GPIO_ReadSW1_STA();
+                
+                if(!k1_sta) {
+                    snprintf(log_msg, sizeof(log_msg), "通道%d K1_1继电器反馈异常", channelNum);
+                    LogSystem_Record(LOG_CATEGORY_SAFETY, channelNum, LOG_EVENT_SAFETY_ALARM_B, log_msg);
+                }
+                if(!k2_sta) {
+                    snprintf(log_msg, sizeof(log_msg), "通道%d K1_2继电器反馈异常", channelNum);
+                    LogSystem_Record(LOG_CATEGORY_SAFETY, channelNum, LOG_EVENT_SAFETY_ALARM_E, log_msg);
+                }
+                if(!sw_sta) {
+                    snprintf(log_msg, sizeof(log_msg), "通道%d SW1接触器反馈异常", channelNum);
+                    LogSystem_Record(LOG_CATEGORY_SAFETY, channelNum, LOG_EVENT_SAFETY_ALARM_H, log_msg);
+                }
+                break;
+                
+            case 2:
+                k1_sta = GPIO_ReadK2_1_STA();
+                k2_sta = GPIO_ReadK2_2_STA();
+                sw_sta = GPIO_ReadSW2_STA();
+                
+                if(!k1_sta) {
+                    snprintf(log_msg, sizeof(log_msg), "通道%d K2_1继电器反馈异常", channelNum);
+                    LogSystem_Record(LOG_CATEGORY_SAFETY, channelNum, LOG_EVENT_SAFETY_ALARM_C, log_msg);
+                }
+                if(!k2_sta) {
+                    snprintf(log_msg, sizeof(log_msg), "通道%d K2_2继电器反馈异常", channelNum);
+                    LogSystem_Record(LOG_CATEGORY_SAFETY, channelNum, LOG_EVENT_SAFETY_ALARM_F, log_msg);
+                }
+                if(!sw_sta) {
+                    snprintf(log_msg, sizeof(log_msg), "通道%d SW2接触器反馈异常", channelNum);
+                    LogSystem_Record(LOG_CATEGORY_SAFETY, channelNum, LOG_EVENT_SAFETY_ALARM_I, log_msg);
+                }
+                break;
+                
+            case 3:
+                k1_sta = GPIO_ReadK3_1_STA();
+                k2_sta = GPIO_ReadK3_2_STA();
+                sw_sta = GPIO_ReadSW3_STA();
+                
+                if(!k1_sta) {
+                    snprintf(log_msg, sizeof(log_msg), "通道%d K3_1继电器反馈异常", channelNum);
+                    LogSystem_Record(LOG_CATEGORY_SAFETY, channelNum, LOG_EVENT_SAFETY_ALARM_D, log_msg);
+                }
+                if(!k2_sta) {
+                    snprintf(log_msg, sizeof(log_msg), "通道%d K3_2继电器反馈异常", channelNum);
+                    LogSystem_Record(LOG_CATEGORY_SAFETY, channelNum, LOG_EVENT_SAFETY_ALARM_G, log_msg);
+                }
+                if(!sw_sta) {
+                    snprintf(log_msg, sizeof(log_msg), "通道%d SW3接触器反馈异常", channelNum);
+                    LogSystem_Record(LOG_CATEGORY_SAFETY, channelNum, LOG_EVENT_SAFETY_ALARM_J, log_msg);
+                }
+                break;
         }
         
-        return RELAY_ERR_FEEDBACK;
+        return RELAY_ERR_HARDWARE_FAILURE;
     }
 }
 
@@ -200,8 +269,8 @@ uint8_t RelayControl_CloseChannel(uint8_t channelNum)
 {
     if(channelNum < 1 || channelNum > 3)
         return RELAY_ERR_INVALID_CHANNEL;
-    uint8_t idx = channelNum - 1;
     
+    uint8_t idx = channelNum - 1;
     DEBUG_Printf("通道%d关闭中 - 输出500ms低电平脉冲（三极管导通）\r\n", channelNum);
     
     // 输出500ms低电平脉冲（三极管导通，继电器动作）
@@ -257,24 +326,77 @@ uint8_t RelayControl_CloseChannel(uint8_t channelNum)
         relayChannels[idx].errorCode = RELAY_ERR_NONE;
         DEBUG_Printf("通道%d关闭成功\r\n", channelNum);
         
-        // 记录通道关闭日志
-        if(LogSystem_IsInitialized()) {
-            LOG_CHANNEL_CLOSE(channelNum);
-        }
-        
         return RELAY_ERR_NONE;
     } else {
-        // 硬件未能关闭，设置内部状态为ON（反映真实硬件状态）
-        relayChannels[idx].state = RELAY_STATE_ON;
-        relayChannels[idx].errorCode = RELAY_ERR_FEEDBACK;
-        DEBUG_Printf("通道%d关闭失败：硬件反馈异常\r\n", channelNum);
+        // 硬件关闭失败，记录错误
+        relayChannels[idx].state = RELAY_STATE_ERROR;
+        relayChannels[idx].errorCode = RELAY_ERR_HARDWARE_FAILURE;
+        DEBUG_Printf("通道%d关闭失败 - 硬件反馈异常\r\n", channelNum);
         
-        // 记录通道关闭失败日志
-        if(LogSystem_IsInitialized()) {
-            LOG_CHANNEL_ERROR(channelNum, "Close failed: feedback error");
+        // 精确检测每个继电器和接触器的异常状态并记录相应日志
+        char log_msg[64];
+        uint8_t k1_sta = 0, k2_sta = 0, sw_sta = 0;
+        
+        switch(channelNum) {
+            case 1:
+                k1_sta = GPIO_ReadK1_1_STA();
+                k2_sta = GPIO_ReadK1_2_STA();
+                sw_sta = GPIO_ReadSW1_STA();
+                
+                if(k1_sta) {  // 关闭失败时应该为0，如果为1则异常
+                    snprintf(log_msg, sizeof(log_msg), "通道%d K1_1继电器关闭异常", channelNum);
+                    LogSystem_Record(LOG_CATEGORY_SAFETY, channelNum, LOG_EVENT_SAFETY_ALARM_B, log_msg);
+                }
+                if(k2_sta) {  // 关闭失败时应该为0，如果为1则异常
+                    snprintf(log_msg, sizeof(log_msg), "通道%d K1_2继电器关闭异常", channelNum);
+                    LogSystem_Record(LOG_CATEGORY_SAFETY, channelNum, LOG_EVENT_SAFETY_ALARM_E, log_msg);
+                }
+                if(sw_sta) {  // 关闭失败时应该为0，如果为1则异常
+                    snprintf(log_msg, sizeof(log_msg), "通道%d SW1接触器关闭异常", channelNum);
+                    LogSystem_Record(LOG_CATEGORY_SAFETY, channelNum, LOG_EVENT_SAFETY_ALARM_H, log_msg);
+                }
+                break;
+                
+            case 2:
+                k1_sta = GPIO_ReadK2_1_STA();
+                k2_sta = GPIO_ReadK2_2_STA();
+                sw_sta = GPIO_ReadSW2_STA();
+                
+                if(k1_sta) {  // 关闭失败时应该为0，如果为1则异常
+                    snprintf(log_msg, sizeof(log_msg), "通道%d K2_1继电器关闭异常", channelNum);
+                    LogSystem_Record(LOG_CATEGORY_SAFETY, channelNum, LOG_EVENT_SAFETY_ALARM_C, log_msg);
+                }
+                if(k2_sta) {  // 关闭失败时应该为0，如果为1则异常
+                    snprintf(log_msg, sizeof(log_msg), "通道%d K2_2继电器关闭异常", channelNum);
+                    LogSystem_Record(LOG_CATEGORY_SAFETY, channelNum, LOG_EVENT_SAFETY_ALARM_F, log_msg);
+                }
+                if(sw_sta) {  // 关闭失败时应该为0，如果为1则异常
+                    snprintf(log_msg, sizeof(log_msg), "通道%d SW2接触器关闭异常", channelNum);
+                    LogSystem_Record(LOG_CATEGORY_SAFETY, channelNum, LOG_EVENT_SAFETY_ALARM_I, log_msg);
+                }
+                break;
+                
+            case 3:
+                k1_sta = GPIO_ReadK3_1_STA();
+                k2_sta = GPIO_ReadK3_2_STA();
+                sw_sta = GPIO_ReadSW3_STA();
+                
+                if(k1_sta) {  // 关闭失败时应该为0，如果为1则异常
+                    snprintf(log_msg, sizeof(log_msg), "通道%d K3_1继电器关闭异常", channelNum);
+                    LogSystem_Record(LOG_CATEGORY_SAFETY, channelNum, LOG_EVENT_SAFETY_ALARM_D, log_msg);
+                }
+                if(k2_sta) {  // 关闭失败时应该为0，如果为1则异常
+                    snprintf(log_msg, sizeof(log_msg), "通道%d K3_2继电器关闭异常", channelNum);
+                    LogSystem_Record(LOG_CATEGORY_SAFETY, channelNum, LOG_EVENT_SAFETY_ALARM_G, log_msg);
+                }
+                if(sw_sta) {  // 关闭失败时应该为0，如果为1则异常
+                    snprintf(log_msg, sizeof(log_msg), "通道%d SW3接触器关闭异常", channelNum);
+                    LogSystem_Record(LOG_CATEGORY_SAFETY, channelNum, LOG_EVENT_SAFETY_ALARM_J, log_msg);
+                }
+                break;
         }
         
-        return RELAY_ERR_FEEDBACK;
+        return RELAY_ERR_HARDWARE_FAILURE;
     }
 }
 

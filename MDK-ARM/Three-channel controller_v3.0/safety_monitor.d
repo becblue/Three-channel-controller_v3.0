@@ -40,10 +40,10 @@ three-channel controller_v3.0\safety_monitor.o: D:\Program Files\Keil_v5\ARM\ARM
 three-channel controller_v3.0\safety_monitor.o: ../Core/Inc/gpio_control.h
 three-channel controller_v3.0\safety_monitor.o: ../Core/Inc/relay_control.h
 three-channel controller_v3.0\safety_monitor.o: ../Core/Inc/temperature_monitor.h
-three-channel controller_v3.0\safety_monitor.o: ../Core/Inc/usart.h
 three-channel controller_v3.0\safety_monitor.o: ../Core/Inc/log_system.h
 three-channel controller_v3.0\safety_monitor.o: ../Core/Inc/w25q128_driver.h
 three-channel controller_v3.0\safety_monitor.o: ../Core/Inc/spi.h
 three-channel controller_v3.0\safety_monitor.o: ../Core/Inc/smart_delay.h
 three-channel controller_v3.0\safety_monitor.o: ../Core/Inc/system_control.h
 three-channel controller_v3.0\safety_monitor.o: ../Core/Inc/iwdg_control.h
+three-channel controller_v3.0\safety_monitor.o: ../Core/Inc/usart.h

@@ -41,6 +41,7 @@
 #include "iwdg.h"          // 包含IWDG外设驱动
 #include "log_system.h"    // 包含日志系统模块
 #include "w25q128_driver.h" // 包含W25Q128 Flash驱动模块
+#include <string.h>        // 包含字符串操作函数
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -188,6 +189,44 @@ int main(void)
   IwdgControl_Init();
   DEBUG_Printf("IWDG看门狗控制模块初始化完成\r\n");
   
+  // 检测重启原因并记录到日志系统（在日志系统初始化之前检测）
+  DEBUG_Printf("=== 检测系统重启原因 ===\r\n");
+  uint8_t reset_reason_detected = 0;
+  char reset_reason_msg[48] = {0};
+  
+  // 检测看门狗复位
+  if(__HAL_RCC_GET_FLAG(RCC_FLAG_IWDGRST)) {
+    DEBUG_Printf("检测到看门狗复位，系统正在恢复...\r\n");
+    strcpy(reset_reason_msg, "Watchdog reset detected");
+    reset_reason_detected = 1;
+  }
+  // 检测软件复位
+  else if(__HAL_RCC_GET_FLAG(RCC_FLAG_SFTRST)) {
+    DEBUG_Printf("检测到软件复位\r\n");
+    strcpy(reset_reason_msg, "Software reset");
+    reset_reason_detected = 2;
+  }
+  // 检测上电复位
+  else if(__HAL_RCC_GET_FLAG(RCC_FLAG_PORRST)) {
+    DEBUG_Printf("检测到上电复位\r\n");
+    strcpy(reset_reason_msg, "Power on reset");
+    reset_reason_detected = 3;
+  }
+  // 检测外部复位
+  else if(__HAL_RCC_GET_FLAG(RCC_FLAG_PINRST)) {
+    DEBUG_Printf("检测到外部复位\r\n");
+    strcpy(reset_reason_msg, "External reset");
+    reset_reason_detected = 4;
+  }
+  else {
+    DEBUG_Printf("正常启动\r\n");
+    strcpy(reset_reason_msg, "Normal startup");
+    reset_reason_detected = 5;
+  }
+  
+  // 清除复位标志
+  __HAL_RCC_CLEAR_RESET_FLAGS();
+  
   // Flash连接测试（调试用）
   DEBUG_Printf("开始Flash连接测试...\r\n");
   if(W25Q128_TestConnection() == W25Q128_OK) {
@@ -199,8 +238,22 @@ int main(void)
   // 日志系统模块初始化
   if(LogSystem_Init() == LOG_SYSTEM_OK) {
     DEBUG_Printf("日志系统初始化完成\r\n");
+    
+    // 记录重启原因到日志系统
+    if(reset_reason_detected == 1) {
+      LOG_WATCHDOG_RESET();
+    } else if(reset_reason_detected == 2) {
+      LOG_SOFTWARE_RESET(reset_reason_msg);
+    } else if(reset_reason_detected == 3) {
+      LOG_POWER_ON_RESET();
+    } else if(reset_reason_detected == 4) {
+      LOG_SYSTEM_RESTART(reset_reason_msg);
+    } else {
+      LOG_SYSTEM_START();
+    }
   } else {
     DEBUG_Printf("日志系统初始化失败\r\n");
+    // 记录初始化失败到调试输出，无法记录到Flash
   }
   
   // 注意：IWDG将在系统进入正常状态后自动启动，无需在此处阻塞延时
@@ -221,12 +274,70 @@ int main(void)
     // 系统控制模块状态机处理（包含自检、主循环调度等）
     SystemControl_Process();
     
-    // PC13按键长按检测逻辑（3秒长按输出日志）
-    if (key1_pressed && !key1_long_press_triggered) {
+    // PC13按键状态检测（按键松开时执行功能）
+    static uint8_t key1_was_pressed = 0;
+    static uint32_t key1_saved_start_time = 0;  // 保存按键开始时间
+    
+    if (key1_pressed) {
+        if (!key1_was_pressed) {
+            key1_was_pressed = 1;  // 标记按键曾经被按下
+            key1_saved_start_time = key1_press_start_time;  // 保存开始时间
+        }
+        
+        // 按键按下期间，只显示提示信息，不执行功能
         uint32_t current_time = HAL_GetTick();
-        if (current_time - key1_press_start_time >= 3000) {  // 3秒长按
+        uint32_t press_duration = current_time - key1_saved_start_time;
+        
+        // 显示按键提示（每秒更新一次）
+        static uint32_t last_hint_time = 0;
+        if (current_time - last_hint_time >= 1000) {
+            last_hint_time = current_time;
+            
+            if (key2_pressed) {
+                if (press_duration >= 3000) {
+                    DEBUG_Printf("KEY1+KEY2已按下 %.1f 秒，松开将执行FLASH读取测试\r\n", press_duration/1000.0f);
+                } else {
+                    DEBUG_Printf("KEY1+KEY2已按下 %.1f 秒，需3秒执行FLASH读取测试\r\n", press_duration/1000.0f);
+                }
+            } else {
+                if (press_duration >= 8000) {
+                    DEBUG_Printf("KEY1已按下 %.1f 秒，松开将执行FLASH状态查看\r\n", press_duration/1000.0f);
+                } else if (press_duration >= 3000) {
+                    DEBUG_Printf("KEY1已按下 %.1f 秒，松开将输出日志，继续按下8秒可查看FLASH状态\r\n", press_duration/1000.0f);
+                } else {
+                    DEBUG_Printf("KEY1已按下 %.1f 秒，需3秒输出日志，8秒查看FLASH状态\r\n", press_duration/1000.0f);
+                }
+            }
+        }
+    } else if (key1_was_pressed && !key1_long_press_triggered) {
+        // 按键松开，根据总按压时长执行对应功能
+        uint32_t total_press_duration = HAL_GetTick() - key1_saved_start_time;
+        
+        // 检查是否有双键组合
+        static uint8_t key2_was_pressed_with_key1 = 0;
+        if (key2_pressed) {
+            key2_was_pressed_with_key1 = 1;
+        }
+        
+        if (key2_was_pressed_with_key1 && total_press_duration >= 3000) {
+            // KEY1+KEY2组合：FLASH读取测试
             key1_long_press_triggered = 1;
-            DEBUG_Printf("\r\n=== 检测到PC13长按，开始输出日志 ===\r\n");
+            key2_long_press_triggered = 1;
+            DEBUG_Printf("\r\n=== KEY1+KEY2组合（%.1f秒），开始FLASH读取测试 ===\r\n", total_press_duration/1000.0f);
+            SystemControl_FlashReadTest();
+            DEBUG_Printf("=== FLASH读取测试完成 ===\r\n");
+        } else if (!key2_was_pressed_with_key1) {
+            // 单独KEY1
+            if (total_press_duration >= 8000) {
+                // KEY1长按8秒：FLASH状态查看
+                key1_long_press_triggered = 1;
+                DEBUG_Printf("\r\n=== KEY1长按%.1f秒，查看FLASH状态 ===\r\n", total_press_duration/1000.0f);
+                SystemControl_PrintFlashStatus();
+                DEBUG_Printf("=== FLASH状态查看完成 ===\r\n");
+            } else if (total_press_duration >= 3000) {
+                // KEY1长按3秒：输出日志
+                key1_long_press_triggered = 1;
+                DEBUG_Printf("\r\n=== KEY1长按%.1f秒，开始输出日志 ===\r\n", total_press_duration/1000.0f);
             
             // 启动分批日志输出
             if (LogSystem_IsInitialized() && !log_output_state.is_outputting) {
@@ -242,8 +353,15 @@ int main(void)
             } else if (!LogSystem_IsInitialized()) {
                 DEBUG_Printf("日志系统未初始化，无法输出日志\r\n");
                 DEBUG_Printf("=== 日志输出完成 ===\r\n");
+                }
+            } else {
+                DEBUG_Printf("KEY1按压时间不足3秒（%.1f秒），无操作\r\n", total_press_duration/1000.0f);
             }
         }
+        
+        // 重置所有标志
+        key1_was_pressed = 0;
+        key2_was_pressed_with_key1 = 0;
     }
     
     // 分批日志输出处理（非阻塞）
@@ -273,12 +391,75 @@ int main(void)
         }
     }
     
-    // PC14按键长按检测逻辑（3秒长按清空日志）
-    if (key2_pressed && !key2_long_press_triggered) {
+    // PC14按键状态检测（按键松开时执行功能）
+    static uint8_t key2_was_pressed = 0;
+    static uint32_t key2_saved_start_time = 0;  // 保存按键开始时间
+    
+    if (key2_pressed) {
+        if (!key2_was_pressed) {
+            key2_was_pressed = 1;  // 标记按键曾经被按下
+            key2_saved_start_time = key2_press_start_time;  // 保存开始时间
+        }
+        
+        // 按键按下期间，只显示提示信息，不执行功能
         uint32_t current_time = HAL_GetTick();
-        if (current_time - key2_press_start_time >= 3000) {  // 3秒长按
+        uint32_t press_duration = current_time - key2_saved_start_time;
+        
+        // 显示按键提示（每秒更新一次）
+        static uint32_t last_hint_time2 = 0;
+        if (current_time - last_hint_time2 >= 1000) {
+            last_hint_time2 = current_time;
+            
+            // 只有在没有同时按下KEY1时才显示单独KEY2提示
+            if (!key1_pressed) {
+                if (press_duration >= 15000) {
+                    DEBUG_Printf("KEY2已按下 %.1f 秒，松开将完全擦除FLASH（危险！）\r\n", press_duration/1000.0f);
+                } else if (press_duration >= 10000) {
+                    DEBUG_Printf("KEY2已按下 %.1f 秒，松开将执行完整写满测试，继续按下15秒可完全擦除\r\n", press_duration/1000.0f);
+                } else if (press_duration >= 8000) {
+                    DEBUG_Printf("KEY2已按下 %.1f 秒，松开将执行快速写满测试，继续按下10秒完整写满\r\n", press_duration/1000.0f);
+                } else if (press_duration >= 3000) {
+                    DEBUG_Printf("KEY2已按下 %.1f 秒，松开将快速清空日志，继续按下8秒快速写满\r\n", press_duration/1000.0f);
+                } else {
+                    DEBUG_Printf("KEY2已按下 %.1f 秒，需3秒清空，8秒快速写满，10秒完整写满，15秒完全擦除\r\n", press_duration/1000.0f);
+                }
+            }
+        }
+    } else if (key2_was_pressed && !key2_long_press_triggered) {
+        // 按键松开，根据总按压时长执行对应功能
+        uint32_t total_press_duration = HAL_GetTick() - key2_saved_start_time;
+        
+        // 只有在没有同时按下KEY1时才执行单独KEY2操作
+        static uint8_t key1_was_pressed_with_key2 = 0;
+        if (key1_pressed) {
+            key1_was_pressed_with_key2 = 1;
+        }
+        
+        if (!key1_was_pressed_with_key2) {
+            // 单独KEY2操作
+            if (total_press_duration >= 15000) {
+                // KEY2长按15秒：完全擦除FLASH（最危险操作）
+                key2_long_press_triggered = 1;
+                DEBUG_Printf("\r\n=== KEY2长按%.1f秒，开始完全擦除FLASH ===\r\n", total_press_duration/1000.0f);
+                DEBUG_Printf("警告：这将永久删除所有日志数据！\r\n");
+                SystemControl_FlashCompleteErase();
+                DEBUG_Printf("=== FLASH完全擦除操作完成 ===\r\n");
+            } else if (total_press_duration >= 10000) {
+                // KEY2长按10秒：完整FLASH写满测试（真正写满15MB）
             key2_long_press_triggered = 1;
-            DEBUG_Printf("\r\n=== 检测到PC14长按，开始清空日志 ===\r\n");
+                DEBUG_Printf("\r\n=== KEY2长按%.1f秒，开始完整FLASH写满测试 ===\r\n", total_press_duration/1000.0f);
+                SystemControl_FlashFillTest();
+                DEBUG_Printf("=== 完整FLASH写满测试完成 ===\r\n");
+            } else if (total_press_duration >= 8000) {
+                // KEY2长按8秒：快速FLASH写满测试（写入10000条）
+                key2_long_press_triggered = 1;
+                DEBUG_Printf("\r\n=== KEY2长按%.1f秒，开始快速FLASH写满测试 ===\r\n", total_press_duration/1000.0f);
+                SystemControl_FlashQuickFillTest();
+                DEBUG_Printf("=== 快速FLASH写满测试完成 ===\r\n");
+            } else if (total_press_duration >= 3000) {
+                // KEY2长按3秒：快速清空日志（原功能）
+                key2_long_press_triggered = 1;
+                DEBUG_Printf("\r\n=== KEY2长按%.1f秒，开始快速清空日志 ===\r\n", total_press_duration/1000.0f);
             
             // 清空所有日志
             if (LogSystem_IsInitialized()) {
@@ -293,6 +474,29 @@ int main(void)
             }
             
             DEBUG_Printf("=== 日志清空操作完成 ===\r\n");
+            } else {
+                DEBUG_Printf("KEY2按压时间不足3秒（%.1f秒），无操作\r\n", total_press_duration/1000.0f);
+            }
+        }
+        
+        // 重置所有标志
+        key2_was_pressed = 0;
+        key1_was_pressed_with_key2 = 0;
+    }
+    
+    // 按键标志位超时重置（防止重复执行）
+    static uint32_t key_reset_time = 0;
+    if ((key1_long_press_triggered || key2_long_press_triggered) && 
+        (HAL_GetTick() - key_reset_time > 2000)) {  // 2秒后自动重置
+        key1_long_press_triggered = 0;
+        key2_long_press_triggered = 0;
+        key_reset_time = HAL_GetTick();
+    }
+    
+    // 设置重置时间（当任何按键操作完成时）
+    if (key1_long_press_triggered || key2_long_press_triggered) {
+        if (key_reset_time == 0) {
+            key_reset_time = HAL_GetTick();  // 设置重置开始时间
         }
     }
     

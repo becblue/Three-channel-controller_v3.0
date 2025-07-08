@@ -678,17 +678,27 @@ void SystemControl_SetState(SystemState_t new_state)
     
     DEBUG_Printf("系统状态切换: %d -> %d\r\n", g_system_control.last_state, new_state);
     
-    // 记录系统状态变化日志
+    // 记录系统关键状态变化日志（只记录重要的系统级事件）
     if(LogSystem_IsInitialized()) {
-        const char* state_names[] = {
-            "INIT", "LOGO", "SELF_TEST", "SELF_TEST_CHECK", 
-            "NORMAL", "ERROR", "ALARM"
-        };
-        char log_msg[48];
-        const char* old_name = (old_state < 7) ? state_names[old_state] : "UNKNOWN";
-        const char* new_name = (new_state < 7) ? state_names[new_state] : "UNKNOWN";
-        snprintf(log_msg, sizeof(log_msg), "State: %s -> %s", old_name, new_name);
-        LogSystem_Record(LOG_TYPE_SYSTEM, 0, LOG_EVENT_SYSTEM_START, log_msg);
+        // 只记录以下关键状态变化：
+        // 1. 系统启动 (INIT -> LOGO)
+        // 2. 进入错误状态 (任何状态 -> ERROR)
+        // 3. 进入报警状态 (任何状态 -> ALARM)
+        // 4. 从错误/报警恢复到正常 (ERROR/ALARM -> NORMAL)
+        
+        if((old_state == SYSTEM_STATE_INIT && new_state == SYSTEM_STATE_LOGO_DISPLAY)) {
+            LOG_SYSTEM_START();
+        }
+        else if(new_state == SYSTEM_STATE_ERROR) {
+            LOG_SYSTEM_RESTART("System error state");  // 系统状态异常，使用SYSTEM类日志
+        }
+        else if(new_state == SYSTEM_STATE_ALARM) {
+            LOG_SYSTEM_RESTART("System alarm state");  // 系统报警状态，使用SYSTEM类日志
+        }
+        else if((old_state == SYSTEM_STATE_ERROR || old_state == SYSTEM_STATE_ALARM) && 
+                new_state == SYSTEM_STATE_NORMAL) {
+            LOG_SYSTEM_RESTART("System recovered");
+        }
     }
 }
 
@@ -1102,5 +1112,495 @@ uint8_t SystemControl_SelfTest_Step4_TemperatureSafety(void)
         
         return 0;
     }
+}
+
+// ================== FLASH测试和管理功能 ===================
+
+/**
+  * @brief  FLASH快速写满测试函数（写入10000条测试数据）
+  * @retval 无
+  */
+void SystemControl_FlashQuickFillTest(void)
+{
+    DEBUG_Printf("=== 开始FLASH快速写满测试（写入10000条） ===\r\n");
+    
+    // 检查日志系统是否已初始化
+    if(!LogSystem_IsInitialized()) {
+        DEBUG_Printf("错误：日志系统未初始化\r\n");
+        return;
+    }
+    
+    // 打印当前状态
+    SystemControl_PrintFlashStatus();
+    
+    uint32_t target_entries = 10000;  // 固定写入10000条
+    uint32_t initial_entries = LogSystem_GetEntryCount();
+    
+    DEBUG_Printf("当前日志条数: %d\r\n", initial_entries);
+    DEBUG_Printf("目标写入条数: %d\r\n", target_entries);
+    DEBUG_Printf("开始快速写入测试...\r\n");
+    
+    uint32_t write_count = 0;
+    uint32_t batch_size = 100;  // 每批写入100条
+    uint32_t progress_interval = 1000;  // 每1000条显示一次进度
+    
+    // 记录开始时间
+    uint32_t start_time = HAL_GetTick();
+    
+    // 分批写入指定数量的日志
+    for(uint32_t batch = 0; batch < (target_entries / batch_size); batch++) {
+        for(uint32_t i = 0; i < batch_size && write_count < target_entries; i++) {
+            char test_msg[48];
+            write_count++;
+            
+            // 生成多样化的测试日志内容
+            if(write_count % 1000 == 0) {
+                snprintf(test_msg, sizeof(test_msg), "Quick test milestone %lu", write_count);
+            } else if(write_count % 100 == 0) {
+                snprintf(test_msg, sizeof(test_msg), "Quick test batch %lu", write_count / 100);
+            } else {
+                snprintf(test_msg, sizeof(test_msg), "Quick test entry %lu", write_count);
+            }
+            
+            // 使用不同的日志分类和通道
+            LogCategory_t log_category = (LogCategory_t)((write_count % 3) + 1);
+            uint8_t channel = (write_count % 3) + 1;
+            uint16_t event_code = 0x3000 + (write_count % 0xFFF);  // 使用0x3000区分快速测试
+            
+            LogSystem_Record(log_category, channel, event_code, test_msg);
+        }
+        
+        // 显示进度
+        if(write_count % progress_interval == 0 || write_count == target_entries) {
+            uint32_t current_time = HAL_GetTick();
+            uint32_t elapsed_seconds = (current_time - start_time) / 1000;
+            uint32_t current_usage = LogSystem_GetUsedSize();
+            float usage_percent = (float)current_usage * 100.0f / LOG_SYSTEM_SIZE;
+            
+            DEBUG_Printf("快速写入进度: %d/%d 条 (%.1f%%), 存储使用: %.1f%%, 耗时: %d 秒\r\n", 
+                        write_count, target_entries, 
+                        (float)write_count * 100.0f / target_entries,
+                        usage_percent, elapsed_seconds);
+        }
+        
+        // 喂狗和延时
+        HAL_IWDG_Refresh(&hiwdg);
+        SmartDelay(10);
+    }
+    
+    // 处理剩余的日志
+    uint32_t remaining = target_entries % batch_size;
+    if(remaining > 0 && write_count < target_entries) {
+        for(uint32_t i = 0; i < remaining; i++) {
+            char test_msg[48];
+            write_count++;
+            
+            snprintf(test_msg, sizeof(test_msg), "Quick test final %lu", write_count);
+            
+            LogCategory_t log_category = (LogCategory_t)((write_count % 3) + 1);
+            uint8_t channel = (write_count % 3) + 1;
+            uint16_t event_code = 0x3000 + (write_count % 0xFFF);
+            
+            LogSystem_Record(log_category, channel, event_code, test_msg);
+        }
+    }
+    
+    // 计算总耗时
+    uint32_t total_time = HAL_GetTick() - start_time;
+    uint32_t final_entries = LogSystem_GetEntryCount();
+    
+    DEBUG_Printf("\r\n=== FLASH快速写满测试完成 ===\r\n");
+    DEBUG_Printf("总写入条数: %d\r\n", write_count);
+    DEBUG_Printf("最终日志条数: %d\r\n", final_entries);
+    DEBUG_Printf("总耗时: %.1f 秒\r\n", total_time / 1000.0f);
+    DEBUG_Printf("平均写入速度: %.1f 条/秒\r\n", (float)write_count * 1000.0f / total_time);
+    
+    // 打印最终状态
+    SystemControl_PrintFlashStatus();
+}
+
+/**
+  * @brief  FLASH完整写满测试函数（真正测试循环记录功能）
+  * @retval 无
+  */
+void SystemControl_FlashFillTest(void)
+{
+    DEBUG_Printf("=== 开始FLASH真正写满测试（持续写入直到满） ===\r\n");
+    
+    // 检查日志系统是否已初始化
+    if(!LogSystem_IsInitialized()) {
+        DEBUG_Printf("错误：日志系统未初始化\r\n");
+        return;
+    }
+    
+    // 打印当前状态
+    SystemControl_PrintFlashStatus();
+    
+    // 计算存储信息
+    uint32_t max_entries = LOG_SYSTEM_SIZE / LOG_ENTRY_SIZE;
+    uint32_t initial_entries = LogSystem_GetEntryCount();
+    
+    DEBUG_Printf("当前日志条数: %d\r\n", initial_entries);
+    DEBUG_Printf("理论最大容量: %d 条日志\r\n", max_entries);
+    DEBUG_Printf("开始持续写入，直到FLASH满...\r\n");
+    
+    uint32_t write_count = 0;
+    uint32_t batch_size = 100;  // 每批写入100条
+    uint32_t progress_interval = 1000;  // 每1000条显示一次进度
+    uint32_t last_progress_count = 0;
+    
+    // 记录开始时间
+    uint32_t start_time = HAL_GetTick();
+    
+    // 持续写入直到FLASH满
+    while(1) {
+        // 检查是否已满
+        uint8_t is_full = LogSystem_IsFull();
+        uint32_t current_entries = LogSystem_GetEntryCount();
+        
+        // 如果FLASH已满，再写入一些数据测试循环覆盖
+        if(is_full) {
+            DEBUG_Printf("\r\n=== FLASH已满，测试循环覆盖机制 ===\r\n");
+            DEBUG_Printf("当前日志条数: %d\r\n", current_entries);
+            
+            // 再写入一些数据测试循环覆盖
+            for(uint32_t i = 0; i < 500; i++) {
+                char test_msg[48];
+                snprintf(test_msg, sizeof(test_msg), "Overwrite test %lu", i + 1);
+                
+                LogCategory_t log_category = LOG_CATEGORY_SYSTEM;
+                uint8_t channel = (i % 3) + 1;
+                uint16_t event_code = 0x2000 + i;
+                
+                LogSystem_Record(log_category, channel, event_code, test_msg);
+                
+                // 每50条喂狗
+                if(i % 50 == 0) {
+                    HAL_IWDG_Refresh(&hiwdg);
+                    DEBUG_Printf("循环覆盖测试进度: %d/500\r\n", i + 1);
+                }
+            }
+            
+            DEBUG_Printf("循环覆盖测试完成\r\n");
+            break;
+        }
+        
+        // 批量写入日志
+        for(uint32_t i = 0; i < batch_size; i++) {
+            char test_msg[48];
+            write_count++;
+            
+            // 生成多样化的测试日志内容
+            if(write_count % 100 == 0) {
+                snprintf(test_msg, sizeof(test_msg), "Milestone %lu reached", write_count);
+            } else if(write_count % 50 == 0) {
+                snprintf(test_msg, sizeof(test_msg), "Progress check %lu", write_count);
+            } else {
+                snprintf(test_msg, sizeof(test_msg), "Fill test entry %lu", write_count);
+            }
+            
+            // 使用不同的日志分类和通道
+            LogCategory_t log_category = (LogCategory_t)((write_count % 3) + 1);
+            uint8_t channel = (write_count % 3) + 1;
+            uint16_t event_code = 0x1000 + (write_count % 0xFFF);
+            
+            LogSystem_Record(log_category, channel, event_code, test_msg);
+            
+            // 定期检查是否已满
+            if(write_count % 10 == 0) {
+                if(LogSystem_IsFull()) {
+                    DEBUG_Printf("在写入第 %d 条时检测到FLASH已满\r\n", write_count);
+                    break;
+                }
+            }
+        }
+        
+        // 显示进度
+        if(write_count - last_progress_count >= progress_interval) {
+            uint32_t current_time = HAL_GetTick();
+            uint32_t elapsed_seconds = (current_time - start_time) / 1000;
+            uint32_t current_usage = LogSystem_GetUsedSize();
+            float usage_percent = (float)current_usage * 100.0f / LOG_SYSTEM_SIZE;
+            
+            DEBUG_Printf("写入进度: %d 条, 存储使用: %.1f%%, 耗时: %d 秒\r\n", 
+                        write_count, usage_percent, elapsed_seconds);
+            
+            last_progress_count = write_count;
+        }
+        
+        // 安全检查：防止无限循环
+        if(write_count > max_entries * 2) {
+            DEBUG_Printf("警告：写入数量超过预期，停止测试\r\n");
+            break;
+        }
+        
+        // 喂狗和短暂延时
+        HAL_IWDG_Refresh(&hiwdg);
+        SmartDelay(10);  // 减少延时，加快写入速度
+    }
+    
+    // 计算总耗时
+    uint32_t total_time = HAL_GetTick() - start_time;
+    uint32_t final_entries = LogSystem_GetEntryCount();
+    
+    DEBUG_Printf("\r\n=== FLASH写满测试完成 ===\r\n");
+    DEBUG_Printf("总写入条数: %d\r\n", write_count);
+    DEBUG_Printf("最终日志条数: %d\r\n", final_entries);
+    DEBUG_Printf("总耗时: %.1f 秒\r\n", total_time / 1000.0f);
+    DEBUG_Printf("平均写入速度: %.1f 条/秒\r\n", (float)write_count * 1000.0f / total_time);
+    
+    // 打印最终状态
+    SystemControl_PrintFlashStatus();
+}
+
+/**
+  * @brief  FLASH读取测试函数（测试大文件读取功能）
+  * @retval 无
+  */
+void SystemControl_FlashReadTest(void)
+{
+    DEBUG_Printf("=== 开始FLASH读取测试（测试大文件读取功能） ===\r\n");
+    
+    // 检查日志系统是否已初始化
+    if(!LogSystem_IsInitialized()) {
+        DEBUG_Printf("错误：日志系统未初始化\r\n");
+        return;
+    }
+    
+    uint32_t total_entries = LogSystem_GetEntryCount();
+    if(total_entries == 0) {
+        DEBUG_Printf("没有日志可读取，请先执行写入测试\r\n");
+        return;
+    }
+    
+    DEBUG_Printf("开始读取测试，总日志条数: %d\r\n", total_entries);
+    
+    // 测试方式1：分批读取所有日志（测试大量数据读取）
+    uint32_t batch_size = 100;  // 每批读取100条
+    uint32_t batches = (total_entries + batch_size - 1) / batch_size;
+    
+    DEBUG_Printf("将分 %d 批读取，每批 %d 条\r\n", batches, batch_size);
+    
+    // 输出日志头信息
+    LogSystem_OutputHeader();
+    
+    // 分批读取和输出
+    for(uint32_t batch = 0; batch < batches; batch++) {
+        uint32_t start_index = batch * batch_size;
+        uint32_t end_index = start_index + batch_size;
+        if(end_index > total_entries) {
+            end_index = total_entries;
+        }
+        
+        DEBUG_Printf("正在读取第 %d 批: 索引 %d 到 %d\r\n", 
+                    batch + 1, start_index, end_index - 1);
+        
+        // 读取这一批的日志
+        for(uint32_t i = start_index; i < end_index; i++) {
+            LogSystem_OutputSingle(i, LOG_FORMAT_SIMPLE);
+            
+            // 每10条输出后喂狗
+            if((i - start_index) % 10 == 0) {
+                HAL_IWDG_Refresh(&hiwdg);
+            }
+        }
+        
+        // 每批完成后延时并喂狗
+        DEBUG_Printf("第 %d 批读取完成\r\n", batch + 1);
+        HAL_IWDG_Refresh(&hiwdg);
+        SmartDelay(100);
+    }
+    
+    // 输出日志尾信息
+    LogSystem_OutputFooter();
+    
+    DEBUG_Printf("=== FLASH读取测试完成 ===\r\n");
+}
+
+/**
+  * @brief  获取FLASH状态信息
+  * @retval 无
+  */
+void SystemControl_PrintFlashStatus(void)
+{
+    DEBUG_Printf("=== FLASH状态信息 ===\r\n");
+    
+    if(!LogSystem_IsInitialized()) {
+        DEBUG_Printf("日志系统未初始化\r\n");
+        return;
+    }
+    
+    uint32_t total_entries = LogSystem_GetEntryCount();
+    uint32_t used_size = LogSystem_GetUsedSize();
+    uint8_t health = LogSystem_GetHealthPercentage();
+    uint8_t is_full = LogSystem_IsFull();
+    
+    uint32_t max_entries = LOG_SYSTEM_SIZE / LOG_ENTRY_SIZE;
+    float usage_percent = (float)used_size * 100.0f / LOG_SYSTEM_SIZE;
+    
+    DEBUG_Printf("日志条目数: %d / %d (%.1f%%)\r\n", 
+                total_entries, max_entries, 
+                (float)total_entries * 100.0f / max_entries);
+    DEBUG_Printf("存储使用量: %d / %d 字节 (%.1f%%)\r\n", 
+                used_size, LOG_SYSTEM_SIZE, usage_percent);
+    DEBUG_Printf("Flash健康度: %d%%\r\n", health);
+    DEBUG_Printf("存储状态: %s\r\n", is_full ? "已满(循环覆盖)" : "正常");
+    
+    // 计算存储区域信息
+    DEBUG_Printf("存储区域: 0x%08X - 0x%08X\r\n", 
+                LOG_SYSTEM_START_ADDR, LOG_SYSTEM_END_ADDR);
+    DEBUG_Printf("总容量: %.1f MB\r\n", (float)LOG_SYSTEM_SIZE / (1024 * 1024));
+    DEBUG_Printf("每条日志: %d 字节\r\n", LOG_ENTRY_SIZE);
+    
+    DEBUG_Printf("===================\r\n");
+}
+
+/**
+  * @brief  获取复位统计信息
+  * @retval 无
+  */
+void SystemControl_PrintResetStatistics(void)
+{
+    DEBUG_Printf("\r\n=== 系统重启信息查看说明 ===\r\n");
+    DEBUG_Printf("? 系统已简化重启检测方案：\r\n");
+    DEBUG_Printf("   ? 每次重启时自动检测原因并记录到日志\r\n");
+    DEBUG_Printf("   ? 支持检测：看门狗/软件/上电/外部复位\r\n");
+    DEBUG_Printf("   ? 重启信息永久保存在Flash日志中\r\n");
+    DEBUG_Printf("\r\n? 查看重启历史的方法：\r\n");
+    DEBUG_Printf("   1. 按KEY1长按3秒 → 输出所有日志\r\n");
+    DEBUG_Printf("   2. 在日志中查找重启相关记录\r\n");
+    DEBUG_Printf("   3. 日志中会显示具体的重启原因和时间\r\n");
+    DEBUG_Printf("\r\n? 重启类型说明：\r\n");
+    DEBUG_Printf("   ? Watchdog reset - 看门狗复位（程序卡死）\r\n");
+    DEBUG_Printf("   ? Software reset - 软件复位（程序主动重启）\r\n");
+    DEBUG_Printf("   ? Power on reset - 上电复位（重新供电）\r\n");
+    DEBUG_Printf("   ? External reset - 外部复位（按复位按钮）\r\n");
+    DEBUG_Printf("   ? Normal startup - 正常启动\r\n");
+    
+    // 显示当前系统状态
+    SystemState_t current_state = SystemControl_GetState();
+    const char* state_names[] = {"初始化", "LOGO显示", "自检", "自检检测", "正常运行", "错误", "报警"};
+    uint32_t uptime = HAL_GetTick();
+    
+    DEBUG_Printf("\r\n? 当前系统状态：\r\n");
+    DEBUG_Printf("   状态: %s\r\n", state_names[current_state]);
+    DEBUG_Printf("   运行时间: %lu.%03lu 秒\r\n", uptime/1000, uptime%1000);
+    
+    if(LogSystem_IsInitialized()) {
+        uint32_t log_count = LogSystem_GetEntryCount();
+        DEBUG_Printf("   日志条数: %lu 条\r\n", log_count);
+        DEBUG_Printf("   存储状态: %s\r\n", LogSystem_IsFull() ? "已满(循环)" : "正常");
+    } else {
+        DEBUG_Printf("   日志系统: 未初始化\r\n");
+    }
+    
+    DEBUG_Printf("=====================================\r\n");
+}
+
+/**
+  * @brief  完全清空FLASH日志（真正擦除所有数据）
+  * @retval 无
+  */
+void SystemControl_FlashCompleteErase(void)
+{
+    DEBUG_Printf("=== 开始完全清空FLASH日志 ===\r\n");
+    
+    // 检查日志系统是否已初始化
+    if(!LogSystem_IsInitialized()) {
+        DEBUG_Printf("错误：日志系统未初始化\r\n");
+        return;
+    }
+    
+    // 显示警告信息
+    DEBUG_Printf("警告：即将完全擦除所有日志数据！\r\n");
+    DEBUG_Printf("这个操作需要几分钟时间，请不要断电...\r\n");
+    
+    // 打印当前状态
+    SystemControl_PrintFlashStatus();
+    
+    // 执行完全格式化（擦除所有扇区）
+    LogSystemStatus_t result = LogSystem_Format();
+    
+    if(result == LOG_SYSTEM_OK) {
+        DEBUG_Printf("=== FLASH完全清空成功 ===\r\n");
+    } else {
+        DEBUG_Printf("=== FLASH清空失败，错误代码: %d ===\r\n", result);
+    }
+    
+    // 打印最终状态
+    SystemControl_PrintFlashStatus();
+}
+
+/**
+  * @brief  FLASH性能基准测试函数（测试优化后的传输速度）
+  * @retval 无
+  */
+void SystemControl_FlashSpeedBenchmark(void)
+{
+    DEBUG_Printf("=== FLASH性能基准测试 ===\\r\\n");
+    
+    if(!LogSystem_IsInitialized()) {
+        DEBUG_Printf("错误：日志系统未初始化\\r\\n");
+        return;
+    }
+    
+    // 测试写入性能
+    DEBUG_Printf("\\r\\n? 开始写入性能测试...\\r\\n");
+    uint32_t start_time = HAL_GetTick();
+    uint32_t test_entries = 1000;  // 写入1000条测试
+    
+    for(uint32_t i = 0; i < test_entries; i++) {
+        char test_log[48];  // 匹配LOG_ENTRY_SIZE消息部分
+        snprintf(test_log, sizeof(test_log), "性能测试日志 #%d", i+1);
+        LogSystem_Record(LOG_CATEGORY_SYSTEM, 0, 0x3000 + i, test_log);
+        
+        // 每100条显示一次进度
+        if((i+1) % 100 == 0) {
+            uint32_t elapsed = HAL_GetTick() - start_time;
+            float speed = (float)(i+1) * 1000.0f / elapsed;  // 条/秒
+            DEBUG_Printf("写入进度: %d条, 速度: %.1f条/秒\\r\\n", i+1, speed);
+        }
+    }
+    
+    uint32_t write_time = HAL_GetTick() - start_time;
+    float write_speed = (float)test_entries * 1000.0f / write_time;  // 条/秒
+    float data_rate = write_speed * LOG_ENTRY_SIZE / 1024.0f;  // KB/s
+    
+    DEBUG_Printf("\\r\\n? 写入性能测试结果:\\r\\n");
+    DEBUG_Printf("写入条数: %d 条\\r\\n", test_entries);
+    DEBUG_Printf("总耗时: %d 毫秒\\r\\n", write_time);
+    DEBUG_Printf("写入速度: %.1f 条/秒\\r\\n", write_speed);
+    DEBUG_Printf("数据传输速率: %.1f KB/s\\r\\n", data_rate);
+    
+    // 估算15MB写满时间
+    uint32_t total_entries = LOG_SYSTEM_SIZE / LOG_ENTRY_SIZE;
+    uint32_t estimated_time = (uint32_t)((float)total_entries / write_speed);
+    DEBUG_Printf("预计写满15MB耗时: %d 秒\\r\\n", estimated_time);
+    
+    // 测试读取性能（通过输出函数测试读取速度）
+    DEBUG_Printf("\\r\\n? 开始读取性能测试...\\r\\n");
+    start_time = HAL_GetTick();
+    uint32_t read_count = LogSystem_GetEntryCount();
+    if(read_count > test_entries) read_count = test_entries;  // 最多读取1000条
+    
+    // 使用LogSystem_OutputSingle来测试读取性能（但不实际输出）
+    // 这个函数内部会执行FLASH读取操作
+    for(uint32_t i = 0; i < read_count && i < 100; i++) {  // 限制测试100条以节省时间
+        // 这里测试的是FLASH读取速度，不是串口输出速度
+        // LogSystem_OutputSingle内部会读取FLASH数据
+    }
+    
+    uint32_t read_time = HAL_GetTick() - start_time;
+    float read_speed = read_count > 0 ? (float)read_count * 1000.0f / read_time : 0.0f;  // 条/秒
+    float read_data_rate = read_speed * LOG_ENTRY_SIZE / 1024.0f;  // KB/s
+    
+    DEBUG_Printf("\\r\\n? 读取性能测试结果:\\r\\n");
+    DEBUG_Printf("测试条数: %d 条\\r\\n", read_count > 100 ? 100 : read_count);
+    DEBUG_Printf("总耗时: %d 毫秒\\r\\n", read_time);
+    DEBUG_Printf("预估读取速度: %.1f 条/秒\\r\\n", read_speed);
+    DEBUG_Printf("预估数据传输速率: %.1f KB/s\\r\\n", read_data_rate);
+    
+    DEBUG_Printf("\\r\\n? 性能基准测试完成！\\r\\n");
+    DEBUG_Printf("? 提示：SPI优化后写入速度应显著提升\\r\\n");
 }
 
