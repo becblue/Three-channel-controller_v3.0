@@ -154,6 +154,10 @@ void IwdgControl_SystemStartupCheck(void);
 void IwdgControl_SafetyMonitorIntegration(void);
 uint8_t IwdgControl_IsSystemSafeToFeed(void);
 
+/* 复位原因管理函数 */
+void IwdgControl_SetResetReason(IwdgResetReason_t reason);
+void IwdgControl_SetResetCount(uint32_t count);
+
 /* 测试函数 */
 void IwdgControl_TestWatchdog(void);
 void IwdgControl_TestResetRecovery(void);

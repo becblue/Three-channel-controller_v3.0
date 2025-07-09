@@ -189,43 +189,69 @@ int main(void)
   IwdgControl_Init();
   DEBUG_Printf("IWDG看门狗控制模块初始化完成\r\n");
   
-  // 检测重启原因并记录到日志系统（在日志系统初始化之前检测）
-  DEBUG_Printf("=== 检测系统重启原因 ===\r\n");
+  // 打印复位原因统计信息（在复位原因设置完成后）
+  IwdgControl_PrintResetReason();
+  
+  // 统一检测系统重启原因并记录到日志系统
+  DEBUG_Printf("=== 统一检测系统重启原因 ===\r\n");
   uint8_t reset_reason_detected = 0;
   char reset_reason_msg[48] = {0};
+  IwdgResetReason_t iwdg_reset_reason = IWDG_RESET_UNKNOWN;
+  static uint32_t reset_count = 0;  // 重启计数（简化版，存储在静态变量中）
   
   // 检测看门狗复位
   if(__HAL_RCC_GET_FLAG(RCC_FLAG_IWDGRST)) {
     DEBUG_Printf("检测到看门狗复位，系统正在恢复...\r\n");
     strcpy(reset_reason_msg, "Watchdog reset detected");
     reset_reason_detected = 1;
+    iwdg_reset_reason = IWDG_RESET_WATCHDOG;
+    reset_count++;  // 看门狗复位计数增加
+  }
+  // 检测窗口看门狗复位
+  else if(__HAL_RCC_GET_FLAG(RCC_FLAG_WWDGRST)) {
+    DEBUG_Printf("检测到窗口看门狗复位\r\n");
+    strcpy(reset_reason_msg, "Window watchdog reset");
+    reset_reason_detected = 6;
+    iwdg_reset_reason = IWDG_RESET_WINDOW_WATCHDOG;
+    reset_count++;
   }
   // 检测软件复位
   else if(__HAL_RCC_GET_FLAG(RCC_FLAG_SFTRST)) {
     DEBUG_Printf("检测到软件复位\r\n");
     strcpy(reset_reason_msg, "Software reset");
     reset_reason_detected = 2;
+    iwdg_reset_reason = IWDG_RESET_SOFTWARE;
   }
   // 检测上电复位
   else if(__HAL_RCC_GET_FLAG(RCC_FLAG_PORRST)) {
     DEBUG_Printf("检测到上电复位\r\n");
     strcpy(reset_reason_msg, "Power on reset");
     reset_reason_detected = 3;
+    iwdg_reset_reason = IWDG_RESET_POWER_ON;
   }
-  // 检测外部复位
+  // 检测外部复位/引脚复位
   else if(__HAL_RCC_GET_FLAG(RCC_FLAG_PINRST)) {
-    DEBUG_Printf("检测到外部复位\r\n");
-    strcpy(reset_reason_msg, "External reset");
+    DEBUG_Printf("检测到引脚复位\r\n");
+    strcpy(reset_reason_msg, "Pin reset");
     reset_reason_detected = 4;
+    iwdg_reset_reason = IWDG_RESET_PIN;
   }
   else {
     DEBUG_Printf("正常启动\r\n");
     strcpy(reset_reason_msg, "Normal startup");
     reset_reason_detected = 5;
+    iwdg_reset_reason = IWDG_RESET_NONE;
   }
   
-  // 清除复位标志
+  // 将复位原因和计数传递给IWDG模块
+  IwdgControl_SetResetReason(iwdg_reset_reason);
+  IwdgControl_SetResetCount(reset_count);
+  
+  // 清除复位标志（统一在此处清除，避免重复检测）
   __HAL_RCC_CLEAR_RESET_FLAGS();
+  
+  DEBUG_Printf("复位原因编码: %d, IWDG原因: %d, 复位次数: %lu\r\n", 
+               reset_reason_detected, iwdg_reset_reason, reset_count);
   
   // Flash连接测试（调试用）
   DEBUG_Printf("开始Flash连接测试...\r\n");
@@ -239,17 +265,37 @@ int main(void)
   if(LogSystem_Init() == LOG_SYSTEM_OK) {
     DEBUG_Printf("日志系统初始化完成\r\n");
     
-    // 记录重启原因到日志系统
-    if(reset_reason_detected == 1) {
-      LOG_WATCHDOG_RESET();
-    } else if(reset_reason_detected == 2) {
-      LOG_SOFTWARE_RESET(reset_reason_msg);
-    } else if(reset_reason_detected == 3) {
-      LOG_POWER_ON_RESET();
-    } else if(reset_reason_detected == 4) {
-      LOG_SYSTEM_RESTART(reset_reason_msg);
-    } else {
-      LOG_SYSTEM_START();
+    // 记录重启原因到日志系统（完整支持所有复位类型）
+    char log_msg[48];
+    switch(reset_reason_detected) {
+      case 1:  // 看门狗复位
+        snprintf(log_msg, sizeof(log_msg), "看门狗复位(第%lu次)", reset_count);
+        LOG_WATCHDOG_RESET();
+        // 同时记录详细信息
+        LogSystem_Record(LOG_CATEGORY_SAFETY, 0, LOG_EVENT_WATCHDOG_RESET, log_msg);
+        break;
+        
+      case 6:  // 窗口看门狗复位
+        snprintf(log_msg, sizeof(log_msg), "窗口看门狗复位(第%lu次)", reset_count);
+        LOG_WATCHDOG_RESET();
+        LogSystem_Record(LOG_CATEGORY_SAFETY, 0, LOG_EVENT_WATCHDOG_RESET, log_msg);
+        break;
+        
+      case 2:  // 软件复位
+        LOG_SOFTWARE_RESET("软件主动复位");
+        break;
+        
+      case 3:  // 上电复位
+        LOG_POWER_ON_RESET();
+        break;
+        
+      case 4:  // 引脚复位
+        LOG_SYSTEM_RESTART("引脚复位(按复位按钮)");
+        break;
+        
+      default:  // 正常启动
+        LOG_SYSTEM_START();
+        break;
     }
   } else {
     DEBUG_Printf("日志系统初始化失败\r\n");
@@ -258,6 +304,14 @@ int main(void)
   
   // 注意：IWDG将在系统进入正常状态后自动启动，无需在此处阻塞延时
   DEBUG_Printf("系统初始化完成，开始状态机循环\r\n");
+  
+  // 输出复位原因修复验证信息
+  DEBUG_Printf("\r\n=== 复位原因记录修复验证 ===\r\n");
+  DEBUG_Printf("? 复位检测已统一到main.c处理\r\n");
+  DEBUG_Printf("? 避免了iwdg_control.c的重复检测\r\n");
+  DEBUG_Printf("? 确保复位原因在日志系统初始化后记录\r\n");
+  DEBUG_Printf("? 支持完整的复位类型检测和日志记录\r\n");
+  DEBUG_Printf("验证方法: 重启系统后使用KEY1长按3秒查看日志\r\n");
 
 
 

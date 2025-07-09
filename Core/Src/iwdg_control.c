@@ -45,8 +45,7 @@ static uint32_t g_iwdg_reset_count = 0;       // 复位计数
 
 /* Private function prototypes -----------------------------------------------*/
 static void IwdgControl_InitStructure(void);
-static void IwdgControl_AnalyzeResetReason(void);
-// 统计信息更新函数已移除，统计信息在实际操作中直接更新
+
 static uint8_t IwdgControl_CheckSafetyConditions(void);
 static void IwdgControl_HandleResetRecovery(void);
 
@@ -61,8 +60,7 @@ void IwdgControl_Init(void)
     // 初始化控制结构体
     IwdgControl_InitStructure();
     
-    // 分析复位原因
-    IwdgControl_AnalyzeResetReason();
+
     
     // 系统启动检查
     IwdgControl_SystemStartupCheck();
@@ -73,9 +71,6 @@ void IwdgControl_Init(void)
     DEBUG_Printf("=== IWDG看门狗控制模块初始化完成 ===\r\n");
     DEBUG_Printf("超时时间: %lums, 喂狗间隔: %lums\r\n", 
                 g_iwdg_control.timeout_value, g_iwdg_control.feed_interval);
-    
-    // 打印复位原因
-    IwdgControl_PrintResetReason();
 }
 
 /**
@@ -531,38 +526,25 @@ static void IwdgControl_InitStructure(void)
 }
 
 /**
-  * @brief  分析复位原因
+  * @brief  设置复位原因（由main.c调用）
+  * @param  reason: 复位原因
   * @retval 无
   */
-static void IwdgControl_AnalyzeResetReason(void)
+void IwdgControl_SetResetReason(IwdgResetReason_t reason)
 {
-    // 检查复位标志
-    if(__HAL_RCC_GET_FLAG(RCC_FLAG_IWDGRST)) {
-        g_iwdg_control.statistics.last_reset_reason = IWDG_RESET_WATCHDOG;
-        __HAL_RCC_CLEAR_RESET_FLAGS();
-        // 记录看门狗复位到日志系统
-        if(LogSystem_IsInitialized()) {
-            LOG_WATCHDOG_RESET();
-        }
-    } else if(__HAL_RCC_GET_FLAG(RCC_FLAG_WWDGRST)) {
-        g_iwdg_control.statistics.last_reset_reason = IWDG_RESET_WINDOW_WATCHDOG;
-        __HAL_RCC_CLEAR_RESET_FLAGS();
-        // 记录窗口看门狗复位到日志系统
-        if(LogSystem_IsInitialized()) {
-            LOG_WATCHDOG_RESET();
-        }
-    } else if(__HAL_RCC_GET_FLAG(RCC_FLAG_PORRST)) {
-        g_iwdg_control.statistics.last_reset_reason = IWDG_RESET_POWER_ON;
-        __HAL_RCC_CLEAR_RESET_FLAGS();
-    } else if(__HAL_RCC_GET_FLAG(RCC_FLAG_SFTRST)) {
-        g_iwdg_control.statistics.last_reset_reason = IWDG_RESET_SOFTWARE;
-        __HAL_RCC_CLEAR_RESET_FLAGS();
-    } else if(__HAL_RCC_GET_FLAG(RCC_FLAG_PINRST)) {
-        g_iwdg_control.statistics.last_reset_reason = IWDG_RESET_PIN;
-        __HAL_RCC_CLEAR_RESET_FLAGS();
-    } else {
-        g_iwdg_control.statistics.last_reset_reason = IWDG_RESET_UNKNOWN;
-    }
+    g_iwdg_control.statistics.last_reset_reason = reason;
+    DEBUG_Printf("IWDG模块已设置复位原因: %d\r\n", reason);
+}
+
+/**
+  * @brief  设置复位计数（由main.c调用）
+  * @param  count: 复位次数
+  * @retval 无
+  */
+void IwdgControl_SetResetCount(uint32_t count)
+{
+    g_iwdg_reset_count = count;
+    DEBUG_Printf("IWDG模块已设置复位次数: %lu\r\n", count);
 }
 
 // 统计信息更新函数已移除，统计信息在实际操作中直接更新
