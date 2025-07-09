@@ -47,7 +47,7 @@ uint8_t RelayControl_CheckInterlock(uint8_t channelNum); // 检查通道互锁
 uint8_t RelayControl_GetLastError(uint8_t channelNum);   // 获取最后一次错误
 void RelayControl_ClearError(uint8_t channelNum);        // 清除错误状态
 
-// 使能信号处理函数（在中断中调用）
+// 使能信号处理函数（在中断中调用，设置标志位）
 void RelayControl_HandleEnableSignal(uint8_t channelNum, uint8_t state);
 
 // 错误代码定义
@@ -61,13 +61,11 @@ void RelayControl_HandleEnableSignal(uint8_t channelNum, uint8_t state);
 #define RELAY_ERR_HARDWARE_FAILURE  0x07    // 硬件反馈异常错误
 
 // 时间常量定义
-#define RELAY_CHECK_INTERVAL        50      // 使能信号检测间隔(ms)
 #define RELAY_PULSE_WIDTH           500     // 控制脉冲宽度(ms)
 #define RELAY_FEEDBACK_DELAY        500     // 反馈检测延时(ms)
-#define RELAY_CHECK_COUNT           3       // 使能信号检测次数
 
 // ========== 函数声明 ==========
-void RelayControl_ProcessPendingActions(void); // 处理待处理的动作
+void RelayControl_ProcessPendingActions(void); // 处理中断标志并执行继电器动作
 
 #ifdef __cplusplus
 }

@@ -558,42 +558,25 @@ int main(void)
         }
     }
     
-    // 看门狗喂狗调试：添加详细的状态监控和调试输出
+    // 看门狗喂狗：简化实现，减少调试输出
     SystemState_t current_state = SystemControl_GetState();
     uint16_t alarm_flags = SafetyMonitor_GetAlarmFlags();
-    uint8_t iwdg_auto_feed = IwdgControl_IsAutoFeedEnabled();
-    uint8_t iwdg_safe_to_feed = IwdgControl_IsSystemSafeToFeed();
     
-    // 每500ms输出一次详细的看门狗状态信息
-    static uint32_t last_watchdog_debug_time = 0;
-    uint32_t current_time = HAL_GetTick();
-    if(current_time - last_watchdog_debug_time >= 500) {
-        last_watchdog_debug_time = current_time;
-        
-        // 输出详细的看门狗状态信息
-        DEBUG_Printf("[看门狗调试] 时间:%lu, 系统状态:%d, 异常标志:0x%04X\r\n", 
-                    current_time, current_state, alarm_flags);
-        DEBUG_Printf("[看门狗调试] IWDG自动喂狗:%s, 安全检查:%s\r\n", 
-                    iwdg_auto_feed ? "启用" : "禁用", 
-                    iwdg_safe_to_feed ? "通过" : "阻止");
-        
-        // 特别关注O类异常
-        if(alarm_flags & (1 << 14)) {  // O类异常（索引14）
-            DEBUG_Printf("[看门狗调试] ?? 检测到O类异常，主循环判断结果:\r\n");
-            if(current_state == SYSTEM_STATE_NORMAL || 
-               current_state == SYSTEM_STATE_ALARM ||
-               current_state == SYSTEM_STATE_SELF_TEST ||
-               current_state == SYSTEM_STATE_SELF_TEST_CHECK) {
-                DEBUG_Printf("[看门狗调试] ? 主循环将喂狗（系统状态允许）\r\n");
-            } else {
-                DEBUG_Printf("[看门狗调试] ? 主循环将停止喂狗（系统状态不允许）\r\n");
-            }
-        }
-    }
+    // 注释看门狗调试信息，保持串口输出简洁
+    // static uint32_t last_watchdog_debug_time = 0;
+    // uint32_t current_time = HAL_GetTick();
+    // if(current_time - last_watchdog_debug_time >= 500) {
+    //     last_watchdog_debug_time = current_time;
+    //     DEBUG_Printf("[看门狗调试] 时间:%lu, 系统状态:%d, 异常标志:0x%04X\r\n", 
+    //                 current_time, current_state, alarm_flags);
+    //     DEBUG_Printf("[看门狗调试] IWDG自动喂狗:%s, 安全检查:%s\r\n", 
+    //                 iwdg_auto_feed ? "启用" : "禁用", 
+    //                 iwdg_safe_to_feed ? "通过" : "阻止");
+    // }
     
-    // 记录每次喂狗操作
-    static uint32_t last_feed_time = 0;
-    static uint32_t feed_count = 0;
+    // 注释调试相关的变量，避免编译警告
+    // static uint32_t last_feed_time = 0;
+    // static uint32_t feed_count = 0;
     
     // 简化的看门狗喂狗：在正常状态、报警状态和自检阶段都喂狗
     if(current_state == SYSTEM_STATE_NORMAL || 
@@ -603,31 +586,33 @@ int main(void)
         // 正常状态、报警状态和自检阶段都需要喂狗，只有错误状态才停止喂狗
         IWDG_Refresh();
         
-        // 记录喂狗操作（每100次喂狗输出一次统计）
-        feed_count++;
-        uint32_t feed_interval = current_time - last_feed_time;
-        last_feed_time = current_time;
-        
-        if(feed_count % 100 == 0) {
-            DEBUG_Printf("[看门狗调试] 已喂狗%lu次，本次间隔:%lums\r\n", feed_count, feed_interval);
-        }
-        
-        // 如果存在O类异常，每次喂狗都输出确认信息
-        if(alarm_flags & (1 << 14)) {
-            static uint32_t last_o_feed_debug = 0;
-            if(current_time - last_o_feed_debug >= 1000) {  // 每秒输出一次
-                last_o_feed_debug = current_time;
-                DEBUG_Printf("[看门狗调试] ? O类异常期间继续喂狗，状态:%d，计数:%lu\r\n", 
-                            current_state, feed_count);
-            }
-        }
+        // 注释喂狗统计调试信息，保持串口输出简洁
+        // feed_count++;
+        // uint32_t current_time = HAL_GetTick();
+        // uint32_t feed_interval = current_time - last_feed_time;
+        // last_feed_time = current_time;
+        // 
+        // if(feed_count % 100 == 0) {
+        //     DEBUG_Printf("[看门狗调试] 已喂狗%lu次，本次间隔:%lums\r\n", feed_count, feed_interval);
+        // }
+        // 
+        // // 如果存在O类异常，每次喂狗都输出确认信息
+        // if(alarm_flags & (1 << 14)) {
+        //     static uint32_t last_o_feed_debug = 0;
+        //     if(current_time - last_o_feed_debug >= 1000) {  // 每秒输出一次
+        //         last_o_feed_debug = current_time;
+        //         DEBUG_Printf("[看门狗调试] ? O类异常期间继续喂狗，状态:%d，计数:%lu\r\n", 
+        //                     current_state, feed_count);
+        //     }
+        // }
     } else {
-        // 不喂狗的情况，记录原因
-        static uint32_t last_no_feed_debug = 0;
-        if(current_time - last_no_feed_debug >= 1000) {
-            last_no_feed_debug = current_time;
-            DEBUG_Printf("[看门狗调试] ? 停止喂狗，系统状态:%d（错误状态）\r\n", current_state);
-        }
+        // 不喂狗的情况（调试信息已注释）
+        // static uint32_t last_no_feed_debug = 0;
+        // uint32_t current_time = HAL_GetTick();
+        // if(current_time - last_no_feed_debug >= 1000) {
+        //     last_no_feed_debug = current_time;
+        //     DEBUG_Printf("[看门狗调试] ? 停止喂狗，系统状态:%d（错误状态）\r\n", current_state);
+        // }
     }
     
     // 主循环延时1ms，避免CPU占用过高

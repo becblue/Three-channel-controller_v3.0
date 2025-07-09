@@ -3,7 +3,7 @@
 <title>Static Call Graph - [Three-channel controller_v3.0\Three-channel controller_v3.0]</title></head>
 <body><HR>
 <H1>Static Call Graph for image Three-channel controller_v3.0\Three-channel controller_v3.0</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060960: Last Updated: Wed Jul 09 17:27:52 2025
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060960: Last Updated: Wed Jul 09 19:13:17 2025
 <BR><P>
 <H3>Maximum Stack Usage =        792 bytes + Unknown(Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -112,7 +112,7 @@ Global Symbols
 <P><STRONG><a name="[48]"></a>__main</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, entry.o(.ARM.Collect$$$$00000000))
 <BR>[Address Reference Count : 1]<UL><LI> startup_stm32f103xe.o(.text)
 </UL>
-<P><STRONG><a name="[189]"></a>_main_stk</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, entry2.o(.ARM.Collect$$$$00000001))
+<P><STRONG><a name="[188]"></a>_main_stk</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, entry2.o(.ARM.Collect$$$$00000001))
 
 <P><STRONG><a name="[4f]"></a>_main_scatterload</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, entry5.o(.ARM.Collect$$$$00000004))
 <BR><BR>[Calls]<UL><LI><a href="#[50]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__scatterload
@@ -122,17 +122,17 @@ Global Symbols
 <BR><BR>[Called By]<UL><LI><a href="#[50]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__scatterload
 </UL>
 
-<P><STRONG><a name="[18a]"></a>_main_clock</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, entry7b.o(.ARM.Collect$$$$00000008))
+<P><STRONG><a name="[189]"></a>_main_clock</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, entry7b.o(.ARM.Collect$$$$00000008))
 
-<P><STRONG><a name="[18b]"></a>_main_cpp_init</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, entry8b.o(.ARM.Collect$$$$0000000A))
+<P><STRONG><a name="[18a]"></a>_main_cpp_init</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, entry8b.o(.ARM.Collect$$$$0000000A))
 
-<P><STRONG><a name="[18c]"></a>_main_init</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, entry9a.o(.ARM.Collect$$$$0000000B))
+<P><STRONG><a name="[18b]"></a>_main_init</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, entry9a.o(.ARM.Collect$$$$0000000B))
 
-<P><STRONG><a name="[18d]"></a>__rt_lib_shutdown_fini</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, entry12b.o(.ARM.Collect$$$$0000000E))
+<P><STRONG><a name="[18c]"></a>__rt_lib_shutdown_fini</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, entry12b.o(.ARM.Collect$$$$0000000E))
 
-<P><STRONG><a name="[18e]"></a>__rt_final_cpp</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, entry10a.o(.ARM.Collect$$$$0000000F))
+<P><STRONG><a name="[18d]"></a>__rt_final_cpp</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, entry10a.o(.ARM.Collect$$$$0000000F))
 
-<P><STRONG><a name="[18f]"></a>__rt_final_exit</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, entry11a.o(.ARM.Collect$$$$00000011))
+<P><STRONG><a name="[18e]"></a>__rt_final_exit</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, entry11a.o(.ARM.Collect$$$$00000011))
 
 <P><STRONG><a name="[0]"></a>Reset_Handler</STRONG> (Thumb, 8 bytes, Stack size 0 bytes, startup_stm32f103xe.o(.text))
 <BR>[Address Reference Count : 1]<UL><LI> startup_stm32f103xe.o(RESET)
@@ -315,7 +315,7 @@ Global Symbols
 <LI><a href="#[66]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_d2ulz
 </UL>
 
-<P><STRONG><a name="[190]"></a>_ll_ushift_r</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, llushr.o(.text), UNUSED)
+<P><STRONG><a name="[18f]"></a>_ll_ushift_r</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, llushr.o(.text), UNUSED)
 
 <P><STRONG><a name="[11d]"></a>__aeabi_memcpy</STRONG> (Thumb, 36 bytes, Stack size 0 bytes, memcpya.o(.text))
 <BR><BR>[Called By]<UL><LI><a href="#[11c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_RefreshDirtyRegions
@@ -324,28 +324,27 @@ Global Symbols
 <P><STRONG><a name="[e9]"></a>__aeabi_memcpy4</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, memcpya.o(.text))
 <BR><BR>[Called By]<UL><LI><a href="#[e8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;IwdgControl_PrintResetReason
 <LI><a href="#[141]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SafetyMonitor_GetAlarmInfo
-<LI><a href="#[151]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_UpdateSelfTestProgress
 <LI><a href="#[126]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_ShowSelfTestBarWithStep
 </UL>
 
-<P><STRONG><a name="[191]"></a>__aeabi_memcpy8</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, memcpya.o(.text), UNUSED)
+<P><STRONG><a name="[190]"></a>__aeabi_memcpy8</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, memcpya.o(.text), UNUSED)
 
 <P><STRONG><a name="[52]"></a>__aeabi_memset</STRONG> (Thumb, 14 bytes, Stack size 0 bytes, memseta.o(.text))
 <BR><BR>[Called By]<UL><LI><a href="#[53]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_memset$wrapper
 <LI><a href="#[51]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memclr
 </UL>
 
-<P><STRONG><a name="[192]"></a>__aeabi_memset4</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, memseta.o(.text), UNUSED)
+<P><STRONG><a name="[191]"></a>__aeabi_memset4</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, memseta.o(.text), UNUSED)
 
-<P><STRONG><a name="[193]"></a>__aeabi_memset8</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, memseta.o(.text), UNUSED)
+<P><STRONG><a name="[192]"></a>__aeabi_memset8</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, memseta.o(.text), UNUSED)
 
 <P><STRONG><a name="[51]"></a>__aeabi_memclr</STRONG> (Thumb, 4 bytes, Stack size 0 bytes, memseta.o(.text))
 <BR><BR>[Calls]<UL><LI><a href="#[52]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memset
 </UL>
-<BR>[Called By]<UL><LI><a href="#[114]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_ClearDirtyRegions
-<LI><a href="#[115]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_Clear
-<LI><a href="#[150]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_ExecuteSelfTest
+<BR>[Called By]<UL><LI><a href="#[150]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_ExecuteSelfTest
 <LI><a href="#[11e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_ResetDisplayCache
+<LI><a href="#[114]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_ClearDirtyRegions
+<LI><a href="#[115]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_Clear
 </UL>
 
 <P><STRONG><a name="[e3]"></a>__aeabi_memclr4</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, memseta.o(.text))
@@ -363,7 +362,7 @@ Global Symbols
 <LI><a href="#[f7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LogSystem_Init
 </UL>
 
-<P><STRONG><a name="[194]"></a>__aeabi_memclr8</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, memseta.o(.text), UNUSED)
+<P><STRONG><a name="[193]"></a>__aeabi_memclr8</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, memseta.o(.text), UNUSED)
 
 <P><STRONG><a name="[53]"></a>_memset$wrapper</STRONG> (Thumb, 18 bytes, Stack size 8 bytes, memseta.o(.text), UNUSED)
 <BR><BR>[Calls]<UL><LI><a href="#[52]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memset
@@ -479,7 +478,7 @@ Global Symbols
 <BR><BR>[Called By]<UL><LI><a href="#[111]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;NTC_ResToTemp
 </UL>
 
-<P><STRONG><a name="[195]"></a>__aeabi_uidiv</STRONG> (Thumb, 0 bytes, Stack size 12 bytes, uidiv.o(.text), UNUSED)
+<P><STRONG><a name="[194]"></a>__aeabi_uidiv</STRONG> (Thumb, 0 bytes, Stack size 12 bytes, uidiv.o(.text), UNUSED)
 
 <P><STRONG><a name="[184]"></a>__aeabi_uidivmod</STRONG> (Thumb, 44 bytes, Stack size 12 bytes, uidiv.o(.text), UNUSED)
 <BR><BR>[Called By]<UL><LI><a href="#[17d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_printf_core
@@ -493,7 +492,7 @@ Global Symbols
 <LI><a href="#[180]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_fp_digits
 </UL>
 
-<P><STRONG><a name="[196]"></a>__I$use$fp</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, iusefp.o(.text), UNUSED)
+<P><STRONG><a name="[195]"></a>__I$use$fp</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, iusefp.o(.text), UNUSED)
 
 <P><STRONG><a name="[56]"></a>_float_round</STRONG> (Thumb, 18 bytes, Stack size 0 bytes, fepilogue.o(.text))
 <BR><BR>[Called By]<UL><LI><a href="#[59]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_fdiv
@@ -555,7 +554,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[4f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_main_scatterload
 </UL>
 
-<P><STRONG><a name="[197]"></a>__scatterload_rt2</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, init.o(.text), UNUSED)
+<P><STRONG><a name="[196]"></a>__scatterload_rt2</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, init.o(.text), UNUSED)
 
 <P><STRONG><a name="[5d]"></a>__aeabi_llsl</STRONG> (Thumb, 30 bytes, Stack size 0 bytes, llshl.o(.text), UNUSED)
 <BR><BR>[Called By]<UL><LI><a href="#[60]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_double_epilogue
@@ -564,13 +563,13 @@ Global Symbols
 <LI><a href="#[66]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_d2ulz
 </UL>
 
-<P><STRONG><a name="[198]"></a>_ll_shift_l</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, llshl.o(.text), UNUSED)
+<P><STRONG><a name="[197]"></a>_ll_shift_l</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, llshl.o(.text), UNUSED)
 
 <P><STRONG><a name="[5f]"></a>__aeabi_lasr</STRONG> (Thumb, 36 bytes, Stack size 0 bytes, llsshr.o(.text), UNUSED)
 <BR><BR>[Called By]<UL><LI><a href="#[5e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_dadd
 </UL>
 
-<P><STRONG><a name="[199]"></a>_ll_sshift_r</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, llsshr.o(.text), UNUSED)
+<P><STRONG><a name="[198]"></a>_ll_sshift_r</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, llsshr.o(.text), UNUSED)
 
 <P><STRONG><a name="[61]"></a>_double_round</STRONG> (Thumb, 30 bytes, Stack size 8 bytes, depilogue.o(.text), UNUSED)
 <BR><BR>[Called By]<UL><LI><a href="#[60]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_double_epilogue
@@ -648,7 +647,6 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[165]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TemperatureMonitor_UpdateAll
 <LI><a href="#[16e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TemperatureMonitor_Init
 <LI><a href="#[166]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TemperatureMonitor_CheckAndHandleAlarm
-<LI><a href="#[12a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SmartDelayWithDebug
 <LI><a href="#[12e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_ProcessPendingActions
 <LI><a href="#[12c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_OpenChannel
 <LI><a href="#[12b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_Init
@@ -659,14 +657,12 @@ Global Symbols
 <LI><a href="#[ed]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;IwdgControl_SetResetCount
 <LI><a href="#[ea]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;IwdgControl_Resume
 <LI><a href="#[e8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;IwdgControl_PrintResetReason
-<LI><a href="#[e1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;IwdgControl_IsSystemSafeToFeed
 <LI><a href="#[e2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;IwdgControl_Init
 <LI><a href="#[e0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;IwdgControl_Feed
 <LI><a href="#[13b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SafetyMonitor_UpdateBeepState
 <LI><a href="#[13a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SafetyMonitor_UpdateAlarmOutput
 <LI><a href="#[145]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SafetyMonitor_ProcessDcCtrlInterrupt
 <LI><a href="#[140]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SafetyMonitor_ClearAlarmFlag
-<LI><a href="#[139]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SafetyMonitor_CheckPowerMonitor
 <LI><a href="#[134]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SafetyMonitor_CheckAlarmO_ClearCondition
 <LI><a href="#[137]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SafetyMonitor_SetAlarmFlag
 <LI><a href="#[142]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SafetyMonitor_Init
@@ -1189,11 +1185,12 @@ Global Symbols
 
 <P><STRONG><a name="[6a]"></a>HAL_GetTick</STRONG> (Thumb, 6 bytes, Stack size 0 bytes, stm32f1xx_hal.o(i.HAL_GetTick))
 <BR><BR>[Called By]<UL><LI><a href="#[f1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LogSystem_Record
+<LI><a href="#[12e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_ProcessPendingActions
 <LI><a href="#[12c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_OpenChannel
+<LI><a href="#[a1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_HandleEnableSignal
 <LI><a href="#[129]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_CloseChannel
 <LI><a href="#[148]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SmartDelay_FeedWatchdog
 <LI><a href="#[ec]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;IwdgControl_Suspend
-<LI><a href="#[e1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;IwdgControl_IsSystemSafeToFeed
 <LI><a href="#[e2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;IwdgControl_Init
 <LI><a href="#[e0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;IwdgControl_Feed
 <LI><a href="#[13b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SafetyMonitor_UpdateBeepState
@@ -1204,7 +1201,6 @@ Global Symbols
 <LI><a href="#[e5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SmartDelayWithForceFeed
 <LI><a href="#[137]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SafetyMonitor_SetAlarmFlag
 <LI><a href="#[142]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SafetyMonitor_Init
-<LI><a href="#[eb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;IwdgControl_SafetyMonitorIntegration
 <LI><a href="#[169]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_StartSelfTest
 <LI><a href="#[162]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_StartLogoDisplay
 <LI><a href="#[16a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_Reset
@@ -1596,7 +1592,7 @@ Global Symbols
 </UL>
 
 <P><STRONG><a name="[e0]"></a>IwdgControl_Feed</STRONG> (Thumb, 76 bytes, Stack size 8 bytes, iwdg_control.o(i.IwdgControl_Feed))
-<BR><BR>[Stack]<UL><LI>Max Depth = 384<LI>Call Chain = IwdgControl_Feed &rArr; IwdgControl_IsSystemSafeToFeed &rArr; DEBUG_Printf &rArr; HAL_UART_Transmit &rArr; UART_WaitOnFlagUntilTimeout
+<BR><BR>[Stack]<UL><LI>Max Depth = 352<LI>Call Chain = IwdgControl_Feed &rArr; DEBUG_Printf &rArr; HAL_UART_Transmit &rArr; UART_WaitOnFlagUntilTimeout
 </UL>
 <BR>[Calls]<UL><LI><a href="#[6a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GetTick
 <LI><a href="#[71]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DEBUG_Printf
@@ -1619,20 +1615,13 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[46]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
 
-<P><STRONG><a name="[188]"></a>IwdgControl_IsAutoFeedEnabled</STRONG> (Thumb, 6 bytes, Stack size 0 bytes, iwdg_control.o(i.IwdgControl_IsAutoFeedEnabled))
-<BR><BR>[Called By]<UL><LI><a href="#[46]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
-</UL>
-
-<P><STRONG><a name="[e1]"></a>IwdgControl_IsSystemSafeToFeed</STRONG> (Thumb, 184 bytes, Stack size 32 bytes, iwdg_control.o(i.IwdgControl_IsSystemSafeToFeed))
-<BR><BR>[Stack]<UL><LI>Max Depth = 376<LI>Call Chain = IwdgControl_IsSystemSafeToFeed &rArr; DEBUG_Printf &rArr; HAL_UART_Transmit &rArr; UART_WaitOnFlagUntilTimeout
+<P><STRONG><a name="[e1]"></a>IwdgControl_IsSystemSafeToFeed</STRONG> (Thumb, 42 bytes, Stack size 8 bytes, iwdg_control.o(i.IwdgControl_IsSystemSafeToFeed))
+<BR><BR>[Stack]<UL><LI>Max Depth = 8<LI>Call Chain = IwdgControl_IsSystemSafeToFeed
 </UL>
 <BR>[Calls]<UL><LI><a href="#[e6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_GetState
-<LI><a href="#[6a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GetTick
-<LI><a href="#[71]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DEBUG_Printf
 <LI><a href="#[e7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SafetyMonitor_GetAlarmFlags
 </UL>
 <BR>[Called By]<UL><LI><a href="#[e0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;IwdgControl_Feed
-<LI><a href="#[46]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
 
 <P><STRONG><a name="[e8]"></a>IwdgControl_PrintResetReason</STRONG> (Thumb, 50 bytes, Stack size 40 bytes, iwdg_control.o(i.IwdgControl_PrintResetReason))
@@ -1645,7 +1634,7 @@ Global Symbols
 </UL>
 
 <P><STRONG><a name="[ea]"></a>IwdgControl_Resume</STRONG> (Thumb, 38 bytes, Stack size 8 bytes, iwdg_control.o(i.IwdgControl_Resume))
-<BR><BR>[Stack]<UL><LI>Max Depth = 392<LI>Call Chain = IwdgControl_Resume &rArr; IwdgControl_Feed &rArr; IwdgControl_IsSystemSafeToFeed &rArr; DEBUG_Printf &rArr; HAL_UART_Transmit &rArr; UART_WaitOnFlagUntilTimeout
+<BR><BR>[Stack]<UL><LI>Max Depth = 360<LI>Call Chain = IwdgControl_Resume &rArr; IwdgControl_Feed &rArr; DEBUG_Printf &rArr; HAL_UART_Transmit &rArr; UART_WaitOnFlagUntilTimeout
 </UL>
 <BR>[Calls]<UL><LI><a href="#[71]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DEBUG_Printf
 <LI><a href="#[e0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;IwdgControl_Feed
@@ -1653,11 +1642,10 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[eb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;IwdgControl_SafetyMonitorIntegration
 </UL>
 
-<P><STRONG><a name="[eb]"></a>IwdgControl_SafetyMonitorIntegration</STRONG> (Thumb, 126 bytes, Stack size 16 bytes, iwdg_control.o(i.IwdgControl_SafetyMonitorIntegration))
-<BR><BR>[Stack]<UL><LI>Max Depth = 536<LI>Call Chain = IwdgControl_SafetyMonitorIntegration &rArr; IwdgControl_Suspend &rArr; LogSystem_Record &rArr; LogSystem_WriteEntry &rArr; LogSystem_PrepareNewSector &rArr; DEBUG_Printf &rArr; HAL_UART_Transmit &rArr; UART_WaitOnFlagUntilTimeout
+<P><STRONG><a name="[eb]"></a>IwdgControl_SafetyMonitorIntegration</STRONG> (Thumb, 72 bytes, Stack size 8 bytes, iwdg_control.o(i.IwdgControl_SafetyMonitorIntegration))
+<BR><BR>[Stack]<UL><LI>Max Depth = 528<LI>Call Chain = IwdgControl_SafetyMonitorIntegration &rArr; IwdgControl_Suspend &rArr; LogSystem_Record &rArr; LogSystem_WriteEntry &rArr; LogSystem_PrepareNewSector &rArr; DEBUG_Printf &rArr; HAL_UART_Transmit &rArr; UART_WaitOnFlagUntilTimeout
 </UL>
-<BR>[Calls]<UL><LI><a href="#[6a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GetTick
-<LI><a href="#[71]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DEBUG_Printf
+<BR>[Calls]<UL><LI><a href="#[71]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DEBUG_Printf
 <LI><a href="#[ec]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;IwdgControl_Suspend
 <LI><a href="#[ea]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;IwdgControl_Resume
 <LI><a href="#[e7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SafetyMonitor_GetAlarmFlags
@@ -1988,10 +1976,10 @@ Global Symbols
 <BR>[Calls]<UL><LI><a href="#[114]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_ClearDirtyRegions
 <LI><a href="#[113]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_AddDirtyRegion
 </UL>
-<BR>[Called By]<UL><LI><a href="#[113]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_AddDirtyRegion
-<LI><a href="#[120]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_ShowSelfTestBarWithCompanyLogo
+<BR>[Called By]<UL><LI><a href="#[120]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_ShowSelfTestBarWithCompanyLogo
 <LI><a href="#[122]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_ShowMainScreenDirty
 <LI><a href="#[119]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_DrawStringDirty
+<LI><a href="#[113]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_AddDirtyRegion
 </UL>
 
 <P><STRONG><a name="[115]"></a>OLED_Clear</STRONG> (Thumb, 20 bytes, Stack size 8 bytes, oled_display.o(i.OLED_Clear))
@@ -2014,11 +2002,11 @@ Global Symbols
 </UL>
 <BR>[Calls]<UL><LI><a href="#[51]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memclr
 </UL>
-<BR>[Called By]<UL><LI><a href="#[113]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_AddDirtyRegion
-<LI><a href="#[14e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_EnterNormalState
+<BR>[Called By]<UL><LI><a href="#[14e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_EnterNormalState
 <LI><a href="#[14d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_EnterErrorState
 <LI><a href="#[14c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_EnterAlarmState
 <LI><a href="#[122]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_ShowMainScreenDirty
+<LI><a href="#[113]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_AddDirtyRegion
 </UL>
 
 <P><STRONG><a name="[117]"></a>OLED_DrawString</STRONG> (Thumb, 162 bytes, Stack size 16 bytes, oled_display.o(i.OLED_DrawString))
@@ -2048,9 +2036,9 @@ Global Symbols
 <P><STRONG><a name="[11a]"></a>OLED_Init</STRONG> (Thumb, 172 bytes, Stack size 8 bytes, oled_display.o(i.OLED_Init))
 <BR><BR>[Stack]<UL><LI>Max Depth = 200<LI>Call Chain = OLED_Init &rArr; OLED_Clear &rArr; OLED_Refresh &rArr; OLED_WriteCmd &rArr; HAL_I2C_Mem_Write &rArr; I2C_RequestMemoryWrite &rArr; I2C_WaitOnMasterAddressFlagUntilTimeout
 </UL>
-<BR>[Calls]<UL><LI><a href="#[115]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_Clear
-<LI><a href="#[11b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_WriteCmd
+<BR>[Calls]<UL><LI><a href="#[11b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_WriteCmd
 <LI><a href="#[9f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_Delay
+<LI><a href="#[115]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_Clear
 </UL>
 <BR>[Called By]<UL><LI><a href="#[46]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
@@ -2061,11 +2049,11 @@ Global Symbols
 <BR>[Calls]<UL><LI><a href="#[11b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_WriteCmd
 <LI><a href="#[a8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_I2C_Mem_Write
 </UL>
-<BR>[Called By]<UL><LI><a href="#[117]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_DrawString
-<LI><a href="#[115]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_Clear
-<LI><a href="#[157]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_HandleSelfTestError
+<BR>[Called By]<UL><LI><a href="#[157]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_HandleSelfTestError
 <LI><a href="#[126]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_ShowSelfTestBarWithStep
 <LI><a href="#[121]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_ShowLogo
+<LI><a href="#[117]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_DrawString
+<LI><a href="#[115]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_Clear
 </UL>
 
 <P><STRONG><a name="[11c]"></a>OLED_RefreshDirtyRegions</STRONG> (Thumb, 200 bytes, Stack size 56 bytes, oled_display.o(i.OLED_RefreshDirtyRegions))
@@ -2108,8 +2096,8 @@ Global Symbols
 <P><STRONG><a name="[121]"></a>OLED_ShowLogo</STRONG> (Thumb, 180 bytes, Stack size 40 bytes, oled_display.o(i.OLED_ShowLogo))
 <BR><BR>[Stack]<UL><LI>Max Depth = 232<LI>Call Chain = OLED_ShowLogo &rArr; OLED_Clear &rArr; OLED_Refresh &rArr; OLED_WriteCmd &rArr; HAL_I2C_Mem_Write &rArr; I2C_RequestMemoryWrite &rArr; I2C_WaitOnMasterAddressFlagUntilTimeout
 </UL>
-<BR>[Calls]<UL><LI><a href="#[115]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_Clear
-<LI><a href="#[116]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_Refresh
+<BR>[Calls]<UL><LI><a href="#[116]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_Refresh
+<LI><a href="#[115]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_Clear
 </UL>
 <BR>[Called By]<UL><LI><a href="#[162]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_StartLogoDisplay
 </UL>
@@ -2117,12 +2105,12 @@ Global Symbols
 <P><STRONG><a name="[122]"></a>OLED_ShowMainScreenDirty</STRONG> (Thumb, 352 bytes, Stack size 48 bytes, oled_display.o(i.OLED_ShowMainScreenDirty))
 <BR><BR>[Stack]<UL><LI>Max Depth = 256<LI>Call Chain = OLED_ShowMainScreenDirty &rArr; OLED_RefreshDirtyRegions &rArr; OLED_WriteCmd &rArr; HAL_I2C_Mem_Write &rArr; I2C_RequestMemoryWrite &rArr; I2C_WaitOnMasterAddressFlagUntilTimeout
 </UL>
-<BR>[Calls]<UL><LI><a href="#[114]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_ClearDirtyRegions
-<LI><a href="#[113]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_AddDirtyRegion
-<LI><a href="#[ef]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LogSystem_IsInitialized
+<BR>[Calls]<UL><LI><a href="#[ef]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LogSystem_IsInitialized
 <LI><a href="#[123]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LogSystem_GetHealthPercentage
 <LI><a href="#[11c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_RefreshDirtyRegions
 <LI><a href="#[119]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_DrawStringDirty
+<LI><a href="#[114]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_ClearDirtyRegions
+<LI><a href="#[113]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_AddDirtyRegion
 <LI><a href="#[f0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__2snprintf
 <LI><a href="#[73]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;strlen
 </UL>
@@ -2132,10 +2120,10 @@ Global Symbols
 <P><STRONG><a name="[120]"></a>OLED_ShowSelfTestBarWithCompanyLogo</STRONG> (Thumb, 424 bytes, Stack size 48 bytes, oled_display.o(i.OLED_ShowSelfTestBarWithCompanyLogo))
 <BR><BR>[Stack]<UL><LI>Max Depth = 256<LI>Call Chain = OLED_ShowSelfTestBarWithCompanyLogo &rArr; OLED_RefreshDirtyRegions &rArr; OLED_WriteCmd &rArr; HAL_I2C_Mem_Write &rArr; I2C_RequestMemoryWrite &rArr; I2C_WaitOnMasterAddressFlagUntilTimeout
 </UL>
-<BR>[Calls]<UL><LI><a href="#[115]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_Clear
-<LI><a href="#[113]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_AddDirtyRegion
-<LI><a href="#[124]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_ShowCompanyLogo
+<BR>[Calls]<UL><LI><a href="#[124]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_ShowCompanyLogo
 <LI><a href="#[11c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_RefreshDirtyRegions
+<LI><a href="#[115]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_Clear
+<LI><a href="#[113]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_AddDirtyRegion
 <LI><a href="#[125]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__2sprintf
 <LI><a href="#[73]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;strlen
 </UL>
@@ -2219,8 +2207,12 @@ Global Symbols
 <LI><a href="#[167]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_UpdateDisplay
 </UL>
 
-<P><STRONG><a name="[a1]"></a>RelayControl_HandleEnableSignal</STRONG> (Thumb, 2 bytes, Stack size 0 bytes, relay_control.o(i.RelayControl_HandleEnableSignal))
-<BR><BR>[Called By]<UL><LI><a href="#[a0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GPIO_EXTI_Callback
+<P><STRONG><a name="[a1]"></a>RelayControl_HandleEnableSignal</STRONG> (Thumb, 42 bytes, Stack size 8 bytes, relay_control.o(i.RelayControl_HandleEnableSignal))
+<BR><BR>[Stack]<UL><LI>Max Depth = 8<LI>Call Chain = RelayControl_HandleEnableSignal
+</UL>
+<BR>[Calls]<UL><LI><a href="#[6a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GetTick
+</UL>
+<BR>[Called By]<UL><LI><a href="#[a0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GPIO_EXTI_Callback
 </UL>
 
 <P><STRONG><a name="[12b]"></a>RelayControl_Init</STRONG> (Thumb, 150 bytes, Stack size 16 bytes, relay_control.o(i.RelayControl_Init))
@@ -2274,13 +2266,14 @@ Global Symbols
 <LI><a href="#[154]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_SelfTest_Step2_RelayCorrection
 </UL>
 
-<P><STRONG><a name="[12e]"></a>RelayControl_ProcessPendingActions</STRONG> (Thumb, 266 bytes, Stack size 16 bytes, relay_control.o(i.RelayControl_ProcessPendingActions))
-<BR><BR>[Stack]<UL><LI>Max Depth = 568<LI>Call Chain = RelayControl_ProcessPendingActions &rArr; RelayControl_OpenChannel &rArr; LogSystem_Record &rArr; LogSystem_WriteEntry &rArr; LogSystem_PrepareNewSector &rArr; DEBUG_Printf &rArr; HAL_UART_Transmit &rArr; UART_WaitOnFlagUntilTimeout
+<P><STRONG><a name="[12e]"></a>RelayControl_ProcessPendingActions</STRONG> (Thumb, 464 bytes, Stack size 32 bytes, relay_control.o(i.RelayControl_ProcessPendingActions))
+<BR><BR>[Stack]<UL><LI>Max Depth = 584<LI>Call Chain = RelayControl_ProcessPendingActions &rArr; RelayControl_OpenChannel &rArr; LogSystem_Record &rArr; LogSystem_WriteEntry &rArr; LogSystem_PrepareNewSector &rArr; DEBUG_Printf &rArr; HAL_UART_Transmit &rArr; UART_WaitOnFlagUntilTimeout
 </UL>
 <BR>[Calls]<UL><LI><a href="#[e6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_GetState
 <LI><a href="#[12d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SafetyMonitor_IsAlarmActive
 <LI><a href="#[12c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_OpenChannel
 <LI><a href="#[129]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_CloseChannel
+<LI><a href="#[6a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GetTick
 <LI><a href="#[71]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DEBUG_Printf
 <LI><a href="#[83]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_ReadSW3_STA
 <LI><a href="#[82]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_ReadSW2_STA
@@ -2372,12 +2365,11 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[144]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SafetyMonitor_UpdateAllAlarmStatus
 </UL>
 
-<P><STRONG><a name="[139]"></a>SafetyMonitor_CheckPowerMonitor</STRONG> (Thumb, 188 bytes, Stack size 24 bytes, safety_monitor.o(i.SafetyMonitor_CheckPowerMonitor))
-<BR><BR>[Stack]<UL><LI>Max Depth = 560<LI>Call Chain = SafetyMonitor_CheckPowerMonitor &rArr; SafetyMonitor_SetAlarmFlag &rArr; LogSystem_Record &rArr; LogSystem_WriteEntry &rArr; LogSystem_PrepareNewSector &rArr; DEBUG_Printf &rArr; HAL_UART_Transmit &rArr; UART_WaitOnFlagUntilTimeout
+<P><STRONG><a name="[139]"></a>SafetyMonitor_CheckPowerMonitor</STRONG> (Thumb, 72 bytes, Stack size 8 bytes, safety_monitor.o(i.SafetyMonitor_CheckPowerMonitor))
+<BR><BR>[Stack]<UL><LI>Max Depth = 544<LI>Call Chain = SafetyMonitor_CheckPowerMonitor &rArr; SafetyMonitor_SetAlarmFlag &rArr; LogSystem_Record &rArr; LogSystem_WriteEntry &rArr; LogSystem_PrepareNewSector &rArr; DEBUG_Printf &rArr; HAL_UART_Transmit &rArr; UART_WaitOnFlagUntilTimeout
 </UL>
 <BR>[Calls]<UL><LI><a href="#[12d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SafetyMonitor_IsAlarmActive
 <LI><a href="#[6a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GetTick
-<LI><a href="#[71]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DEBUG_Printf
 <LI><a href="#[76]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_ReadDC_CTRL
 <LI><a href="#[13b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SafetyMonitor_UpdateBeepState
 <LI><a href="#[13a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SafetyMonitor_UpdateAlarmOutput
@@ -2595,11 +2587,10 @@ Global Symbols
 <LI><a href="#[172]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;W25Q128_WaitForReady
 </UL>
 
-<P><STRONG><a name="[12a]"></a>SmartDelayWithDebug</STRONG> (Thumb, 118 bytes, Stack size 32 bytes, smart_delay.o(i.SmartDelayWithDebug))
-<BR><BR>[Stack]<UL><LI>Max Depth = 376<LI>Call Chain = SmartDelayWithDebug &rArr; DEBUG_Printf &rArr; HAL_UART_Transmit &rArr; UART_WaitOnFlagUntilTimeout
+<P><STRONG><a name="[12a]"></a>SmartDelayWithDebug</STRONG> (Thumb, 56 bytes, Stack size 16 bytes, smart_delay.o(i.SmartDelayWithDebug))
+<BR><BR>[Stack]<UL><LI>Max Depth = 40<LI>Call Chain = SmartDelayWithDebug &rArr; SmartDelay_FeedWatchdog &rArr; SmartDelay_ShouldFeedWatchdog
 </UL>
-<BR>[Calls]<UL><LI><a href="#[71]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DEBUG_Printf
-<LI><a href="#[148]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SmartDelay_FeedWatchdog
+<BR>[Calls]<UL><LI><a href="#[148]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SmartDelay_FeedWatchdog
 <LI><a href="#[9f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_Delay
 </UL>
 <BR>[Called By]<UL><LI><a href="#[12c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RelayControl_OpenChannel
@@ -2658,10 +2649,10 @@ Global Symbols
 <P><STRONG><a name="[14c]"></a>SystemControl_EnterAlarmState</STRONG> (Thumb, 32 bytes, Stack size 8 bytes, system_control.o(i.SystemControl_EnterAlarmState))
 <BR><BR>[Stack]<UL><LI>Max Depth = 352<LI>Call Chain = SystemControl_EnterAlarmState &rArr; DEBUG_Printf &rArr; HAL_UART_Transmit &rArr; UART_WaitOnFlagUntilTimeout
 </UL>
-<BR>[Calls]<UL><LI><a href="#[114]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_ClearDirtyRegions
-<LI><a href="#[6a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GetTick
+<BR>[Calls]<UL><LI><a href="#[6a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GetTick
 <LI><a href="#[71]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DEBUG_Printf
 <LI><a href="#[11e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_ResetDisplayCache
+<LI><a href="#[114]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_ClearDirtyRegions
 </UL>
 <BR>[Called By]<UL><LI><a href="#[163]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_MainLoopScheduler
 </UL>
@@ -2669,10 +2660,10 @@ Global Symbols
 <P><STRONG><a name="[14d]"></a>SystemControl_EnterErrorState</STRONG> (Thumb, 70 bytes, Stack size 16 bytes, system_control.o(i.SystemControl_EnterErrorState))
 <BR><BR>[Stack]<UL><LI>Max Depth = 360<LI>Call Chain = SystemControl_EnterErrorState &rArr; DEBUG_Printf &rArr; HAL_UART_Transmit &rArr; UART_WaitOnFlagUntilTimeout
 </UL>
-<BR>[Calls]<UL><LI><a href="#[114]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_ClearDirtyRegions
-<LI><a href="#[6a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GetTick
+<BR>[Calls]<UL><LI><a href="#[6a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GetTick
 <LI><a href="#[71]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DEBUG_Printf
 <LI><a href="#[11e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_ResetDisplayCache
+<LI><a href="#[114]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_ClearDirtyRegions
 <LI><a href="#[73]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;strlen
 <LI><a href="#[101]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;strncpy
 </UL>
@@ -2682,13 +2673,13 @@ Global Symbols
 <P><STRONG><a name="[14e]"></a>SystemControl_EnterNormalState</STRONG> (Thumb, 50 bytes, Stack size 8 bytes, system_control.o(i.SystemControl_EnterNormalState))
 <BR><BR>[Stack]<UL><LI>Max Depth = 360<LI>Call Chain = SystemControl_EnterNormalState &rArr; MX_IWDG_Init &rArr; DEBUG_Printf &rArr; HAL_UART_Transmit &rArr; UART_WaitOnFlagUntilTimeout
 </UL>
-<BR>[Calls]<UL><LI><a href="#[114]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_ClearDirtyRegions
-<LI><a href="#[115]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_Clear
-<LI><a href="#[6a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GetTick
+<BR>[Calls]<UL><LI><a href="#[6a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GetTick
 <LI><a href="#[71]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DEBUG_Printf
 <LI><a href="#[10b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;MX_IWDG_Init
 <LI><a href="#[de]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;IWDG_Refresh
 <LI><a href="#[11e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_ResetDisplayCache
+<LI><a href="#[114]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_ClearDirtyRegions
+<LI><a href="#[115]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_Clear
 </UL>
 <BR>[Called By]<UL><LI><a href="#[163]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_MainLoopScheduler
 <LI><a href="#[150]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_ExecuteSelfTest
@@ -2810,13 +2801,13 @@ Global Symbols
 <P><STRONG><a name="[157]"></a>SystemControl_HandleSelfTestError</STRONG> (Thumb, 106 bytes, Stack size 72 bytes, system_control.o(i.SystemControl_HandleSelfTestError))
 <BR><BR>[Stack]<UL><LI>Max Depth = 608<LI>Call Chain = SystemControl_HandleSelfTestError &rArr; SafetyMonitor_SetAlarmFlag &rArr; LogSystem_Record &rArr; LogSystem_WriteEntry &rArr; LogSystem_PrepareNewSector &rArr; DEBUG_Printf &rArr; HAL_UART_Transmit &rArr; UART_WaitOnFlagUntilTimeout
 </UL>
-<BR>[Calls]<UL><LI><a href="#[118]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_DrawString6x8
-<LI><a href="#[115]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_Clear
-<LI><a href="#[71]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DEBUG_Printf
+<BR>[Calls]<UL><LI><a href="#[71]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DEBUG_Printf
 <LI><a href="#[137]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SafetyMonitor_SetAlarmFlag
 <LI><a href="#[14d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_EnterErrorState
 <LI><a href="#[11e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_ResetDisplayCache
 <LI><a href="#[116]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_Refresh
+<LI><a href="#[118]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_DrawString6x8
+<LI><a href="#[115]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_Clear
 <LI><a href="#[125]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__2sprintf
 <LI><a href="#[73]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;strlen
 </UL>
@@ -2875,7 +2866,7 @@ Global Symbols
 <LI><a href="#[46]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
 
-<P><STRONG><a name="[168]"></a>SystemControl_Process</STRONG> (Thumb, 152 bytes, Stack size 8 bytes, system_control.o(i.SystemControl_Process))
+<P><STRONG><a name="[168]"></a>SystemControl_Process</STRONG> (Thumb, 148 bytes, Stack size 8 bytes, system_control.o(i.SystemControl_Process))
 <BR><BR>[Stack]<UL><LI>Max Depth = 696<LI>Call Chain = SystemControl_Process &rArr; SystemControl_ExecuteSelfTest &rArr; SystemControl_SelfTest_Step2_RelayCorrection &rArr; RelayControl_OpenChannel &rArr; LogSystem_Record &rArr; LogSystem_WriteEntry &rArr; LogSystem_PrepareNewSector &rArr; DEBUG_Printf &rArr; HAL_UART_Transmit &rArr; UART_WaitOnFlagUntilTimeout
 </UL>
 <BR>[Calls]<UL><LI><a href="#[6a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GetTick
@@ -2983,10 +2974,10 @@ Global Symbols
 <P><STRONG><a name="[169]"></a>SystemControl_StartSelfTest</STRONG> (Thumb, 34 bytes, Stack size 8 bytes, system_control.o(i.SystemControl_StartSelfTest))
 <BR><BR>[Stack]<UL><LI>Max Depth = 576<LI>Call Chain = SystemControl_StartSelfTest &rArr; SystemControl_ExecuteChannelShutdown &rArr; RelayControl_CloseChannel &rArr; LogSystem_Record &rArr; LogSystem_WriteEntry &rArr; LogSystem_PrepareNewSector &rArr; DEBUG_Printf &rArr; HAL_UART_Transmit &rArr; UART_WaitOnFlagUntilTimeout
 </UL>
-<BR>[Calls]<UL><LI><a href="#[115]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_Clear
-<LI><a href="#[6a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GetTick
+<BR>[Calls]<UL><LI><a href="#[6a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GetTick
 <LI><a href="#[71]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DEBUG_Printf
 <LI><a href="#[14f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_ExecuteChannelShutdown
+<LI><a href="#[115]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_Clear
 </UL>
 <BR>[Called By]<UL><LI><a href="#[168]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_Process
 </UL>
@@ -3012,14 +3003,13 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[163]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_MainLoopScheduler
 </UL>
 
-<P><STRONG><a name="[151]"></a>SystemControl_UpdateSelfTestProgress</STRONG> (Thumb, 80 bytes, Stack size 40 bytes, system_control.o(i.SystemControl_UpdateSelfTestProgress))
-<BR><BR>[Stack]<UL><LI>Max Depth = 384<LI>Call Chain = SystemControl_UpdateSelfTestProgress &rArr; DEBUG_Printf &rArr; HAL_UART_Transmit &rArr; UART_WaitOnFlagUntilTimeout
+<P><STRONG><a name="[151]"></a>SystemControl_UpdateSelfTestProgress</STRONG> (Thumb, 48 bytes, Stack size 16 bytes, system_control.o(i.SystemControl_UpdateSelfTestProgress))
+<BR><BR>[Stack]<UL><LI>Max Depth = 360<LI>Call Chain = SystemControl_UpdateSelfTestProgress &rArr; DEBUG_Printf &rArr; HAL_UART_Transmit &rArr; UART_WaitOnFlagUntilTimeout
 </UL>
-<BR>[Calls]<UL><LI><a href="#[115]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_Clear
-<LI><a href="#[71]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DEBUG_Printf
+<BR>[Calls]<UL><LI><a href="#[71]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DEBUG_Printf
 <LI><a href="#[126]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_ShowSelfTestBarWithStep
 <LI><a href="#[11f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_ResetSelfTestBarState
-<LI><a href="#[e9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memcpy4
+<LI><a href="#[115]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_Clear
 </UL>
 <BR>[Called By]<UL><LI><a href="#[150]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemControl_ExecuteSelfTest
 </UL>
@@ -3258,7 +3248,7 @@ Global Symbols
 <BR><BR>[Calls]<UL><LI><a href="#[17d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_printf_core
 </UL>
 
-<P><STRONG><a name="[19a]"></a>__1snprintf</STRONG> (Thumb, 0 bytes, Stack size 40 bytes, printfa.o(i.__0snprintf), UNUSED)
+<P><STRONG><a name="[199]"></a>__1snprintf</STRONG> (Thumb, 0 bytes, Stack size 40 bytes, printfa.o(i.__0snprintf), UNUSED)
 
 <P><STRONG><a name="[f0]"></a>__2snprintf</STRONG> (Thumb, 0 bytes, Stack size 40 bytes, printfa.o(i.__0snprintf))
 <BR><BR>[Stack]<UL><LI>Max Depth = 40<LI>Call Chain = __2snprintf
@@ -3276,16 +3266,16 @@ Global Symbols
 <LI><a href="#[f8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LogSystem_FormatTimestamp
 </UL>
 
-<P><STRONG><a name="[19b]"></a>__c89snprintf</STRONG> (Thumb, 0 bytes, Stack size 40 bytes, printfa.o(i.__0snprintf), UNUSED)
+<P><STRONG><a name="[19a]"></a>__c89snprintf</STRONG> (Thumb, 0 bytes, Stack size 40 bytes, printfa.o(i.__0snprintf), UNUSED)
 
-<P><STRONG><a name="[19c]"></a>snprintf</STRONG> (Thumb, 0 bytes, Stack size 40 bytes, printfa.o(i.__0snprintf), UNUSED)
+<P><STRONG><a name="[19b]"></a>snprintf</STRONG> (Thumb, 0 bytes, Stack size 40 bytes, printfa.o(i.__0snprintf), UNUSED)
 
 <P><STRONG><a name="[17e]"></a>__0sprintf</STRONG> (Thumb, 34 bytes, Stack size 24 bytes, printfa.o(i.__0sprintf), UNUSED)
 <BR><BR>[Calls]<UL><LI><a href="#[4e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_sputc
 <LI><a href="#[17d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_printf_core
 </UL>
 
-<P><STRONG><a name="[19d]"></a>__1sprintf</STRONG> (Thumb, 0 bytes, Stack size 24 bytes, printfa.o(i.__0sprintf), UNUSED)
+<P><STRONG><a name="[19c]"></a>__1sprintf</STRONG> (Thumb, 0 bytes, Stack size 24 bytes, printfa.o(i.__0sprintf), UNUSED)
 
 <P><STRONG><a name="[125]"></a>__2sprintf</STRONG> (Thumb, 0 bytes, Stack size 24 bytes, printfa.o(i.__0sprintf))
 <BR><BR>[Stack]<UL><LI>Max Depth = 24<LI>Call Chain = __2sprintf
@@ -3297,20 +3287,20 @@ Global Symbols
 <LI><a href="#[120]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED_ShowSelfTestBarWithCompanyLogo
 </UL>
 
-<P><STRONG><a name="[19e]"></a>__c89sprintf</STRONG> (Thumb, 0 bytes, Stack size 24 bytes, printfa.o(i.__0sprintf), UNUSED)
+<P><STRONG><a name="[19d]"></a>__c89sprintf</STRONG> (Thumb, 0 bytes, Stack size 24 bytes, printfa.o(i.__0sprintf), UNUSED)
 
-<P><STRONG><a name="[19f]"></a>sprintf</STRONG> (Thumb, 0 bytes, Stack size 24 bytes, printfa.o(i.__0sprintf), UNUSED)
+<P><STRONG><a name="[19e]"></a>sprintf</STRONG> (Thumb, 0 bytes, Stack size 24 bytes, printfa.o(i.__0sprintf), UNUSED)
 
 <P><STRONG><a name="[17f]"></a>__0vsprintf</STRONG> (Thumb, 30 bytes, Stack size 24 bytes, printfa.o(i.__0vsprintf), UNUSED)
 <BR><BR>[Calls]<UL><LI><a href="#[4e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_sputc
 <LI><a href="#[17d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_printf_core
 </UL>
 
-<P><STRONG><a name="[1a0]"></a>__1vsprintf</STRONG> (Thumb, 0 bytes, Stack size 24 bytes, printfa.o(i.__0vsprintf), UNUSED)
+<P><STRONG><a name="[19f]"></a>__1vsprintf</STRONG> (Thumb, 0 bytes, Stack size 24 bytes, printfa.o(i.__0vsprintf), UNUSED)
 
-<P><STRONG><a name="[1a1]"></a>__2vsprintf</STRONG> (Thumb, 0 bytes, Stack size 24 bytes, printfa.o(i.__0vsprintf), UNUSED)
+<P><STRONG><a name="[1a0]"></a>__2vsprintf</STRONG> (Thumb, 0 bytes, Stack size 24 bytes, printfa.o(i.__0vsprintf), UNUSED)
 
-<P><STRONG><a name="[1a2]"></a>__c89vsprintf</STRONG> (Thumb, 0 bytes, Stack size 24 bytes, printfa.o(i.__0vsprintf), UNUSED)
+<P><STRONG><a name="[1a1]"></a>__c89vsprintf</STRONG> (Thumb, 0 bytes, Stack size 24 bytes, printfa.o(i.__0vsprintf), UNUSED)
 
 <P><STRONG><a name="[72]"></a>vsprintf</STRONG> (Thumb, 0 bytes, Stack size 24 bytes, printfa.o(i.__0vsprintf))
 <BR><BR>[Stack]<UL><LI>Max Depth = 24<LI>Call Chain = vsprintf
@@ -3318,13 +3308,13 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[71]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DEBUG_Printf
 </UL>
 
-<P><STRONG><a name="[1a3]"></a>__scatterload_copy</STRONG> (Thumb, 14 bytes, Stack size unknown bytes, handlers.o(i.__scatterload_copy), UNUSED)
+<P><STRONG><a name="[1a2]"></a>__scatterload_copy</STRONG> (Thumb, 14 bytes, Stack size unknown bytes, handlers.o(i.__scatterload_copy), UNUSED)
 
-<P><STRONG><a name="[1a4]"></a>__scatterload_null</STRONG> (Thumb, 2 bytes, Stack size unknown bytes, handlers.o(i.__scatterload_null), UNUSED)
+<P><STRONG><a name="[1a3]"></a>__scatterload_null</STRONG> (Thumb, 2 bytes, Stack size unknown bytes, handlers.o(i.__scatterload_null), UNUSED)
 
-<P><STRONG><a name="[1a5]"></a>__scatterload_zeroinit</STRONG> (Thumb, 14 bytes, Stack size unknown bytes, handlers.o(i.__scatterload_zeroinit), UNUSED)
+<P><STRONG><a name="[1a4]"></a>__scatterload_zeroinit</STRONG> (Thumb, 14 bytes, Stack size unknown bytes, handlers.o(i.__scatterload_zeroinit), UNUSED)
 
-<P><STRONG><a name="[46]"></a>main</STRONG> (Thumb, 3800 bytes, Stack size 96 bytes, main.o(i.main))
+<P><STRONG><a name="[46]"></a>main</STRONG> (Thumb, 3636 bytes, Stack size 96 bytes, main.o(i.main))
 <BR><BR>[Stack]<UL><LI>Max Depth = 792<LI>Call Chain = main &rArr; SystemControl_Process &rArr; SystemControl_ExecuteSelfTest &rArr; SystemControl_SelfTest_Step2_RelayCorrection &rArr; RelayControl_OpenChannel &rArr; LogSystem_Record &rArr; LogSystem_WriteEntry &rArr; LogSystem_PrepareNewSector &rArr; DEBUG_Printf &rArr; HAL_UART_Transmit &rArr; UART_WaitOnFlagUntilTimeout
 </UL>
 <BR>[Calls]<UL><LI><a href="#[5a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_ui2f
@@ -3340,8 +3330,6 @@ Global Symbols
 <LI><a href="#[ee]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;IwdgControl_SetResetReason
 <LI><a href="#[ed]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;IwdgControl_SetResetCount
 <LI><a href="#[e8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;IwdgControl_PrintResetReason
-<LI><a href="#[e1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;IwdgControl_IsSystemSafeToFeed
-<LI><a href="#[188]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;IwdgControl_IsAutoFeedEnabled
 <LI><a href="#[e2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;IwdgControl_Init
 <LI><a href="#[145]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SafetyMonitor_ProcessDcCtrlInterrupt
 <LI><a href="#[e7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SafetyMonitor_GetAlarmFlags

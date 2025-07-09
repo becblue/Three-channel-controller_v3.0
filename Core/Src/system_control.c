@@ -75,7 +75,8 @@ void SystemControl_Process(void)
                 // 更新进度条（带公司LOGO）
                 uint8_t percent = (elapsed_time * 100) / SELF_TEST_TIME_MS;
                 OLED_ShowSelfTestBarWithCompanyLogo(percent);
-                DEBUG_Printf("自检进度: %d%%\r\n", percent);
+                // 注释自检进度输出，保持串口输出简洁
+                // DEBUG_Printf("自检进度: %d%%\r\n", percent);
             } else {
                 // 进入自检检测阶段
                 g_system_control.current_state = SYSTEM_STATE_SELF_TEST_CHECK;
@@ -797,18 +798,19 @@ void SystemControl_UpdateSelfTestProgress(uint8_t step, uint8_t percent)
     // 显示进度条和步骤描述
     OLED_ShowSelfTestBarWithStep(percent, step);
     
-    // 输出步骤信息（保留中文用于串口调试）
-    const char* step_names[] = {
-        "",
-        "期望状态识别",
-        "继电器纠错",
-        "接触器检查", 
-        "温度安全检测"
-    };
+    // 注释步骤名称和输出信息，保持串口输出简洁
+    // const char* step_names[] = {
+    //     "",
+    //     "期望状态识别",
+    //     "继电器纠错",
+    //     "接触器检查", 
+    //     "温度安全检测"
+    // };
     
-    if(step >= 1 && step <= 4) {
-        DEBUG_Printf("自检步骤%d：%s（%d%%）\r\n", step, step_names[step], percent);
-    }
+    // 注释自检步骤输出，保持串口输出简洁
+    // if(step >= 1 && step <= 4) {
+    //     DEBUG_Printf("自检步骤%d：%s（%d%%）\r\n", step, step_names[step], percent);
+    // }
 }
 
 /**

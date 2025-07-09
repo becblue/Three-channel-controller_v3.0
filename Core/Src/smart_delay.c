@@ -122,16 +122,17 @@ void SmartDelayWithDebug(uint32_t delay_ms, const char* context)
     uint32_t feed_interval = SMART_DELAY_FEED_INTERVAL_MS;
     uint32_t elapsed_time = 0;
     
-    DEBUG_Printf("[智能延时] 开始: %s, 总时间: %lums\r\n", context, delay_ms);
+    // 注释智能延时调试信息，保持串口输出简洁
+    // DEBUG_Printf("[智能延时] 开始: %s, 总时间: %lums\r\n", context, delay_ms);
     
     // 如果延时时间很短，直接使用HAL_Delay
     if(delay_ms <= SMART_DELAY_MIN_FEED_TIME) {
         HAL_Delay(delay_ms);
-        DEBUG_Printf("[智能延时] 完成: %s\r\n", context);
+        // DEBUG_Printf("[智能延时] 完成: %s\r\n", context);
         return;
     }
     
-    // 在延时过程中定期喂狗和输出调试信息
+    // 在延时过程中定期喂狗（注释进度输出）
     while(remaining_time > 0) {
         uint32_t current_delay = (remaining_time > feed_interval) ? feed_interval : remaining_time;
         
@@ -140,18 +141,18 @@ void SmartDelayWithDebug(uint32_t delay_ms, const char* context)
         remaining_time -= current_delay;
         elapsed_time += current_delay;
         
-        // 如果还有剩余时间，尝试喂狗并输出进度
+        // 如果还有剩余时间，尝试喂狗（注释进度输出）
         if(remaining_time > 0) {
             SmartDelay_FeedWatchdog();
-            uint32_t progress = (elapsed_time * 100) / delay_ms;
-            DEBUG_Printf("[智能延时] %s: 进度 %lu%% (%lums/%lums)\r\n", 
-                        context, progress, elapsed_time, delay_ms);
+            // uint32_t progress = (elapsed_time * 100) / delay_ms;
+            // DEBUG_Printf("[智能延时] %s: 进度 %lu%% (%lums/%lums)\r\n", 
+            //             context, progress, elapsed_time, delay_ms);
         }
     }
     
     // 延时结束后再喂一次狗
     SmartDelay_FeedWatchdog();
-    DEBUG_Printf("[智能延时] 完成: %s, 总用时: %lums\r\n", context, delay_ms);
+    // DEBUG_Printf("[智能延时] 完成: %s, 总用时: %lums\r\n", context, delay_ms);
 }
 
 /**
