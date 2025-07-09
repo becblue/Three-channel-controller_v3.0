@@ -427,16 +427,36 @@ void IwdgControl_SafetyMonitorIntegration(void)
     // 检查安全监控系统状态
     uint16_t alarm_flags = SafetyMonitor_GetAlarmFlags();
     
+    // 调试输出：每2秒输出一次看门狗控制模块的状态
+    static uint32_t last_integration_debug = 0;
+    uint32_t current_time = HAL_GetTick();
+    if(current_time - last_integration_debug >= 2000) {
+        last_integration_debug = current_time;
+        DEBUG_Printf("[IWDG控制] 安全监控集成检查，异常标志:0x%04X, 自动喂狗:%s\r\n", 
+                    alarm_flags, g_iwdg_control.auto_feed_enabled ? "启用" : "禁用");
+        
+        if(alarm_flags & (1 << 14)) {  // O类异常
+            DEBUG_Printf("[IWDG控制] ? 检测到O类异常，当前自动喂狗状态:%s\r\n", 
+                        g_iwdg_control.auto_feed_enabled ? "启用" : "禁用");
+        }
+    }
+    
     if(alarm_flags != 0) {
         // 有报警存在，暂停喂狗
         if(g_iwdg_control.auto_feed_enabled) {
-            DEBUG_Printf("检测到安全报警(0x%04X)，暂停IWDG喂狗\r\n", alarm_flags);
+            DEBUG_Printf("[IWDG控制] 检测到安全报警(0x%04X)，暂停IWDG自动喂狗\r\n", alarm_flags);
+            
+            // 特别标记O类异常的处理
+            if(alarm_flags & (1 << 14)) {
+                DEBUG_Printf("[IWDG控制] ?? O类异常导致IWDG自动喂狗被暂停\r\n");
+            }
+            
             IwdgControl_Suspend();
         }
     } else {
         // 无报警，恢复喂狗
         if(!g_iwdg_control.auto_feed_enabled && g_iwdg_control.state == IWDG_STATE_SUSPENDED) {
-            DEBUG_Printf("安全报警已清除，恢复IWDG喂狗\r\n");
+            DEBUG_Printf("[IWDG控制] 安全报警已清除，恢复IWDG自动喂狗\r\n");
             IwdgControl_Resume();
         }
     }
@@ -451,24 +471,53 @@ uint8_t IwdgControl_IsSystemSafeToFeed(void)
     // 检查系统状态
     SystemState_t system_state = SystemControl_GetState();
     
+    // 调试输出：每3秒输出一次安全检查结果
+    static uint32_t last_safety_debug = 0;
+    uint32_t current_time = HAL_GetTick();
+    uint16_t alarm_flags = SafetyMonitor_GetAlarmFlags();
+    
+    if(current_time - last_safety_debug >= 3000) {
+        last_safety_debug = current_time;
+        DEBUG_Printf("[IWDG安全检查] 系统状态:%d, 异常标志:0x%04X\r\n", system_state, alarm_flags);
+        
+        if(alarm_flags & (1 << 14)) {  // O类异常
+            DEBUG_Printf("[IWDG安全检查] ? O类异常检查：索引14不在K~M范围(10-12)，将允许喂狗\r\n");
+        }
+        
+        // 检查K~M类异常
+        for(int i = 10; i <= 12; i++) {
+            if(alarm_flags & (1 << i)) {
+                DEBUG_Printf("[IWDG安全检查] ? 检测到%c类温度异常，将阻止喂狗\r\n", 'A' + i);
+            }
+        }
+    }
+    
     // 在自检阶段暂停喂狗
     if(system_state == SYSTEM_STATE_SELF_TEST || 
        system_state == SYSTEM_STATE_LOGO_DISPLAY ||
        system_state == SYSTEM_STATE_ERROR) {
+        if(current_time - last_safety_debug >= 3000) {
+            DEBUG_Printf("[IWDG安全检查] ? 系统状态%d不允许喂狗\r\n", system_state);
+        }
         return 0;
     }
     
     // 检查安全监控系统
-    uint16_t alarm_flags = SafetyMonitor_GetAlarmFlags();
-    
     // 如果有严重报警（K~M类温度异常），停止喂狗
     for(int i = 10; i <= 12; i++) {  // K~M类异常（索引10-12）
         if(alarm_flags & (1 << i)) {
+            if(current_time - last_safety_debug >= 3000) {
+                DEBUG_Printf("[IWDG安全检查] ? %c类温度异常，返回不安全\r\n", 'A' + i);
+            }
             return 0;  // 温度异常，停止喂狗
         }
     }
     
     // 其他异常情况下继续喂狗，防止系统无谓复位
+    if(current_time - last_safety_debug >= 3000 && alarm_flags != 0) {
+        DEBUG_Printf("[IWDG安全检查] ? 非温度异常(0x%04X)，返回安全（包括O类异常）\r\n", alarm_flags);
+    }
+    
     return 1;
 }
 

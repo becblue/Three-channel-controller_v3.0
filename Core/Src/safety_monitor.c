@@ -13,6 +13,10 @@
  * 严格按照README要求实现所有报警逻辑和解除条件
  ************************************************************/
 
+// 中断标志：DC_CTRL中断处理简化
+static volatile uint8_t g_dc_ctrl_interrupt_flag = 0;
+static volatile uint32_t g_dc_ctrl_interrupt_time = 0;
+
 // 全局安全监控结构体
 static SafetyMonitor_t g_safety_monitor;
 
@@ -519,12 +523,37 @@ void SafetyMonitor_DisablePowerMonitor(void)
   */
 void SafetyMonitor_PowerFailureCallback(void)
 {
+    // ? 中断处理简化：只设置标志，避免复杂操作导致看门狗复位
+    // 具体的电源监控逻辑将在主循环中处理
+    g_dc_ctrl_interrupt_flag = 1;
+    g_dc_ctrl_interrupt_time = HAL_GetTick();
+    
+    // 注释：原复杂处理逻辑（Flash写入、日志记录、串口输出等）
+    // 已移至主循环中的SafetyMonitor_ProcessDcCtrlInterrupt()函数处理
+}
+
+/**
+  * @brief  处理DC_CTRL中断标志（在主循环中调用）
+  * @retval 无
+  */
+void SafetyMonitor_ProcessDcCtrlInterrupt(void)
+{
+    // 检查是否有DC_CTRL中断标志
+    if(!g_dc_ctrl_interrupt_flag) return;
+    
+    // 清除中断标志
+    g_dc_ctrl_interrupt_flag = 0;
+    
+    // 检查电源监控是否启用
     if(!g_safety_monitor.power_monitor_enabled) return;
     
     // 读取DC_CTRL当前状态
     uint8_t dc_ctrl_state = GPIO_ReadDC_CTRL();
+    uint32_t current_time = HAL_GetTick();
+    uint32_t interrupt_time = g_dc_ctrl_interrupt_time;
     
-    DEBUG_Printf("[安全监控] DC_CTRL中断触发，当前状态: %s\r\n", dc_ctrl_state ? "高电平" : "低电平");
+    DEBUG_Printf("[电源监控主循环] 时间:%lu, 中断时间:%lu, DC_CTRL中断处理，当前状态: %s\r\n", 
+                current_time, interrupt_time, dc_ctrl_state ? "高电平" : "低电平");
     
     // 修正逻辑：根据实际硬件设计
     // 有DC24V供电时：DC_CTRL为低电平（正常状态）
@@ -532,12 +561,17 @@ void SafetyMonitor_PowerFailureCallback(void)
     if(dc_ctrl_state == 1) {
         // 检测到电源异常（高电平 = 没有DC24V供电）
         if(!SafetyMonitor_IsAlarmActive(ALARM_FLAG_O)) {
-            DEBUG_Printf("[安全监控] 检测到外部电源异常！DC24V供电中断\r\n");
+            DEBUG_Printf("[电源监控主循环] ?? 检测到外部电源异常！DC24V供电中断\r\n");
+            DEBUG_Printf("[电源监控主循环] ? 即将设置O类异常标志（索引14）\r\n");
+            
             SafetyMonitor_SetAlarmFlag(ALARM_FLAG_O, "DC24V Loss");  // 英文版本，10字符
+            
+            DEBUG_Printf("[电源监控主循环] ? O类异常标志已设置，当前异常标志:0x%04X\r\n", 
+                        SafetyMonitor_GetAlarmFlags());
             
             // 电源异常时保持当前通道状态，不强制关闭
             // 继电器在DC24V断电时会自然断开，无需主动控制
-            DEBUG_Printf("[安全监控] 电源异常时保持当前通道状态，继电器将自然断开\r\n");
+            DEBUG_Printf("[电源监控主循环] ? 电源异常时保持当前通道状态，继电器将自然断开\r\n");
             
             // 立即更新报警输出和蜂鸣器状态
             SafetyMonitor_UpdateAlarmOutput();
@@ -545,11 +579,17 @@ void SafetyMonitor_PowerFailureCallback(void)
             
             // 强制立即处理蜂鸣器脉冲（确保蜂鸣器立即响起）
             SafetyMonitor_ProcessBeep();
+            
+            DEBUG_Printf("[电源监控主循环] ? O类异常处理完成，系统应进入ALARM状态\r\n");
+        } else {
+            DEBUG_Printf("[电源监控主循环] ?? O类异常已存在，不重复设置\r\n");
         }
     } else {
-        // 电源恢复正常（低电平 = 有DC24V供电）
-        DEBUG_Printf("[安全监控] 外部电源恢复正常，准备解除O类异常\r\n");
-        // 电源恢复后会在主循环中通过CheckAlarmO_ClearCondition自动解除异常
+        // 电源恢复（低电平 = 有DC24V供电）
+        if(SafetyMonitor_IsAlarmActive(ALARM_FLAG_O)) {
+            DEBUG_Printf("[电源监控主循环] ? 检测到电源恢复，DC24V供电正常\r\n");
+            DEBUG_Printf("[电源监控主循环] ? 将在轮询检查中确认后解除O类异常\r\n");
+        }
     }
 }
 
@@ -713,6 +753,17 @@ void SafetyMonitor_CheckPowerMonitor(void)
     
     // 读取DC_CTRL状态
     uint8_t dc_ctrl_state = GPIO_ReadDC_CTRL();
+    uint32_t current_time = HAL_GetTick();
+    
+    // 每5秒输出一次轮询检查状态
+    static uint32_t last_power_check_debug = 0;
+    if(current_time - last_power_check_debug >= 5000) {
+        last_power_check_debug = current_time;
+        DEBUG_Printf("[电源监控轮询] 时间:%lu, DC_CTRL状态:%s, O类异常:%s\r\n", 
+                    current_time, 
+                    dc_ctrl_state ? "高电平(异常)" : "低电平(正常)",
+                    SafetyMonitor_IsAlarmActive(ALARM_FLAG_O) ? "激活" : "未激活");
+    }
     
     // 修正逻辑：根据实际硬件设计
     // 有DC24V供电时：DC_CTRL为低电平（正常状态）
@@ -720,17 +771,40 @@ void SafetyMonitor_CheckPowerMonitor(void)
     if(dc_ctrl_state == 1) {
         // 检测到电源异常（高电平 = 没有DC24V供电）
         if(!SafetyMonitor_IsAlarmActive(ALARM_FLAG_O)) {
-            DEBUG_Printf("[安全监控] 电源监控检测到DC24V异常\r\n");
+            DEBUG_Printf("[电源监控轮询] ?? 轮询检测到DC24V异常\r\n");
+            DEBUG_Printf("[电源监控轮询] ? 即将设置O类异常标志（索引14）\r\n");
+            
             SafetyMonitor_SetAlarmFlag(ALARM_FLAG_O, "DC24V Loss");  // 英文版本，10字符
+            
+            DEBUG_Printf("[电源监控轮询] ? O类异常标志已设置，当前异常标志:0x%04X\r\n", 
+                        SafetyMonitor_GetAlarmFlags());
             
             // 电源异常时保持当前通道状态，不强制关闭
             // 继电器在DC24V断电时会自然断开，无需主动控制
-            DEBUG_Printf("[安全监控] 电源异常时保持当前通道状态，继电器将自然断开\r\n");
+            DEBUG_Printf("[电源监控轮询] ? 电源异常时保持当前通道状态，继电器将自然断开\r\n");
             
             // 立即更新报警输出和蜂鸣器状态
             SafetyMonitor_UpdateAlarmOutput();
             SafetyMonitor_UpdateBeepState();
             SafetyMonitor_ProcessBeep();
+            
+            DEBUG_Printf("[电源监控轮询] ? O类异常处理完成，系统应进入ALARM状态\r\n");
+        } else {
+            // O类异常已存在，每10秒输出一次状态确认
+            static uint32_t last_existing_debug = 0;
+            if(current_time - last_existing_debug >= 10000) {
+                last_existing_debug = current_time;
+                DEBUG_Printf("[电源监控轮询] ?? O类异常持续存在，DC_CTRL仍为高电平\r\n");
+            }
+        }
+    } else {
+        // 电源正常（低电平 = 有DC24V供电）
+        if(SafetyMonitor_IsAlarmActive(ALARM_FLAG_O)) {
+            static uint32_t last_recovery_debug = 0;
+            if(current_time - last_recovery_debug >= 2000) {
+                last_recovery_debug = current_time;
+                DEBUG_Printf("[电源监控轮询] ? DC_CTRL恢复低电平，但O类异常仍激活，等待解除条件检查\r\n");
+            }
         }
     }
 }

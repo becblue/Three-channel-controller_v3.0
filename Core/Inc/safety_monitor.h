@@ -145,6 +145,12 @@ void SafetyMonitor_DisablePowerMonitor(void);
 // 电源异常中断回调（DC_CTRL引脚中断时调用）
 void SafetyMonitor_PowerFailureCallback(void);
 
+// 检测电源监控异常（O类异常）
+void SafetyMonitor_CheckPowerMonitor(void);
+
+// 处理DC_CTRL中断标志（主循环调用）
+void SafetyMonitor_ProcessDcCtrlInterrupt(void);
+
 // ================== 异常检测函数 ===================
 
 // 检测使能信号冲突（A类异常）
@@ -158,9 +164,6 @@ void SafetyMonitor_CheckContactorStatus(void);
 
 // 检测温度异常（K~M类异常）
 void SafetyMonitor_CheckTemperatureAlarm(void);
-
-// 检测电源监控异常（O类异常）
-void SafetyMonitor_CheckPowerMonitor(void);
 
 // ================== 异常解除检查 ===================
 

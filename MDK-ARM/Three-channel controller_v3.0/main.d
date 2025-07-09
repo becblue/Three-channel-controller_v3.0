@@ -53,3 +53,4 @@ three-channel controller_v3.0\main.o: ../Core/Inc/iwdg_control.h
 three-channel controller_v3.0\main.o: ../Core/Inc/log_system.h
 three-channel controller_v3.0\main.o: ../Core/Inc/w25q128_driver.h
 three-channel controller_v3.0\main.o: ../Core/Inc/smart_delay.h
+three-channel controller_v3.0\main.o: ../Core/Inc/safety_monitor.h
