@@ -7,12 +7,22 @@
 #include <stdio.h>
 
 /************************************************************
- * 继电器控制模块源文件
- * 实现三通道继电器的开启/关闭、三重检测、互锁检查、500ms脉冲、状态反馈检测、异常处理与状态管理
+ * 继电器控制模块源文件 - 异步状态机版本
+ * 实现三通道继电器的异步开启/关闭、中断防抖、干扰检测、优先级处理
+ * 彻底消除主循环阻塞，提高系统响应性和稳定性
  ************************************************************/
 
 // 三个继电器通道实例
 static RelayChannel_t relayChannels[3];
+
+// ================== 异步状态机变量 ===================
+// 异步操作控制数组
+static RelayAsyncOperation_t g_async_operations[MAX_ASYNC_OPERATIONS];
+
+// 异步操作统计
+static uint32_t g_async_total_operations = 0;
+static uint32_t g_async_completed_operations = 0;
+static uint32_t g_async_failed_operations = 0;
 
 // ================== 中断标志位变量 ===================
 // K_EN信号中断标志位（类似DC_CTRL中断处理方式）
@@ -22,6 +32,18 @@ static volatile uint8_t g_k3_en_interrupt_flag = 0;
 static volatile uint32_t g_k1_en_interrupt_time = 0;
 static volatile uint32_t g_k2_en_interrupt_time = 0;
 static volatile uint32_t g_k3_en_interrupt_time = 0;
+
+// ================== 增强防抖和干扰检测变量 ===================
+// 防抖计时器
+static uint32_t g_last_interrupt_time[3] = {0, 0, 0};
+static uint32_t g_debounce_count[3] = {0, 0, 0};
+
+// 干扰检测过滤器
+static InterferenceFilter_t g_interference_filter = {0};
+
+// 干扰检测统计
+static uint32_t g_interference_total_count = 0;
+static uint32_t g_filtered_interrupts_count = 0;
 
 /**
   * @brief  继电器控制模块初始化
@@ -51,10 +73,40 @@ void RelayControl_Init(void)
                 break;
         }
     }
-    DEBUG_Printf("继电器控制模块初始化完成，所有控制信号设为高电平（三极管截止）\r\n");
+    
+    // ================== 初始化异步状态机 ===================
+    for(uint8_t i = 0; i < MAX_ASYNC_OPERATIONS; i++) {
+        g_async_operations[i].state = RELAY_ASYNC_IDLE;
+        g_async_operations[i].channel = 0;
+        g_async_operations[i].operation = 0;
+        g_async_operations[i].start_time = 0;
+        g_async_operations[i].phase_start_time = 0;
+        g_async_operations[i].result = RELAY_ERR_NONE;
+        g_async_operations[i].error_code = RELAY_ERR_NONE;
+    }
+    
+    // ================== 初始化防抖和干扰检测 ===================
+    for(uint8_t i = 0; i < 3; i++) {
+        g_last_interrupt_time[i] = 0;
+        g_debounce_count[i] = 0;
+        g_interference_filter.last_interrupt_time[i] = 0;
+    }
+    g_interference_filter.simultaneous_count = 0;
+    g_interference_filter.interference_detected = 0;
+    g_interference_filter.last_interference_time = 0;
+    
+    // 重置统计计数器
+    g_async_total_operations = 0;
+    g_async_completed_operations = 0;
+    g_async_failed_operations = 0;
+    g_interference_total_count = 0;
+    g_filtered_interrupts_count = 0;
+    
+    DEBUG_Printf("继电器控制模块初始化完成 - 异步状态机版本\r\n");
+    DEBUG_Printf("支持功能: 异步操作、中断防抖、干扰检测、优先级处理\r\n");
     
     // 记录继电器模块初始化日志
-    LogSystem_Record(LOG_CATEGORY_SYSTEM, 0, LOG_EVENT_SYSTEM_START, "继电器控制模块初始化完成");
+    LogSystem_Record(LOG_CATEGORY_SYSTEM, 0, LOG_EVENT_SYSTEM_START, "继电器异步状态机初始化完成");
 }
 
 /**
@@ -104,310 +156,9 @@ uint8_t RelayControl_CheckChannelFeedback(uint8_t channelNum)
     return 0;  // 始终返回正常，避免影响其他模块
 }
 
-/**
-  * @brief  打开继电器通道
-  * @param  channelNum: 通道号(1-3)
-  * @retval 0:成功 其他:错误代码
-  */
-uint8_t RelayControl_OpenChannel(uint8_t channelNum)
-{
-    if(channelNum < 1 || channelNum > 3)
-        return RELAY_ERR_INVALID_CHANNEL;
-    
-    // 检查是否存在O类异常（电源异常）
-    if(SafetyMonitor_IsAlarmActive(ALARM_FLAG_O)) {
-        DEBUG_Printf("通道%d开启被阻止：检测到O类异常（电源异常）\r\n", channelNum);
-        
-        // 记录电源异常阻止开启日志
-        char log_msg[64];
-        snprintf(log_msg, sizeof(log_msg), "通道%d开启被阻止-电源异常", channelNum);
-        LogSystem_Record(LOG_CATEGORY_SAFETY, channelNum, LOG_EVENT_POWER_FAILURE, log_msg);
-        
-        return RELAY_ERR_POWER_FAILURE;
-    }
-    
-    uint8_t idx = channelNum - 1;
-    // 检查互锁
-    if(RelayControl_CheckInterlock(channelNum)) {
-        relayChannels[idx].errorCode = RELAY_ERR_INTERLOCK;
-        DEBUG_Printf("通道%d互锁错误\r\n", channelNum);
-        
-        // 记录互锁错误日志（这是安全关键异常）
-        char log_msg[64];
-        snprintf(log_msg, sizeof(log_msg), "通道%d互锁错误", channelNum);
-        LogSystem_Record(LOG_CATEGORY_SAFETY, channelNum, LOG_EVENT_SAFETY_ALARM_A, log_msg);
-        
-        return RELAY_ERR_INTERLOCK;
-    }
-    
-    DEBUG_Printf("通道%d开启中 - 输出500ms低电平脉冲（三极管导通）\r\n", channelNum);
-    
-    // 输出500ms低电平脉冲（三极管导通，继电器动作）
-    switch(channelNum) {
-        case 1:
-            GPIO_SetK1_1_ON(0); GPIO_SetK1_2_ON(0);
-            break;
-        case 2:
-            GPIO_SetK2_1_ON(0); GPIO_SetK2_2_ON(0);
-            break;
-        case 3:
-            GPIO_SetK3_1_ON(0); GPIO_SetK3_2_ON(0);
-            break;
-    }
-    relayChannels[idx].lastActionTime = HAL_GetTick();
-    SmartDelayWithDebug(RELAY_PULSE_WIDTH, "继电器开启脉冲");
-    
-    // 脉冲结束，恢复高电平（三极管截止）
-    switch(channelNum) {
-        case 1:
-            GPIO_SetK1_1_ON(1); GPIO_SetK1_2_ON(1);
-            break;
-        case 2:
-            GPIO_SetK2_1_ON(1); GPIO_SetK2_2_ON(1);
-            break;
-        case 3:
-            GPIO_SetK3_1_ON(1); GPIO_SetK3_2_ON(1);
-            break;
-    }
-    
-    DEBUG_Printf("通道%d脉冲输出完成，等待反馈\r\n", channelNum);
-    
-    // 延时500ms后，检查硬件反馈再决定内部状态
-    SmartDelayWithDebug(RELAY_FEEDBACK_DELAY, "继电器开启反馈等待");
-    
-    // 检查硬件是否真正开启（直接检查硬件状态，不依赖内部状态）
-    uint8_t hardware_opened = 0;
-    switch(channelNum) {
-        case 1:
-            hardware_opened = (GPIO_ReadK1_1_STA() && GPIO_ReadK1_2_STA() && GPIO_ReadSW1_STA());
-            break;
-        case 2:
-            hardware_opened = (GPIO_ReadK2_1_STA() && GPIO_ReadK2_2_STA() && GPIO_ReadSW2_STA());
-            break;
-        case 3:
-            hardware_opened = (GPIO_ReadK3_1_STA() && GPIO_ReadK3_2_STA() && GPIO_ReadSW3_STA());
-            break;
-    }
-    
-    if(hardware_opened) {
-        // 硬件成功开启，设置内部状态为ON
-        relayChannels[idx].state = RELAY_STATE_ON;
-        relayChannels[idx].errorCode = RELAY_ERR_NONE;
-        DEBUG_Printf("通道%d开启成功\r\n", channelNum);
-        
-        return RELAY_ERR_NONE;
-    } else {
-        // 硬件开启失败，记录错误
-        relayChannels[idx].state = RELAY_STATE_ERROR;
-        relayChannels[idx].errorCode = RELAY_ERR_HARDWARE_FAILURE;
-        DEBUG_Printf("通道%d开启失败 - 硬件反馈异常\r\n", channelNum);
-        
-        // 精确检测每个继电器和接触器的异常状态并记录相应日志
-        char log_msg[64];
-        uint8_t k1_sta = 0, k2_sta = 0, sw_sta = 0;
-        
-        switch(channelNum) {
-            case 1:
-                k1_sta = GPIO_ReadK1_1_STA();
-                k2_sta = GPIO_ReadK1_2_STA();
-                sw_sta = GPIO_ReadSW1_STA();
-                
-                if(!k1_sta) {
-                    snprintf(log_msg, sizeof(log_msg), "通道%d K1_1继电器反馈异常", channelNum);
-                    LogSystem_Record(LOG_CATEGORY_SAFETY, channelNum, LOG_EVENT_SAFETY_ALARM_B, log_msg);
-                }
-                if(!k2_sta) {
-                    snprintf(log_msg, sizeof(log_msg), "通道%d K1_2继电器反馈异常", channelNum);
-                    LogSystem_Record(LOG_CATEGORY_SAFETY, channelNum, LOG_EVENT_SAFETY_ALARM_E, log_msg);
-                }
-                if(!sw_sta) {
-                    snprintf(log_msg, sizeof(log_msg), "通道%d SW1接触器反馈异常", channelNum);
-                    LogSystem_Record(LOG_CATEGORY_SAFETY, channelNum, LOG_EVENT_SAFETY_ALARM_H, log_msg);
-                }
-                break;
-                
-            case 2:
-                k1_sta = GPIO_ReadK2_1_STA();
-                k2_sta = GPIO_ReadK2_2_STA();
-                sw_sta = GPIO_ReadSW2_STA();
-                
-                if(!k1_sta) {
-                    snprintf(log_msg, sizeof(log_msg), "通道%d K2_1继电器反馈异常", channelNum);
-                    LogSystem_Record(LOG_CATEGORY_SAFETY, channelNum, LOG_EVENT_SAFETY_ALARM_C, log_msg);
-                }
-                if(!k2_sta) {
-                    snprintf(log_msg, sizeof(log_msg), "通道%d K2_2继电器反馈异常", channelNum);
-                    LogSystem_Record(LOG_CATEGORY_SAFETY, channelNum, LOG_EVENT_SAFETY_ALARM_F, log_msg);
-                }
-                if(!sw_sta) {
-                    snprintf(log_msg, sizeof(log_msg), "通道%d SW2接触器反馈异常", channelNum);
-                    LogSystem_Record(LOG_CATEGORY_SAFETY, channelNum, LOG_EVENT_SAFETY_ALARM_I, log_msg);
-                }
-                break;
-                
-            case 3:
-                k1_sta = GPIO_ReadK3_1_STA();
-                k2_sta = GPIO_ReadK3_2_STA();
-                sw_sta = GPIO_ReadSW3_STA();
-                
-                if(!k1_sta) {
-                    snprintf(log_msg, sizeof(log_msg), "通道%d K3_1继电器反馈异常", channelNum);
-                    LogSystem_Record(LOG_CATEGORY_SAFETY, channelNum, LOG_EVENT_SAFETY_ALARM_D, log_msg);
-                }
-                if(!k2_sta) {
-                    snprintf(log_msg, sizeof(log_msg), "通道%d K3_2继电器反馈异常", channelNum);
-                    LogSystem_Record(LOG_CATEGORY_SAFETY, channelNum, LOG_EVENT_SAFETY_ALARM_G, log_msg);
-                }
-                if(!sw_sta) {
-                    snprintf(log_msg, sizeof(log_msg), "通道%d SW3接触器反馈异常", channelNum);
-                    LogSystem_Record(LOG_CATEGORY_SAFETY, channelNum, LOG_EVENT_SAFETY_ALARM_J, log_msg);
-                }
-                break;
-        }
-        
-        return RELAY_ERR_HARDWARE_FAILURE;
-    }
-}
 
-/**
-  * @brief  关闭继电器通道
-  * @param  channelNum: 通道号(1-3)
-  * @retval 0:成功 其他:错误代码
-  */
-uint8_t RelayControl_CloseChannel(uint8_t channelNum)
-{
-    if(channelNum < 1 || channelNum > 3)
-        return RELAY_ERR_INVALID_CHANNEL;
-    
-    uint8_t idx = channelNum - 1;
-    DEBUG_Printf("通道%d关闭中 - 输出500ms低电平脉冲（三极管导通）\r\n", channelNum);
-    
-    // 输出500ms低电平脉冲（三极管导通，继电器动作）
-    switch(channelNum) {
-        case 1:
-            GPIO_SetK1_1_OFF(0); GPIO_SetK1_2_OFF(0);
-            break;
-        case 2:
-            GPIO_SetK2_1_OFF(0); GPIO_SetK2_2_OFF(0);
-            break;
-        case 3:
-            GPIO_SetK3_1_OFF(0); GPIO_SetK3_2_OFF(0);
-            break;
-    }
-    relayChannels[idx].lastActionTime = HAL_GetTick();
-    SmartDelayWithDebug(RELAY_PULSE_WIDTH, "继电器关闭脉冲");
-    
-    // 脉冲结束，恢复高电平（三极管截止）
-    switch(channelNum) {
-        case 1:
-            GPIO_SetK1_1_OFF(1); GPIO_SetK1_2_OFF(1);
-            break;
-        case 2:
-            GPIO_SetK2_1_OFF(1); GPIO_SetK2_2_OFF(1);
-            break;
-        case 3:
-            GPIO_SetK3_1_OFF(1); GPIO_SetK3_2_OFF(1);
-            break;
-    }
-    
-    DEBUG_Printf("通道%d脉冲输出完成，等待反馈\r\n", channelNum);
-    
-    // 延时500ms后，检查硬件反馈再决定内部状态
-    SmartDelayWithDebug(RELAY_FEEDBACK_DELAY, "继电器关闭反馈等待");
-    
-    // 检查硬件是否真正关闭（直接检查硬件状态，不依赖内部状态）
-    uint8_t hardware_closed = 0;
-    switch(channelNum) {
-        case 1:
-            hardware_closed = (!GPIO_ReadK1_1_STA() && !GPIO_ReadK1_2_STA() && !GPIO_ReadSW1_STA());
-            break;
-        case 2:
-            hardware_closed = (!GPIO_ReadK2_1_STA() && !GPIO_ReadK2_2_STA() && !GPIO_ReadSW2_STA());
-            break;
-        case 3:
-            hardware_closed = (!GPIO_ReadK3_1_STA() && !GPIO_ReadK3_2_STA() && !GPIO_ReadSW3_STA());
-            break;
-    }
-    
-    if(hardware_closed) {
-        // 硬件成功关闭，设置内部状态为OFF
-        relayChannels[idx].state = RELAY_STATE_OFF;
-        relayChannels[idx].errorCode = RELAY_ERR_NONE;
-        DEBUG_Printf("通道%d关闭成功\r\n", channelNum);
-        
-        return RELAY_ERR_NONE;
-    } else {
-        // 硬件关闭失败，记录错误
-        relayChannels[idx].state = RELAY_STATE_ERROR;
-        relayChannels[idx].errorCode = RELAY_ERR_HARDWARE_FAILURE;
-        DEBUG_Printf("通道%d关闭失败 - 硬件反馈异常\r\n", channelNum);
-        
-        // 精确检测每个继电器和接触器的异常状态并记录相应日志
-        char log_msg[64];
-        uint8_t k1_sta = 0, k2_sta = 0, sw_sta = 0;
-        
-        switch(channelNum) {
-            case 1:
-                k1_sta = GPIO_ReadK1_1_STA();
-                k2_sta = GPIO_ReadK1_2_STA();
-                sw_sta = GPIO_ReadSW1_STA();
-                
-                if(k1_sta) {  // 关闭失败时应该为0，如果为1则异常
-                    snprintf(log_msg, sizeof(log_msg), "通道%d K1_1继电器关闭异常", channelNum);
-                    LogSystem_Record(LOG_CATEGORY_SAFETY, channelNum, LOG_EVENT_SAFETY_ALARM_B, log_msg);
-                }
-                if(k2_sta) {  // 关闭失败时应该为0，如果为1则异常
-                    snprintf(log_msg, sizeof(log_msg), "通道%d K1_2继电器关闭异常", channelNum);
-                    LogSystem_Record(LOG_CATEGORY_SAFETY, channelNum, LOG_EVENT_SAFETY_ALARM_E, log_msg);
-                }
-                if(sw_sta) {  // 关闭失败时应该为0，如果为1则异常
-                    snprintf(log_msg, sizeof(log_msg), "通道%d SW1接触器关闭异常", channelNum);
-                    LogSystem_Record(LOG_CATEGORY_SAFETY, channelNum, LOG_EVENT_SAFETY_ALARM_H, log_msg);
-                }
-                break;
-                
-            case 2:
-                k1_sta = GPIO_ReadK2_1_STA();
-                k2_sta = GPIO_ReadK2_2_STA();
-                sw_sta = GPIO_ReadSW2_STA();
-                
-                if(k1_sta) {  // 关闭失败时应该为0，如果为1则异常
-                    snprintf(log_msg, sizeof(log_msg), "通道%d K2_1继电器关闭异常", channelNum);
-                    LogSystem_Record(LOG_CATEGORY_SAFETY, channelNum, LOG_EVENT_SAFETY_ALARM_C, log_msg);
-                }
-                if(k2_sta) {  // 关闭失败时应该为0，如果为1则异常
-                    snprintf(log_msg, sizeof(log_msg), "通道%d K2_2继电器关闭异常", channelNum);
-                    LogSystem_Record(LOG_CATEGORY_SAFETY, channelNum, LOG_EVENT_SAFETY_ALARM_F, log_msg);
-                }
-                if(sw_sta) {  // 关闭失败时应该为0，如果为1则异常
-                    snprintf(log_msg, sizeof(log_msg), "通道%d SW2接触器关闭异常", channelNum);
-                    LogSystem_Record(LOG_CATEGORY_SAFETY, channelNum, LOG_EVENT_SAFETY_ALARM_I, log_msg);
-                }
-                break;
-                
-            case 3:
-                k1_sta = GPIO_ReadK3_1_STA();
-                k2_sta = GPIO_ReadK3_2_STA();
-                sw_sta = GPIO_ReadSW3_STA();
-                
-                if(k1_sta) {  // 关闭失败时应该为0，如果为1则异常
-                    snprintf(log_msg, sizeof(log_msg), "通道%d K3_1继电器关闭异常", channelNum);
-                    LogSystem_Record(LOG_CATEGORY_SAFETY, channelNum, LOG_EVENT_SAFETY_ALARM_D, log_msg);
-                }
-                if(k2_sta) {  // 关闭失败时应该为0，如果为1则异常
-                    snprintf(log_msg, sizeof(log_msg), "通道%d K3_2继电器关闭异常", channelNum);
-                    LogSystem_Record(LOG_CATEGORY_SAFETY, channelNum, LOG_EVENT_SAFETY_ALARM_G, log_msg);
-                }
-                if(sw_sta) {  // 关闭失败时应该为0，如果为1则异常
-                    snprintf(log_msg, sizeof(log_msg), "通道%d SW3接触器关闭异常", channelNum);
-                    LogSystem_Record(LOG_CATEGORY_SAFETY, channelNum, LOG_EVENT_SAFETY_ALARM_J, log_msg);
-                }
-                break;
-        }
-        
-        return RELAY_ERR_HARDWARE_FAILURE;
-    }
-}
+
+
 
 /**
   * @brief  获取通道状态
@@ -448,18 +199,59 @@ void RelayControl_ClearError(uint8_t channelNum)
 }
 
 /**
-  * @brief  处理使能信号变化（中断方式：设置标志位，主循环处理具体逻辑）
+  * @brief  处理使能信号变化（增强版：防抖+干扰检测）
   * @param  channelNum: 通道号(1-3)
   * @param  state: 信号状态（0=低电平=开启，1=高电平=关闭）
   * @retval 无
-  * @note   中断中仅设置标志位，具体处理逻辑在主循环中执行，避免中断阻塞
+  * @note   增强功能：50ms防抖、干扰检测、统计计数
   */
 void RelayControl_HandleEnableSignal(uint8_t channelNum, uint8_t state)
 {
-    // ? 中断处理简化：只设置标志位，避免复杂操作导致看门狗复位
-    // 具体的继电器控制逻辑将在主循环中处理
     uint32_t current_time = HAL_GetTick();
     
+    // 参数验证
+    if(channelNum < 1 || channelNum > 3) {
+        g_filtered_interrupts_count++;
+        return;
+    }
+    
+    uint8_t ch_idx = channelNum - 1; // 转换为0-2索引
+    
+    // ================== 防抖检查 ===================
+    // 50ms内的重复中断直接丢弃
+    if(current_time - g_last_interrupt_time[ch_idx] < INTERRUPT_DEBOUNCE_TIME_MS) {
+        g_filtered_interrupts_count++;
+        g_debounce_count[ch_idx]++;
+        return;
+    }
+    
+    // ================== 干扰检测 ===================
+    // 检查是否在很短时间内多个通道同时中断（疑似干扰）
+    uint8_t simultaneous_count = 0;
+    for(uint8_t i = 0; i < 3; i++) {
+        if(current_time - g_interference_filter.last_interrupt_time[i] < INTERFERENCE_DETECT_TIME_MS) {
+            simultaneous_count++;
+        }
+    }
+    
+    // 如果检测到多个通道同时中断，可能是干扰
+    if(simultaneous_count >= 2) {
+        g_interference_filter.interference_detected = 1;
+        g_interference_filter.simultaneous_count = simultaneous_count + 1;
+        g_interference_filter.last_interference_time = current_time;
+        g_interference_total_count++;
+        g_filtered_interrupts_count++;
+        
+        // 注意：这里不输出DEBUG_Printf，避免中断中阻塞
+        return;
+    }
+    
+    // ================== 正常中断处理 ===================
+    // 更新时间记录
+    g_last_interrupt_time[ch_idx] = current_time;
+    g_interference_filter.last_interrupt_time[ch_idx] = current_time;
+    
+    // 设置中断标志
     switch(channelNum) {
         case 1:
             g_k1_en_interrupt_flag = 1;
@@ -473,28 +265,75 @@ void RelayControl_HandleEnableSignal(uint8_t channelNum, uint8_t state)
             g_k3_en_interrupt_flag = 1;
             g_k3_en_interrupt_time = current_time;
             break;
-        default:
-            // 无效通道号，忽略
-            break;
     }
 }
 
+// ================== 状态验证和优先级处理函数 ===================
+
 /**
-  * @brief  处理K_EN中断标志并执行继电器动作（在主循环中调用）
+  * @brief  验证状态变化的合理性（检测干扰）
+  * @param  k1_en: K1_EN当前状态
+  * @param  k2_en: K2_EN当前状态  
+  * @param  k3_en: K3_EN当前状态
+  * @retval 1:状态变化合理 0:疑似干扰
+  */
+uint8_t RelayControl_ValidateStateChange(uint8_t k1_en, uint8_t k2_en, uint8_t k3_en)
+{
+    // 检查是否符合互锁逻辑：正常情况下最多只有一个通道的EN为低电平（使能）
+    uint8_t en_active_count = (!k1_en) + (!k2_en) + (!k3_en);
+    
+    if(en_active_count > 1) {
+        return 0; // 多通道同时使能，疑似干扰
+    }
+    
+    // 可以添加更多验证逻辑，比如检查EN信号与STA反馈的一致性等
+    return 1; // 状态变化合理
+}
+
+/**
+  * @brief  获取最高优先级的中断（按时间顺序）
+  * @retval 通道号(1-3)，如果没有中断则返回0
+  */
+uint8_t RelayControl_GetHighestPriorityInterrupt(void)
+{
+    uint32_t earliest_time = UINT32_MAX;
+    uint8_t priority_channel = 0;
+    
+    // 找到时间最早的中断
+    if(g_k1_en_interrupt_flag && g_k1_en_interrupt_time < earliest_time) {
+        earliest_time = g_k1_en_interrupt_time;
+        priority_channel = 1;
+    }
+    if(g_k2_en_interrupt_flag && g_k2_en_interrupt_time < earliest_time) {
+        earliest_time = g_k2_en_interrupt_time;
+        priority_channel = 2;
+    }
+    if(g_k3_en_interrupt_flag && g_k3_en_interrupt_time < earliest_time) {
+        earliest_time = g_k3_en_interrupt_time;
+        priority_channel = 3;
+    }
+    
+    return priority_channel;
+}
+
+/**
+  * @brief  处理K_EN中断标志并执行继电器动作（增强版：优先级+状态验证+异步操作）
   * @retval 无
-  * @note   处理中断标志位，避免轮询延迟，提高响应速度
+  * @note   新功能：优先级处理、干扰检测、状态验证、异步操作、非阻塞执行
   */
 void RelayControl_ProcessPendingActions(void)
 {
+    uint32_t current_time = HAL_GetTick();
+    
+    // ================== 系统安全检查 ===================
     // 检查系统状态，如果处于报警状态则停止处理
     extern SystemState_t SystemControl_GetState(void);
     SystemState_t system_state = SystemControl_GetState();
     if(system_state == SYSTEM_STATE_ALARM) {
-        // 报警状态下停止继电器操作，避免阻塞主循环导致看门狗复位
-        return;
+        return; // 报警状态下停止继电器操作
     }
     
-    // 检查是否存在关键异常，如果存在则停止处理
+    // 检查是否存在关键异常
     if(SafetyMonitor_IsAlarmActive(ALARM_FLAG_B) ||  // K1_1_STA工作异常
        SafetyMonitor_IsAlarmActive(ALARM_FLAG_C) ||  // K2_1_STA工作异常
        SafetyMonitor_IsAlarmActive(ALARM_FLAG_D) ||  // K3_1_STA工作异常
@@ -502,110 +341,588 @@ void RelayControl_ProcessPendingActions(void)
        SafetyMonitor_IsAlarmActive(ALARM_FLAG_F) ||  // K2_2_STA工作异常
        SafetyMonitor_IsAlarmActive(ALARM_FLAG_G) ||  // K3_2_STA工作异常
        SafetyMonitor_IsAlarmActive(ALARM_FLAG_O)) {  // 外部电源异常（DC_CTRL）
-        // 发生关键异常时停止处理，保持当前通道状态
-        return;
+        return; // 发生关键异常时停止处理
     }
     
+    // ================== 检查是否有中断需要处理 ===================
+    uint8_t pending_count = 0;
+    if(g_k1_en_interrupt_flag) pending_count++;
+    if(g_k2_en_interrupt_flag) pending_count++;
+    if(g_k3_en_interrupt_flag) pending_count++;
+    
+    if(pending_count == 0) {
+        return; // 没有中断需要处理
+    }
+    
+    // ================== 同时中断检测和状态验证 ===================
+    if(pending_count > 1) {
+        // 检测到多个同时中断，进行状态验证
+        uint8_t k1_en = GPIO_ReadK1_EN();
+        uint8_t k2_en = GPIO_ReadK2_EN();
+        uint8_t k3_en = GPIO_ReadK3_EN();
+        
+        DEBUG_Printf("?? 检测到%d个同时中断，验证状态: K1_EN=%d, K2_EN=%d, K3_EN=%d\r\n", 
+                    pending_count, k1_en, k2_en, k3_en);
+        
+        // 状态验证 - 检查是否符合互锁逻辑
+        if(!RelayControl_ValidateStateChange(k1_en, k2_en, k3_en)) {
+            DEBUG_Printf("? 状态变化不合理，判定为干扰，丢弃所有中断\r\n");
+            
+            // 清除所有中断标志，记录干扰统计
+            g_k1_en_interrupt_flag = 0;
+            g_k2_en_interrupt_flag = 0;
+            g_k3_en_interrupt_flag = 0;
+            g_interference_total_count++;
+            g_filtered_interrupts_count += pending_count;
+            
+            return;
+        }
+        
+        DEBUG_Printf("? 状态验证通过，但采用优先级处理机制\r\n");
+    }
+    
+    // ================== 优先级处理：每次只处理一个中断 ===================
+    uint8_t priority_channel = RelayControl_GetHighestPriorityInterrupt();
+    
+    if(priority_channel == 0) {
+        return; // 没有有效的中断
+    }
+    
+    // 只处理优先级最高（时间最早）的中断
+    uint8_t k_en, k_sta_all;
+    uint32_t interrupt_time;
+    
+    switch(priority_channel) {
+        case 1:
+            g_k1_en_interrupt_flag = 0; // 清除标志位
+            k_en = GPIO_ReadK1_EN();
+            k_sta_all = GPIO_ReadK1_1_STA() && GPIO_ReadK1_2_STA() && GPIO_ReadSW1_STA();
+            interrupt_time = g_k1_en_interrupt_time;
+            break;
+            
+        case 2:
+            g_k2_en_interrupt_flag = 0; // 清除标志位
+            k_en = GPIO_ReadK2_EN();
+            k_sta_all = GPIO_ReadK2_1_STA() && GPIO_ReadK2_2_STA() && GPIO_ReadSW2_STA();
+            interrupt_time = g_k2_en_interrupt_time;
+            break;
+            
+        case 3:
+            g_k3_en_interrupt_flag = 0; // 清除标志位
+            k_en = GPIO_ReadK3_EN();
+            k_sta_all = GPIO_ReadK3_1_STA() && GPIO_ReadK3_2_STA() && GPIO_ReadSW3_STA();
+            interrupt_time = g_k3_en_interrupt_time;
+            break;
+            
+        default:
+            return;
+    }
+    
+    // ================== 执行异步操作 ===================
+    uint32_t delay = current_time - interrupt_time;
+    DEBUG_Printf("? [优先级处理] 通道%d中断: 时间=%lu, 中断时间=%lu, 延迟=%lums, K_EN=%d, STA=%d\r\n", 
+                priority_channel, current_time, interrupt_time, delay, k_en, k_sta_all);
+    
+    // 中断逻辑：检测K_EN为0且STA也为0，则启动异步开启操作
+    if(k_en == 0 && k_sta_all == 0) {
+        DEBUG_Printf("? [异步操作] 通道%d: K_EN=0且STA=0，启动异步开启\r\n", priority_channel);
+        uint8_t result = RelayControl_StartOpenChannel(priority_channel);
+        if(result == RELAY_ERR_NONE) {
+            DEBUG_Printf("? 通道%d异步开启操作已启动\r\n", priority_channel);
+        } else {
+            DEBUG_Printf("? 通道%d异步开启启动失败，错误码=%d\r\n", priority_channel, result);
+        }
+    }
+    // 中断逻辑：检测K_EN为1且STA也为1，则启动异步关闭操作
+    else if(k_en == 1 && k_sta_all == 1) {
+        DEBUG_Printf("? [异步操作] 通道%d: K_EN=1且STA=1，启动异步关闭\r\n", priority_channel);
+        uint8_t result = RelayControl_StartCloseChannel(priority_channel);
+        if(result == RELAY_ERR_NONE) {
+            DEBUG_Printf("? 通道%d异步关闭操作已启动\r\n", priority_channel);
+        } else {
+            DEBUG_Printf("? 通道%d异步关闭启动失败，错误码=%d\r\n", priority_channel, result);
+        }
+    } else {
+        DEBUG_Printf("? [状态检查] 通道%d: K_EN=%d, STA=%d，条件不满足，无操作\r\n", 
+                    priority_channel, k_en, k_sta_all);
+    }
+    
+    // 如果还有其他中断等待处理，它们将在下次调用时处理（优先级机制）
+    if(pending_count > 1) {
+        DEBUG_Printf("? 还有%d个中断等待处理，将在下次循环中按优先级处理\r\n", pending_count - 1);
+    }
+} 
+
+// ================== 异步操作辅助函数 ===================
+
+/**
+  * @brief  查找空闲的异步操作槽位
+  * @retval 槽位索引，如果没有空闲槽位则返回MAX_ASYNC_OPERATIONS
+  */
+static uint8_t FindFreeAsyncSlot(void)
+{
+    for(uint8_t i = 0; i < MAX_ASYNC_OPERATIONS; i++) {
+        if(g_async_operations[i].state == RELAY_ASYNC_IDLE) {
+            return i;
+        }
+    }
+    return MAX_ASYNC_OPERATIONS; // 没有空闲槽位
+}
+
+/**
+  * @brief  查找指定通道的异步操作
+  * @param  channelNum: 通道号(1-3)
+  * @retval 槽位索引，如果没有找到则返回MAX_ASYNC_OPERATIONS
+  */
+static uint8_t FindAsyncOperationByChannel(uint8_t channelNum)
+{
+    for(uint8_t i = 0; i < MAX_ASYNC_OPERATIONS; i++) {
+        if(g_async_operations[i].state != RELAY_ASYNC_IDLE && 
+           g_async_operations[i].channel == channelNum) {
+            return i;
+        }
+    }
+    return MAX_ASYNC_OPERATIONS;
+}
+
+// ================== 异步操作启动函数 ===================
+
+/**
+  * @brief  启动异步开启通道操作（非阻塞）
+  * @param  channelNum: 通道号(1-3)
+  * @retval 0:成功启动 其他:错误代码
+  */
+uint8_t RelayControl_StartOpenChannel(uint8_t channelNum)
+{
+    if(channelNum < 1 || channelNum > 3) {
+        return RELAY_ERR_INVALID_CHANNEL;
+    }
+    
+    // 检查是否存在O类异常（电源异常）
+    if(SafetyMonitor_IsAlarmActive(ALARM_FLAG_O)) {
+        DEBUG_Printf("通道%d异步开启被阻止：检测到O类异常（电源异常）\r\n", channelNum);
+        return RELAY_ERR_POWER_FAILURE;
+    }
+    
+    // 检查该通道是否已有正在进行的操作
+    if(FindAsyncOperationByChannel(channelNum) != MAX_ASYNC_OPERATIONS) {
+        DEBUG_Printf("通道%d异步开启失败：操作正在进行中\r\n", channelNum);
+        return RELAY_ERR_OPERATION_BUSY;
+    }
+    
+    // 检查互锁
+    if(RelayControl_CheckInterlock(channelNum)) {
+        DEBUG_Printf("通道%d异步开启失败：互锁错误\r\n", channelNum);
+        return RELAY_ERR_INTERLOCK;
+    }
+    
+    // 查找空闲的异步操作槽位
+    uint8_t slot = FindFreeAsyncSlot();
+    if(slot == MAX_ASYNC_OPERATIONS) {
+        DEBUG_Printf("通道%d异步开启失败：无可用操作槽位\r\n", channelNum);
+        return RELAY_ERR_OPERATION_BUSY;
+    }
+    
+    // 初始化异步操作
+    g_async_operations[slot].state = RELAY_ASYNC_PULSE_START;
+    g_async_operations[slot].channel = channelNum;
+    g_async_operations[slot].operation = 1; // 1=开启
+    g_async_operations[slot].start_time = HAL_GetTick();
+    g_async_operations[slot].phase_start_time = HAL_GetTick();
+    g_async_operations[slot].result = RELAY_ERR_NONE;
+    g_async_operations[slot].error_code = RELAY_ERR_NONE;
+    
+    // 更新统计
+    g_async_total_operations++;
+    
+    DEBUG_Printf("? 通道%d异步开启操作已启动（槽位%d）\r\n", channelNum, slot);
+    
+    return RELAY_ERR_NONE;
+}
+
+/**
+  * @brief  启动异步关闭通道操作（非阻塞）
+  * @param  channelNum: 通道号(1-3)
+  * @retval 0:成功启动 其他:错误代码
+  */
+uint8_t RelayControl_StartCloseChannel(uint8_t channelNum)
+{
+    if(channelNum < 1 || channelNum > 3) {
+        return RELAY_ERR_INVALID_CHANNEL;
+    }
+    
+    // 检查该通道是否已有正在进行的操作
+    if(FindAsyncOperationByChannel(channelNum) != MAX_ASYNC_OPERATIONS) {
+        DEBUG_Printf("通道%d异步关闭失败：操作正在进行中\r\n", channelNum);
+        return RELAY_ERR_OPERATION_BUSY;
+    }
+    
+    // 查找空闲的异步操作槽位
+    uint8_t slot = FindFreeAsyncSlot();
+    if(slot == MAX_ASYNC_OPERATIONS) {
+        DEBUG_Printf("通道%d异步关闭失败：无可用操作槽位\r\n", channelNum);
+        return RELAY_ERR_OPERATION_BUSY;
+    }
+    
+    // 初始化异步操作
+    g_async_operations[slot].state = RELAY_ASYNC_PULSE_START;
+    g_async_operations[slot].channel = channelNum;
+    g_async_operations[slot].operation = 0; // 0=关闭
+    g_async_operations[slot].start_time = HAL_GetTick();
+    g_async_operations[slot].phase_start_time = HAL_GetTick();
+    g_async_operations[slot].result = RELAY_ERR_NONE;
+    g_async_operations[slot].error_code = RELAY_ERR_NONE;
+    
+    // 更新统计
+    g_async_total_operations++;
+    
+    DEBUG_Printf("? 通道%d异步关闭操作已启动（槽位%d）\r\n", channelNum, slot);
+    
+    return RELAY_ERR_NONE;
+}
+
+// ================== 异步状态机轮询处理 ===================
+
+/**
+  * @brief  异步状态机轮询处理（在主循环中高频调用）
+  * @retval 无
+  * @note   这是整个异步架构的核心，负责推进所有异步操作的状态机
+  */
+void RelayControl_ProcessAsyncOperations(void)
+{
     uint32_t current_time = HAL_GetTick();
     
-    // ================== 处理K1_EN中断标志 ===================
-    if(g_k1_en_interrupt_flag) {
-        g_k1_en_interrupt_flag = 0;  // 清除标志位
+    for(uint8_t i = 0; i < MAX_ASYNC_OPERATIONS; i++) {
+        RelayAsyncOperation_t* op = &g_async_operations[i];
         
-        uint8_t k1_en = GPIO_ReadK1_EN();
-        uint8_t k1_sta_all = GPIO_ReadK1_1_STA() && GPIO_ReadK1_2_STA() && GPIO_ReadSW1_STA();
-        uint32_t interrupt_time = g_k1_en_interrupt_time;
-        
-        DEBUG_Printf("[中断处理] K1_EN中断: 时间=%lu, 中断时间=%lu, K1_EN=%d, STA=%d\r\n", 
-                    current_time, interrupt_time, k1_en, k1_sta_all);
-        
-        // 中断逻辑：检测K_EN为0且STA也为0，则执行开启动作
-        if(k1_en == 0 && k1_sta_all == 0) {
-            DEBUG_Printf("[中断处理] 通道1: K_EN=0且STA=0，执行开启动作\r\n");
-            uint8_t result = RelayControl_OpenChannel(1);
-            if(result == RELAY_ERR_NONE) {
-                DEBUG_Printf("通道1开启成功\r\n");
-            } else {
-                DEBUG_Printf("通道1开启失败，错误码=%d\r\n", result);
-            }
+        // 跳过空闲槽位
+        if(op->state == RELAY_ASYNC_IDLE) {
+            continue;
         }
-        // 中断逻辑：检测K_EN为1且STA也为1，则执行关闭动作
-        else if(k1_en == 1 && k1_sta_all == 1) {
-            DEBUG_Printf("[中断处理] 通道1: K_EN=1且STA=1，执行关闭动作\r\n");
-            uint8_t result = RelayControl_CloseChannel(1);
-            if(result == RELAY_ERR_NONE) {
-                DEBUG_Printf("通道1关闭成功\r\n");
-            } else {
-                DEBUG_Printf("通道1关闭失败，错误码=%d\r\n", result);
-            }
+        
+        uint8_t channelNum = op->channel;
+        uint32_t elapsed = current_time - op->phase_start_time;
+        uint8_t hardware_state_correct = 0; // 预先声明，避免switch中声明变量的警告
+        
+        switch(op->state) {
+            case RELAY_ASYNC_PULSE_START:
+                // 开始脉冲输出
+                DEBUG_Printf("? 通道%d %s脉冲开始\r\n", channelNum, op->operation ? "开启" : "关闭");
+                
+                if(op->operation) {
+                    // 开启操作：输出ON脉冲
+                    switch(channelNum) {
+                        case 1: GPIO_SetK1_1_ON(0); GPIO_SetK1_2_ON(0); break;
+                        case 2: GPIO_SetK2_1_ON(0); GPIO_SetK2_2_ON(0); break;
+                        case 3: GPIO_SetK3_1_ON(0); GPIO_SetK3_2_ON(0); break;
+                    }
+                } else {
+                    // 关闭操作：输出OFF脉冲
+                    switch(channelNum) {
+                        case 1: GPIO_SetK1_1_OFF(0); GPIO_SetK1_2_OFF(0); break;
+                        case 2: GPIO_SetK2_1_OFF(0); GPIO_SetK2_2_OFF(0); break;
+                        case 3: GPIO_SetK3_1_OFF(0); GPIO_SetK3_2_OFF(0); break;
+                    }
+                }
+                
+                op->state = RELAY_ASYNC_PULSE_ACTIVE;
+                op->phase_start_time = current_time;
+                break;
+                
+            case RELAY_ASYNC_PULSE_ACTIVE:
+                // 脉冲进行中，等待脉冲宽度时间
+                if(elapsed >= RELAY_ASYNC_PULSE_WIDTH) {
+                    DEBUG_Printf("? 通道%d脉冲宽度达到，结束脉冲\r\n", channelNum);
+                    op->state = RELAY_ASYNC_PULSE_END;
+                    op->phase_start_time = current_time;
+                }
+                break;
+                
+            case RELAY_ASYNC_PULSE_END:
+                // 结束脉冲输出，恢复高电平
+                if(op->operation) {
+                    // 开启操作：恢复ON控制信号为高电平
+                    switch(channelNum) {
+                        case 1: GPIO_SetK1_1_ON(1); GPIO_SetK1_2_ON(1); break;
+                        case 2: GPIO_SetK2_1_ON(1); GPIO_SetK2_2_ON(1); break;
+                        case 3: GPIO_SetK3_1_ON(1); GPIO_SetK3_2_ON(1); break;
+                    }
+                } else {
+                    // 关闭操作：恢复OFF控制信号为高电平
+                    switch(channelNum) {
+                        case 1: GPIO_SetK1_1_OFF(1); GPIO_SetK1_2_OFF(1); break;
+                        case 2: GPIO_SetK2_1_OFF(1); GPIO_SetK2_2_OFF(1); break;
+                        case 3: GPIO_SetK3_1_OFF(1); GPIO_SetK3_2_OFF(1); break;
+                    }
+                }
+                
+                DEBUG_Printf("? 通道%d脉冲结束，等待反馈\r\n", channelNum);
+                op->state = RELAY_ASYNC_FEEDBACK_WAIT;
+                op->phase_start_time = current_time;
+                break;
+                
+            case RELAY_ASYNC_FEEDBACK_WAIT:
+                // 等待反馈延时
+                if(elapsed >= RELAY_ASYNC_FEEDBACK_DELAY) {
+                    DEBUG_Printf("? 通道%d开始检查反馈\r\n", channelNum);
+                    op->state = RELAY_ASYNC_FEEDBACK_CHECK;
+                    op->phase_start_time = current_time;
+                }
+                break;
+                
+            case RELAY_ASYNC_FEEDBACK_CHECK:
+                // 检查硬件反馈
+                hardware_state_correct = 0;
+                
+                if(op->operation) {
+                    // 开启操作：检查是否所有状态都为高
+                    switch(channelNum) {
+                        case 1:
+                            hardware_state_correct = (GPIO_ReadK1_1_STA() && GPIO_ReadK1_2_STA() && GPIO_ReadSW1_STA());
+                            break;
+                        case 2:
+                            hardware_state_correct = (GPIO_ReadK2_1_STA() && GPIO_ReadK2_2_STA() && GPIO_ReadSW2_STA());
+                            break;
+                        case 3:
+                            hardware_state_correct = (GPIO_ReadK3_1_STA() && GPIO_ReadK3_2_STA() && GPIO_ReadSW3_STA());
+                            break;
+                    }
+                } else {
+                    // 关闭操作：检查是否所有状态都为低
+                    switch(channelNum) {
+                        case 1:
+                            hardware_state_correct = (!GPIO_ReadK1_1_STA() && !GPIO_ReadK1_2_STA() && !GPIO_ReadSW1_STA());
+                            break;
+                        case 2:
+                            hardware_state_correct = (!GPIO_ReadK2_1_STA() && !GPIO_ReadK2_2_STA() && !GPIO_ReadSW2_STA());
+                            break;
+                        case 3:
+                            hardware_state_correct = (!GPIO_ReadK3_1_STA() && !GPIO_ReadK3_2_STA() && !GPIO_ReadSW3_STA());
+                            break;
+                    }
+                }
+                
+                if(hardware_state_correct) {
+                    // 操作成功
+                    relayChannels[channelNum-1].state = op->operation ? RELAY_STATE_ON : RELAY_STATE_OFF;
+                    relayChannels[channelNum-1].errorCode = RELAY_ERR_NONE;
+                    relayChannels[channelNum-1].lastActionTime = current_time;
+                    
+                    op->result = RELAY_ERR_NONE;
+                    op->state = RELAY_ASYNC_COMPLETE;
+                    g_async_completed_operations++;
+                    
+                    DEBUG_Printf("? 通道%d异步%s操作成功完成\r\n", channelNum, op->operation ? "开启" : "关闭");
+                } else {
+                    // 操作失败
+                    relayChannels[channelNum-1].state = RELAY_STATE_ERROR;
+                    relayChannels[channelNum-1].errorCode = RELAY_ERR_HARDWARE_FAILURE;
+                    
+                    op->result = RELAY_ERR_HARDWARE_FAILURE;
+                    op->error_code = RELAY_ERR_HARDWARE_FAILURE;
+                    op->state = RELAY_ASYNC_ERROR;
+                    g_async_failed_operations++;
+                    
+                    DEBUG_Printf("? 通道%d异步%s操作失败 - 硬件反馈异常\r\n", channelNum, op->operation ? "开启" : "关闭");
+                }
+                break;
+                
+            case RELAY_ASYNC_COMPLETE:
+            case RELAY_ASYNC_ERROR:
+                // 操作完成或出错，重置槽位
+                op->state = RELAY_ASYNC_IDLE;
+                op->channel = 0;
+                break;
+                
+            default:
+                // 未知状态，重置
+                DEBUG_Printf("?? 通道%d异步操作遇到未知状态%d，重置\r\n", channelNum, op->state);
+                op->state = RELAY_ASYNC_IDLE;
+                op->channel = 0;
+                g_async_failed_operations++;
+                break;
+        }
+    }
+} 
+
+// ================== 异步状态查询函数 ===================
+
+/**
+  * @brief  检查指定通道是否有异步操作正在进行
+  * @param  channelNum: 通道号(1-3)
+  * @retval 1:有操作进行中 0:无操作
+  */
+uint8_t RelayControl_IsOperationInProgress(uint8_t channelNum)
+{
+    return (FindAsyncOperationByChannel(channelNum) != MAX_ASYNC_OPERATIONS);
+}
+
+/**
+  * @brief  获取指定通道的异步操作结果
+  * @param  channelNum: 通道号(1-3)
+  * @retval 操作结果错误代码
+  */
+uint8_t RelayControl_GetOperationResult(uint8_t channelNum)
+{
+    uint8_t slot = FindAsyncOperationByChannel(channelNum);
+    if(slot != MAX_ASYNC_OPERATIONS) {
+        return g_async_operations[slot].result;
+    }
+    return RELAY_ERR_INVALID_CHANNEL;
+}
+
+// ================== 统计和调试函数 ===================
+
+/**
+  * @brief  获取异步操作统计信息
+  * @param  total_ops: 总操作数
+  * @param  completed_ops: 完成操作数
+  * @param  failed_ops: 失败操作数
+  * @retval 无
+  */
+void RelayControl_GetAsyncStatistics(uint32_t* total_ops, uint32_t* completed_ops, uint32_t* failed_ops)
+{
+    if(total_ops) *total_ops = g_async_total_operations;
+    if(completed_ops) *completed_ops = g_async_completed_operations;
+    if(failed_ops) *failed_ops = g_async_failed_operations;
+}
+
+/**
+  * @brief  获取干扰检测统计
+  * @param  interference_count: 检测到的干扰次数
+  * @param  filtered_interrupts: 被过滤的中断次数
+  * @retval 无
+  */
+void RelayControl_GetInterferenceStatistics(uint32_t* interference_count, uint32_t* filtered_interrupts)
+{
+    if(interference_count) *interference_count = g_interference_total_count;
+    if(filtered_interrupts) *filtered_interrupts = g_filtered_interrupts_count;
+}
+
+// ================== 智能屏蔽接口实现（用于安全监控） ===================
+
+/**
+  * @brief  检查指定通道是否正在进行异步操作
+  * @param  channelNum: 通道号(1-3)
+  * @retval 1:正在操作 0:空闲状态
+  * @note   用于安全监控模块判断是否需要屏蔽相关异常检测
+  */
+uint8_t RelayControl_IsChannelBusy(uint8_t channelNum)
+{
+    if(channelNum < 1 || channelNum > 3) {
+        return 0; // 无效通道号
+    }
+    
+    // 检查该通道是否有正在进行的异步操作
+    for(uint8_t i = 0; i < MAX_ASYNC_OPERATIONS; i++) {
+        RelayAsyncOperation_t* op = &g_async_operations[i];
+        if(op->state != RELAY_ASYNC_IDLE && op->channel == channelNum) {
+            return 1; // 找到正在进行的操作
         }
     }
     
-    // ================== 处理K2_EN中断标志 ===================
-    if(g_k2_en_interrupt_flag) {
-        g_k2_en_interrupt_flag = 0;  // 清除标志位
-        
-        uint8_t k2_en = GPIO_ReadK2_EN();
-        uint8_t k2_sta_all = GPIO_ReadK2_1_STA() && GPIO_ReadK2_2_STA() && GPIO_ReadSW2_STA();
-        uint32_t interrupt_time = g_k2_en_interrupt_time;
-        
-        DEBUG_Printf("[中断处理] K2_EN中断: 时间=%lu, 中断时间=%lu, K2_EN=%d, STA=%d\r\n", 
-                    current_time, interrupt_time, k2_en, k2_sta_all);
-        
-        // 中断逻辑：检测K_EN为0且STA也为0，则执行开启动作
-        if(k2_en == 0 && k2_sta_all == 0) {
-            DEBUG_Printf("[中断处理] 通道2: K_EN=0且STA=0，执行开启动作\r\n");
-            uint8_t result = RelayControl_OpenChannel(2);
-            if(result == RELAY_ERR_NONE) {
-                DEBUG_Printf("通道2开启成功\r\n");
-            } else {
-                DEBUG_Printf("通道2开启失败，错误码=%d\r\n", result);
-            }
-        }
-        // 中断逻辑：检测K_EN为1且STA也为1，则执行关闭动作
-        else if(k2_en == 1 && k2_sta_all == 1) {
-            DEBUG_Printf("[中断处理] 通道2: K_EN=1且STA=1，执行关闭动作\r\n");
-            uint8_t result = RelayControl_CloseChannel(2);
-            if(result == RELAY_ERR_NONE) {
-                DEBUG_Printf("通道2关闭成功\r\n");
-            } else {
-                DEBUG_Printf("通道2关闭失败，错误码=%d\r\n", result);
-            }
+    return 0; // 该通道空闲
+}
+
+/**
+  * @brief  获取指定通道当前的异步操作类型
+  * @param  channelNum: 通道号(1-3)
+  * @retval 1:开启操作 0:关闭操作 255:无操作
+  * @note   用于安全监控模块精确屏蔽相关异常类型
+  */
+uint8_t RelayControl_GetChannelOperationType(uint8_t channelNum)
+{
+    if(channelNum < 1 || channelNum > 3) {
+        return 255; // 无效通道号
+    }
+    
+    // 查找该通道正在进行的异步操作
+    for(uint8_t i = 0; i < MAX_ASYNC_OPERATIONS; i++) {
+        RelayAsyncOperation_t* op = &g_async_operations[i];
+        if(op->state != RELAY_ASYNC_IDLE && op->channel == channelNum) {
+            return op->operation ? 1 : 0; // 1:开启操作 0:关闭操作
         }
     }
     
-    // ================== 处理K3_EN中断标志 ===================
-    if(g_k3_en_interrupt_flag) {
-        g_k3_en_interrupt_flag = 0;  // 清除标志位
-        
-        uint8_t k3_en = GPIO_ReadK3_EN();
-        uint8_t k3_sta_all = GPIO_ReadK3_1_STA() && GPIO_ReadK3_2_STA() && GPIO_ReadSW3_STA();
-        uint32_t interrupt_time = g_k3_en_interrupt_time;
-        
-        DEBUG_Printf("[中断处理] K3_EN中断: 时间=%lu, 中断时间=%lu, K3_EN=%d, STA=%d\r\n", 
-                    current_time, interrupt_time, k3_en, k3_sta_all);
-        
-        // 中断逻辑：检测K_EN为0且STA也为0，则执行开启动作
-        if(k3_en == 0 && k3_sta_all == 0) {
-            DEBUG_Printf("[中断处理] 通道3: K_EN=0且STA=0，执行开启动作\r\n");
-            uint8_t result = RelayControl_OpenChannel(3);
-            if(result == RELAY_ERR_NONE) {
-                DEBUG_Printf("通道3开启成功\r\n");
-            } else {
-                DEBUG_Printf("通道3开启失败，错误码=%d\r\n", result);
-            }
-        }
-        // 中断逻辑：检测K_EN为1且STA也为1，则执行关闭动作
-        else if(k3_en == 1 && k3_sta_all == 1) {
-            DEBUG_Printf("[中断处理] 通道3: K_EN=1且STA=1，执行关闭动作\r\n");
-            uint8_t result = RelayControl_CloseChannel(3);
-            if(result == RELAY_ERR_NONE) {
-                DEBUG_Printf("通道3关闭成功\r\n");
-            } else {
-                DEBUG_Printf("通道3关闭失败，错误码=%d\r\n", result);
-            }
-        }
+    return 255; // 无操作
+}
+
+// ================== 兼容性函数（阻塞版本） ===================
+
+/**
+  * @brief  开启指定通道（阻塞版本，保持向后兼容）
+  * @param  channelNum: 通道号(1-3)
+  * @retval 0:成功 其他:错误代码
+  * @note   内部使用异步操作，但等待操作完成后返回，保持与原有代码的兼容性
+  */
+uint8_t RelayControl_OpenChannel(uint8_t channelNum)
+{
+    // 启动异步操作
+    uint8_t result = RelayControl_StartOpenChannel(channelNum);
+    if(result != RELAY_ERR_NONE) {
+        return result;
     }
+    
+    DEBUG_Printf("? 通道%d阻塞开启等待异步操作完成\r\n", channelNum);
+    
+    // 等待异步操作完成
+    uint32_t start_time = HAL_GetTick();
+    const uint32_t timeout = 2000; // 2秒超时
+    
+    while(RelayControl_IsOperationInProgress(channelNum)) {
+        // 在等待期间继续轮询异步操作
+        RelayControl_ProcessAsyncOperations();
+        
+        // 检查超时
+        if(HAL_GetTick() - start_time > timeout) {
+            DEBUG_Printf("? 通道%d阻塞开启操作超时\r\n", channelNum);
+            return RELAY_ERR_TIMEOUT;
+        }
+        
+        // 短暂延时，避免CPU过度占用
+        HAL_Delay(1);
+    }
+    
+    // 获取最终结果
+    return RelayControl_GetOperationResult(channelNum);
+}
+
+/**
+  * @brief  关闭指定通道（阻塞版本，保持向后兼容）
+  * @param  channelNum: 通道号(1-3)
+  * @retval 0:成功 其他:错误代码
+  * @note   内部使用异步操作，但等待操作完成后返回，保持与原有代码的兼容性
+  */
+uint8_t RelayControl_CloseChannel(uint8_t channelNum)
+{
+    // 启动异步操作
+    uint8_t result = RelayControl_StartCloseChannel(channelNum);
+    if(result != RELAY_ERR_NONE) {
+        return result;
+    }
+    
+    DEBUG_Printf("? 通道%d阻塞关闭等待异步操作完成\r\n", channelNum);
+    
+    // 等待异步操作完成
+    uint32_t start_time = HAL_GetTick();
+    const uint32_t timeout = 2000; // 2秒超时
+    
+    while(RelayControl_IsOperationInProgress(channelNum)) {
+        // 在等待期间继续轮询异步操作
+        RelayControl_ProcessAsyncOperations();
+        
+        // 检查超时
+        if(HAL_GetTick() - start_time > timeout) {
+            DEBUG_Printf("? 通道%d阻塞关闭操作超时\r\n", channelNum);
+            return RELAY_ERR_TIMEOUT;
+        }
+        
+        // 短暂延时，避免CPU过度占用
+        HAL_Delay(1);
+    }
+    
+    // 获取最终结果
+    return RelayControl_GetOperationResult(channelNum);
 } 
 
 

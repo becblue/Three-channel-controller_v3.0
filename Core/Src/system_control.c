@@ -370,15 +370,24 @@ uint8_t SystemControl_CheckTemperature(void)
 void SystemControl_MainLoopScheduler(void)
 {
     static uint32_t lastRelayTime = 0;
+    static uint32_t lastAsyncTime = 0;     // 异步状态机轮询定时器
     static uint32_t lastTempTime = 0;
     static uint32_t lastOledTime = 0;
     static uint32_t lastSafetyTime = 0;
     static uint32_t lastFanSpeedTime = 0;  // 添加风扇转速统计定时器
     static uint32_t lastIwdgTime = 0;      // 添加IWDG看门狗处理定时器
+    static uint32_t lastAsyncStatsTime = 0; // 异步操作统计输出定时器
     
     uint32_t currentTime = HAL_GetTick();
     
-    // 每10ms处理继电器待处理动作（最高优先级）
+    // ================== 最高优先级：异步状态机轮询（每5ms） ===================
+    // 这是整个异步架构的核心，必须高频轮询以确保及时响应
+    if(currentTime - lastAsyncTime >= 5) {
+        lastAsyncTime = currentTime;
+        RelayControl_ProcessAsyncOperations();
+    }
+    
+    // ================== 中断处理：每10ms处理中断标志 ===================
     if(currentTime - lastRelayTime >= 10) {
         lastRelayTime = currentTime;
         RelayControl_ProcessPendingActions();
@@ -440,6 +449,25 @@ void SystemControl_MainLoopScheduler(void)
         
         // 与安全监控系统集成（仅监控，不喂狗）
         IwdgControl_SafetyMonitorIntegration();
+    }
+    
+    // ================== 异步操作统计输出（每30秒） ===================
+    // 输出异步操作和干扰检测的统计信息，帮助监控系统运行状态
+    if(currentTime - lastAsyncStatsTime >= 30000) {
+        lastAsyncStatsTime = currentTime;
+        
+        uint32_t total_ops, completed_ops, failed_ops;
+        uint32_t interference_count, filtered_interrupts;
+        
+        RelayControl_GetAsyncStatistics(&total_ops, &completed_ops, &failed_ops);
+        RelayControl_GetInterferenceStatistics(&interference_count, &filtered_interrupts);
+        
+        DEBUG_Printf("? [异步统计] 总操作:%lu, 完成:%lu, 失败:%lu, 成功率:%.1f%%\r\n", 
+                    total_ops, completed_ops, failed_ops, 
+                    total_ops > 0 ? (float)completed_ops * 100.0f / total_ops : 0.0f);
+                    
+        DEBUG_Printf("?? [干扰统计] 检测到干扰:%lu次, 过滤中断:%lu个\r\n", 
+                    interference_count, filtered_interrupts);
     }
 }
 

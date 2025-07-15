@@ -638,40 +638,57 @@ void SafetyMonitor_CheckRelayStatus(void)
     RelayState_t ch2_state = RelayControl_GetChannelState(2);
     RelayState_t ch3_state = RelayControl_GetChannelState(3);
     
-    // 检查K1_1_STA异常（B类）
-    uint8_t k1_1_expected = (ch1_state == RELAY_STATE_ON) ? 1 : 0;
-    if(k1_1_sta != k1_1_expected) {
-        SafetyMonitor_SetAlarmFlag(ALARM_FLAG_B, NULL);
+    // ===== 智能屏蔽逻辑：跳过正在进行异步操作的通道 =====
+    uint8_t ch1_busy = RelayControl_IsChannelBusy(1);
+    uint8_t ch2_busy = RelayControl_IsChannelBusy(2);
+    uint8_t ch3_busy = RelayControl_IsChannelBusy(3);
+    
+    // 检查K1_1_STA异常（B类） - 仅在通道1空闲时检测
+    if(!ch1_busy) {
+        uint8_t k1_1_expected = (ch1_state == RELAY_STATE_ON) ? 1 : 0;
+        if(k1_1_sta != k1_1_expected) {
+            SafetyMonitor_SetAlarmFlag(ALARM_FLAG_B, NULL);
+        }
     }
     
-    // 检查K2_1_STA异常（C类）
-    uint8_t k2_1_expected = (ch2_state == RELAY_STATE_ON) ? 1 : 0;
-    if(k2_1_sta != k2_1_expected) {
-        SafetyMonitor_SetAlarmFlag(ALARM_FLAG_C, NULL);
+    // 检查K2_1_STA异常（C类） - 仅在通道2空闲时检测
+    if(!ch2_busy) {
+        uint8_t k2_1_expected = (ch2_state == RELAY_STATE_ON) ? 1 : 0;
+        if(k2_1_sta != k2_1_expected) {
+            SafetyMonitor_SetAlarmFlag(ALARM_FLAG_C, NULL);
+        }
     }
     
-    // 检查K3_1_STA异常（D类）
-    uint8_t k3_1_expected = (ch3_state == RELAY_STATE_ON) ? 1 : 0;
-    if(k3_1_sta != k3_1_expected) {
-        SafetyMonitor_SetAlarmFlag(ALARM_FLAG_D, NULL);
+    // 检查K3_1_STA异常（D类） - 仅在通道3空闲时检测
+    if(!ch3_busy) {
+        uint8_t k3_1_expected = (ch3_state == RELAY_STATE_ON) ? 1 : 0;
+        if(k3_1_sta != k3_1_expected) {
+            SafetyMonitor_SetAlarmFlag(ALARM_FLAG_D, NULL);
+        }
     }
     
-    // 检查K1_2_STA异常（E类）
-    uint8_t k1_2_expected = (ch1_state == RELAY_STATE_ON) ? 1 : 0;
-    if(k1_2_sta != k1_2_expected) {
-        SafetyMonitor_SetAlarmFlag(ALARM_FLAG_E, NULL);
+    // 检查K1_2_STA异常（E类） - 仅在通道1空闲时检测
+    if(!ch1_busy) {
+        uint8_t k1_2_expected = (ch1_state == RELAY_STATE_ON) ? 1 : 0;
+        if(k1_2_sta != k1_2_expected) {
+            SafetyMonitor_SetAlarmFlag(ALARM_FLAG_E, NULL);
+        }
     }
     
-    // 检查K2_2_STA异常（F类）
-    uint8_t k2_2_expected = (ch2_state == RELAY_STATE_ON) ? 1 : 0;
-    if(k2_2_sta != k2_2_expected) {
-        SafetyMonitor_SetAlarmFlag(ALARM_FLAG_F, NULL);
+    // 检查K2_2_STA异常（F类） - 仅在通道2空闲时检测
+    if(!ch2_busy) {
+        uint8_t k2_2_expected = (ch2_state == RELAY_STATE_ON) ? 1 : 0;
+        if(k2_2_sta != k2_2_expected) {
+            SafetyMonitor_SetAlarmFlag(ALARM_FLAG_F, NULL);
+        }
     }
     
-    // 检查K3_2_STA异常（G类）
-    uint8_t k3_2_expected = (ch3_state == RELAY_STATE_ON) ? 1 : 0;
-    if(k3_2_sta != k3_2_expected) {
-        SafetyMonitor_SetAlarmFlag(ALARM_FLAG_G, NULL);
+    // 检查K3_2_STA异常（G类） - 仅在通道3空闲时检测
+    if(!ch3_busy) {
+        uint8_t k3_2_expected = (ch3_state == RELAY_STATE_ON) ? 1 : 0;
+        if(k3_2_sta != k3_2_expected) {
+            SafetyMonitor_SetAlarmFlag(ALARM_FLAG_G, NULL);
+        }
     }
 }
 
@@ -691,22 +708,33 @@ void SafetyMonitor_CheckContactorStatus(void)
     RelayState_t ch2_state = RelayControl_GetChannelState(2);
     RelayState_t ch3_state = RelayControl_GetChannelState(3);
     
-    // 检查SW1_STA异常（H类）
-    uint8_t sw1_expected = (ch1_state == RELAY_STATE_ON) ? 1 : 0;
-    if(sw1_sta != sw1_expected) {
-        SafetyMonitor_SetAlarmFlag(ALARM_FLAG_H, NULL);
+    // ===== 智能屏蔽逻辑：跳过正在进行异步操作的通道 =====
+    uint8_t ch1_busy = RelayControl_IsChannelBusy(1);
+    uint8_t ch2_busy = RelayControl_IsChannelBusy(2);
+    uint8_t ch3_busy = RelayControl_IsChannelBusy(3);
+    
+    // 检查SW1_STA异常（H类） - 仅在通道1空闲时检测
+    if(!ch1_busy) {
+        uint8_t sw1_expected = (ch1_state == RELAY_STATE_ON) ? 1 : 0;
+        if(sw1_sta != sw1_expected) {
+            SafetyMonitor_SetAlarmFlag(ALARM_FLAG_H, NULL);
+        }
     }
     
-    // 检查SW2_STA异常（I类）
-    uint8_t sw2_expected = (ch2_state == RELAY_STATE_ON) ? 1 : 0;
-    if(sw2_sta != sw2_expected) {
-        SafetyMonitor_SetAlarmFlag(ALARM_FLAG_I, NULL);
+    // 检查SW2_STA异常（I类） - 仅在通道2空闲时检测
+    if(!ch2_busy) {
+        uint8_t sw2_expected = (ch2_state == RELAY_STATE_ON) ? 1 : 0;
+        if(sw2_sta != sw2_expected) {
+            SafetyMonitor_SetAlarmFlag(ALARM_FLAG_I, NULL);
+        }
     }
     
-    // 检查SW3_STA异常（J类）
-    uint8_t sw3_expected = (ch3_state == RELAY_STATE_ON) ? 1 : 0;
-    if(sw3_sta != sw3_expected) {
-        SafetyMonitor_SetAlarmFlag(ALARM_FLAG_J, NULL);
+    // 检查SW3_STA异常（J类） - 仅在通道3空闲时检测
+    if(!ch3_busy) {
+        uint8_t sw3_expected = (ch3_state == RELAY_STATE_ON) ? 1 : 0;
+        if(sw3_sta != sw3_expected) {
+            SafetyMonitor_SetAlarmFlag(ALARM_FLAG_J, NULL);
+        }
     }
 }
 
