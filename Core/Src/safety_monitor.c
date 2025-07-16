@@ -20,8 +20,8 @@ static volatile uint32_t g_dc_ctrl_interrupt_time = 0;
 // 全局安全监控结构体
 static SafetyMonitor_t g_safety_monitor;
 
-// 新增：异常日志记录标志
-static uint16_t g_alarm_log_flags = 0;  // 待记录日志的异常标志
+// 新增：异常日志记录标志（暂未使用，保留供将来扩展）
+// static uint16_t g_alarm_log_flags = 0;  // 待记录日志的异常标志
 
 // 异常标志描述字符串（英文版本，适配OLED显示）
 static const char* g_alarm_descriptions[ALARM_FLAG_COUNT] = {

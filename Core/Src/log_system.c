@@ -781,6 +781,43 @@ uint32_t LogSystem_GetCategoryLogCount(LogCategory_t category)
 }
 
 /**
+  * @brief  读取指定索引的日志条目
+  * @param  entry_index: 日志条目索引
+  * @param  entry: 日志条目指针
+  * @retval LogSystemStatus_t 操作状态
+  */
+LogSystemStatus_t LogSystem_ReadEntry(uint32_t entry_index, LogEntry_t* entry)
+{
+    if (!entry) {
+        return LOG_SYSTEM_ERROR;
+    }
+    
+    if (!log_manager.is_initialized) {
+        return LOG_SYSTEM_NOT_INIT;
+    }
+    
+    /* 检查索引有效性 */
+    if (entry_index >= log_manager.total_entries) {
+        return LOG_SYSTEM_ERROR;
+    }
+    
+    /* 计算实际地址 */
+    uint32_t entry_addr = LogSystem_GetEntryAddress(entry_index);
+    
+    /* 从Flash读取数据 */
+    if (W25Q128_ReadData(entry_addr, (uint8_t*)entry, LOG_ENTRY_SIZE) != W25Q128_OK) {
+        return LOG_SYSTEM_ERROR;
+    }
+    
+    /* 验证读取的条目 */
+    if (!LogSystem_VerifyEntry(entry)) {
+        return LOG_SYSTEM_ERROR;
+    }
+    
+    return LOG_SYSTEM_OK;
+}
+
+/**
   * @brief  格式化日志系统（完全擦除所有数据）
   * @retval LogSystemStatus_t 操作状态
   */

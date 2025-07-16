@@ -8,7 +8,6 @@
 "three-channel controller_v3.0\safety_monitor.o"
 "three-channel controller_v3.0\minyerlogo.o"
 "three-channel controller_v3.0\iwdg_control.o"
-"three-channel controller_v3.0\iwdg_test.o"
 "three-channel controller_v3.0\smart_delay.o"
 "three-channel controller_v3.0\log_system.o"
 "three-channel controller_v3.0\w25q128_driver.o"

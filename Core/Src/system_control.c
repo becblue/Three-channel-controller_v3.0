@@ -10,6 +10,8 @@
 #include "log_system.h"    // 日志系统
 #include <string.h>
 #include <stdio.h>
+#include <stdarg.h>        // 变量参数功能
+#include <stdlib.h>        // 添加stdlib.h支持strtoul函数
 
 /************************************************************
  * 系统控制模块源文件
@@ -377,6 +379,7 @@ void SystemControl_MainLoopScheduler(void)
     static uint32_t lastFanSpeedTime = 0;  // 添加风扇转速统计定时器
     static uint32_t lastIwdgTime = 0;      // 添加IWDG看门狗处理定时器
     static uint32_t lastAsyncStatsTime = 0; // 异步操作统计输出定时器
+    static uint32_t lastResetAnalysisTime = 0; // 复位分析实时监控定时器
     
     uint32_t currentTime = HAL_GetTick();
     
@@ -468,6 +471,27 @@ void SystemControl_MainLoopScheduler(void)
                     
         DEBUG_Printf("?? [干扰统计] 检测到干扰:%lu次, 过滤中断:%lu个\r\n", 
                     interference_count, filtered_interrupts);
+    }
+    
+    // ================== 复位分析实时监控（每1秒） ===================
+    // 更新复位分析系统的实时状态监控，检测异常条件并进行风险评估
+    if(currentTime - lastResetAnalysisTime >= 1000) {
+        lastResetAnalysisTime = currentTime;
+        
+        // 更新实时状态
+        ResetAnalysis_UpdateRealTimeStatus();
+        
+        // 检测异常状态
+        if(ResetAnalysis_CheckAbnormalConditions()) {
+            uint8_t risk_level = ResetAnalysis_PredictResetRisk();
+            if(risk_level >= 2) { // 中等风险以上记录日志
+                char risk_msg[48];
+                const char* risk_names[] = {"无风险", "低风险", "中风险", "高风险"};
+                snprintf(risk_msg, sizeof(risk_msg), "复位风险级别: %s", 
+                         risk_level < 4 ? risk_names[risk_level] : "极高");
+                LOG_RESET_RISK_WARNING(risk_msg);
+            }
+        }
     }
 }
 
@@ -1632,5 +1656,505 @@ void SystemControl_FlashSpeedBenchmark(void)
     
     DEBUG_Printf("\\r\\n? 性能基准测试完成！\\r\\n");
     DEBUG_Printf("? 提示：SPI优化后写入速度应显著提升\\r\\n");
+}
+
+// =================== 复位分析系统 - 统一Flash存储版本 ===================
+
+/* 复位原因名称数组 */
+static const char* g_reset_cause_names[] = {
+    "Unknown",
+    "Power On",
+    "Software",
+    "Watchdog",
+    "Pin Reset",
+    "Low Power"
+};
+
+/**
+ * @brief 复位分析系统初始化 - Flash存储版本
+ * @retval 0: 成功, 其他: 失败
+ */
+uint8_t ResetAnalysis_Init(void)
+{
+    DEBUG_Printf("=== 复位分析系统初始化(Flash存储版) ===\r\n");
+    
+    if(!LogSystem_IsInitialized()) {
+        DEBUG_Printf("日志系统未初始化，等待日志系统就绪\r\n");
+        return 1;
+    }
+    
+    // 分析硬件复位原因
+    IwdgResetReason_t hw_reason = IwdgControl_GetLastResetReason();
+    ResetCause_t reset_cause = RESET_CAUSE_UNKNOWN;
+    uint8_t is_abnormal_reset = 0;
+    
+    switch(hw_reason) {
+        case IWDG_RESET_POWER_ON:
+            reset_cause = RESET_CAUSE_POWER_ON;
+            break;
+        case IWDG_RESET_SOFTWARE:
+            reset_cause = RESET_CAUSE_SOFTWARE;
+            break;
+        case IWDG_RESET_WATCHDOG:
+            reset_cause = RESET_CAUSE_WATCHDOG;
+            is_abnormal_reset = 1;  // 看门狗复位为异常
+            break;
+        case IWDG_RESET_PIN:
+            reset_cause = RESET_CAUSE_PIN_RESET;
+            break;
+        case IWDG_RESET_LOW_POWER:
+            reset_cause = RESET_CAUSE_LOW_POWER;
+            break;
+        default:
+            reset_cause = RESET_CAUSE_UNKNOWN;
+            is_abnormal_reset = 1;  // 未知复位为异常
+            break;
+    }
+    
+    DEBUG_Printf("检测到复位原因: %s (%s)\r\n", 
+                g_reset_cause_names[reset_cause], 
+                is_abnormal_reset ? "异常" : "正常");
+    
+    // =================== 记录复位时刻的完整状态快照 ===================
+    
+    // 1. 记录复位原因
+    char detail_buffer[128];
+    snprintf(detail_buffer, sizeof(detail_buffer), "原因:%s,异常:%d", 
+             g_reset_cause_names[reset_cause], is_abnormal_reset);
+    LogSystem_Record(LOG_CATEGORY_SYSTEM, 0, LOG_EVENT_RESET_CAUSE_ANALYSIS, detail_buffer);
+    
+    // 2. 记录复位时刻的GPIO状态快照
+    uint8_t k1_en = GPIO_ReadK1_EN();
+    uint8_t k2_en = GPIO_ReadK2_EN();
+    uint8_t k3_en = GPIO_ReadK3_EN();
+    uint8_t dc_ctrl = GPIO_ReadDC_CTRL();
+    
+    uint8_t k1_1_sta = GPIO_ReadK1_1_STA();
+    uint8_t k1_2_sta = GPIO_ReadK1_2_STA();
+    uint8_t k2_1_sta = GPIO_ReadK2_1_STA();
+    uint8_t k2_2_sta = GPIO_ReadK2_2_STA();
+    uint8_t k3_1_sta = GPIO_ReadK3_1_STA();
+    uint8_t k3_2_sta = GPIO_ReadK3_2_STA();
+    
+    uint8_t sw1_sta = GPIO_ReadSW1_STA();
+    uint8_t sw2_sta = GPIO_ReadSW2_STA();
+    uint8_t sw3_sta = GPIO_ReadSW3_STA();
+    
+    // 记录使能信号状态
+    snprintf(detail_buffer, sizeof(detail_buffer), "K1_EN:%d,K2_EN:%d,K3_EN:%d,DC_CTRL:%d", 
+             k1_en, k2_en, k3_en, dc_ctrl);
+    LogSystem_Record(LOG_CATEGORY_SYSTEM, 0, LOG_EVENT_RESET_SNAPSHOT, detail_buffer);
+    
+    // 记录继电器状态
+    snprintf(detail_buffer, sizeof(detail_buffer), "K1_1:%d,K1_2:%d,K2_1:%d,K2_2:%d,K3_1:%d,K3_2:%d", 
+             k1_1_sta, k1_2_sta, k2_1_sta, k2_2_sta, k3_1_sta, k3_2_sta);
+    LogSystem_Record(LOG_CATEGORY_SYSTEM, 0, LOG_EVENT_RESET_SNAPSHOT, detail_buffer);
+    
+    // 记录接触器状态
+    snprintf(detail_buffer, sizeof(detail_buffer), "SW1:%d,SW2:%d,SW3:%d", 
+             sw1_sta, sw2_sta, sw3_sta);
+    LogSystem_Record(LOG_CATEGORY_SYSTEM, 0, LOG_EVENT_RESET_SNAPSHOT, detail_buffer);
+    
+    // 3. 记录复位时刻的温度状态
+    TempInfo_t temp_info;
+    temp_info = TemperatureMonitor_GetInfo(TEMP_CH1);
+    float temp1 = temp_info.value_celsius;
+    temp_info = TemperatureMonitor_GetInfo(TEMP_CH2);
+    float temp2 = temp_info.value_celsius;
+    temp_info = TemperatureMonitor_GetInfo(TEMP_CH3);
+    float temp3 = temp_info.value_celsius;
+    
+    snprintf(detail_buffer, sizeof(detail_buffer), "NTC1:%.1f℃,NTC2:%.1f℃,NTC3:%.1f℃", 
+             temp1, temp2, temp3);
+    LogSystem_Record(LOG_CATEGORY_SYSTEM, 0, LOG_EVENT_RESET_SNAPSHOT, detail_buffer);
+    
+    // 4. 记录复位时刻的安全监控状态
+    uint16_t alarm_flags = SafetyMonitor_GetAlarmFlags();
+    snprintf(detail_buffer, sizeof(detail_buffer), "报警标志:0x%04X", alarm_flags);
+    LogSystem_Record(LOG_CATEGORY_SYSTEM, 0, LOG_EVENT_RESET_SNAPSHOT, detail_buffer);
+    
+    // =================== 更新复位统计计数 ===================
+    
+    // 读取当前复位统计
+    uint32_t total_resets = ResetAnalysis_GetTotalResets();
+    uint32_t abnormal_resets = ResetAnalysis_GetAbnormalResets();
+    
+    // 复位计数+1
+    total_resets++;
+    if(is_abnormal_reset) {
+        abnormal_resets++;
+    }
+    
+    // 保存新的复位统计
+    snprintf(detail_buffer, sizeof(detail_buffer), "总数:%lu,异常:%lu", total_resets, abnormal_resets);
+    LogSystem_Record(LOG_CATEGORY_SYSTEM, 0, LOG_EVENT_RESET_STATISTICS, detail_buffer);
+    
+    DEBUG_Printf("复位统计更新: 总复位次数=%lu, 异常复位次数=%lu\r\n", total_resets, abnormal_resets);
+    
+    // =================== 评估复位风险等级 ===================
+    
+    uint8_t risk_level = 0;
+    if(abnormal_resets >= 3) {
+        risk_level = 3; // 高风险
+    } else if(abnormal_resets >= 2) {
+        risk_level = 2; // 中风险
+    } else if(abnormal_resets >= 1) {
+        risk_level = 1; // 低风险
+    }
+    
+    const char* risk_names[] = {"无风险", "低风险", "中风险", "高风险"};
+    snprintf(detail_buffer, sizeof(detail_buffer), "风险等级:%d/3,评估:%s", risk_level, risk_names[risk_level]);
+    LogSystem_Record(LOG_CATEGORY_SYSTEM, 0, LOG_EVENT_RESET_RISK_WARNING, detail_buffer);
+    
+    // 记录初始化完成
+    LogSystem_Record(LOG_CATEGORY_SYSTEM, 0, LOG_EVENT_RESET_ANALYSIS_INIT, "复位分析系统初始化完成");
+    
+    DEBUG_Printf("复位分析系统初始化完成，状态快照已保存到Flash\r\n");
+    return 0;
+}
+
+/**
+ * @brief 更新实时状态 - Flash存储版本
+ */
+void ResetAnalysis_UpdateRealTimeStatus(void)
+{
+    static uint32_t last_snapshot_time = 0;
+    uint32_t current_time = HAL_GetTick();
+    
+    // 每10秒记录一次系统快照
+    if(current_time - last_snapshot_time >= 10000) {
+        uint32_t uptime_seconds = current_time / 1000;
+        
+        // 获取当前系统状态
+        uint16_t alarm_flags = SafetyMonitor_GetAlarmFlags();
+        SystemState_t system_state = SystemControl_GetState();
+        
+        // 记录状态快照
+        char snapshot_msg[48];
+        snprintf(snapshot_msg, sizeof(snapshot_msg), "运行:%lus,报警:0x%04X,状态:%d", 
+                 uptime_seconds, alarm_flags, system_state);
+        LOG_RESET_SNAPSHOT(snapshot_msg);
+        
+        // 检查异常条件并记录
+        if(alarm_flags != 0) {
+            char abnormal_msg[48];
+            snprintf(abnormal_msg, sizeof(abnormal_msg), "异常标志:0x%04X,运行时间:%lus", 
+                     alarm_flags, uptime_seconds);
+            LOG_RESET_ABNORMAL_STATE(abnormal_msg);
+        }
+        
+        // 评估系统稳定性
+        uint8_t stability_score = (alarm_flags == 0) ? 100 : (100 - __builtin_popcount(alarm_flags) * 10);
+        if(stability_score < 80) {
+            char stable_msg[48];
+            snprintf(stable_msg, sizeof(stable_msg), "稳定性评分:%d/100", stability_score);
+            LOG_RESET_SYSTEM_STABLE(stable_msg);
+        }
+        
+        last_snapshot_time = current_time;
+    }
+}
+
+/**
+ * @brief 检查异常条件 - Flash存储版本
+ * @retval 检测到的异常条件数量
+ */
+uint8_t ResetAnalysis_CheckAbnormalConditions(void)
+{
+    uint16_t alarm_flags = SafetyMonitor_GetAlarmFlags();
+    uint8_t abnormal_count = 0;
+    
+    if(alarm_flags != 0) {
+        abnormal_count = __builtin_popcount(alarm_flags);  // 计算置位的bit数
+        
+        // 记录异常状态
+        char abnormal_msg[48];
+        snprintf(abnormal_msg, sizeof(abnormal_msg), "检测到%d种异常:0x%04X", abnormal_count, alarm_flags);
+        LOG_RESET_ABNORMAL_STATE(abnormal_msg);
+    }
+    
+    return abnormal_count;
+}
+
+/**
+ * @brief 预测复位风险 - Flash存储版本
+ * @retval 风险等级 (0-3)
+ */
+uint8_t ResetAnalysis_PredictResetRisk(void)
+{
+    uint32_t abnormal_resets = ResetAnalysis_GetAbnormalResets();
+    uint16_t current_alarms = SafetyMonitor_GetAlarmFlags();
+    uint32_t uptime = HAL_GetTick() / 1000;
+    
+    uint8_t risk_level = 0;
+    
+    // 基于异常复位次数评估
+    if(abnormal_resets >= 5) risk_level = 3;
+    else if(abnormal_resets >= 3) risk_level = 2;
+    else if(abnormal_resets >= 1) risk_level = 1;
+    
+    // 基于当前报警状态调整
+    if(current_alarms != 0) {
+        uint8_t alarm_count = __builtin_popcount(current_alarms);
+        if(alarm_count >= 3) risk_level = 3;
+        else if(alarm_count >= 2) risk_level = (risk_level < 2) ? 2 : risk_level;
+        else if(alarm_count >= 1) risk_level = (risk_level < 1) ? 1 : risk_level;
+    }
+    
+    // 基于运行时间调整（短时间内频繁复位是高风险）
+    if(uptime < 300 && abnormal_resets > 0) {  // 5分钟内有异常复位
+        risk_level = (risk_level < 2) ? 2 : risk_level;
+    }
+    
+    // 记录风险预警
+    if(risk_level > 0) {
+        char risk_msg[48];
+        snprintf(risk_msg, sizeof(risk_msg), "风险等级:%d,异常复位:%lu,当前报警:%d", 
+                 risk_level, abnormal_resets, __builtin_popcount(current_alarms));
+        LOG_RESET_RISK_WARNING(risk_msg);
+    }
+    
+    return risk_level;
+}
+
+/**
+ * @brief 从日志系统读取最新的复位总数
+ * @retval 复位总次数
+ */
+uint32_t ResetAnalysis_GetTotalResets(void)
+{
+    if(!LogSystem_IsInitialized()) return 0;
+    
+    uint32_t total_entries = LogSystem_GetEntryCount();
+    uint32_t total_resets = 0;
+    
+    // 从最新的日志中查找最新的统计记录
+    for(int32_t i = total_entries - 1; i >= 0 && i >= (int32_t)(total_entries - 100); i--) {
+        LogEntry_t entry;
+        if(LogSystem_ReadEntry(i, &entry) == LOG_SYSTEM_OK) {
+            if(entry.event_code == LOG_EVENT_RESET_STATISTICS) {
+                // 解析统计信息 "总数:X,异常:Y"
+                char* total_str = strstr(entry.message, "总数:");
+                if(total_str) {
+                    total_resets = strtoul(total_str + 3, NULL, 10);
+                    break;
+                }
+            }
+        }
+    }
+    
+    return total_resets;
+}
+
+/**
+ * @brief 从日志系统读取最新的异常复位数
+ * @retval 异常复位次数
+ */
+uint32_t ResetAnalysis_GetAbnormalResets(void)
+{
+    if(!LogSystem_IsInitialized()) return 0;
+    
+    uint32_t total_entries = LogSystem_GetEntryCount();
+    uint32_t abnormal_resets = 0;
+    
+    // 从最新的日志中查找最新的统计记录
+    for(int32_t i = total_entries - 1; i >= 0 && i >= (int32_t)(total_entries - 100); i--) {
+        LogEntry_t entry;
+        if(LogSystem_ReadEntry(i, &entry) == LOG_SYSTEM_OK) {
+            if(entry.event_code == LOG_EVENT_RESET_STATISTICS) {
+                // 解析统计信息 "总数:X,异常:Y"
+                char* abnormal_str = strstr(entry.message, "异常:");
+                if(abnormal_str) {
+                    abnormal_resets = strtoul(abnormal_str + 3, NULL, 10);
+                    break;
+                }
+            }
+        }
+    }
+    
+    return abnormal_resets;
+}
+
+/**
+ * @brief 从日志系统读取最新的复位原因
+ * @retval 复位原因
+ */
+ResetCause_t ResetAnalysis_GetLastResetCause(void)
+{
+    if(!LogSystem_IsInitialized()) return RESET_CAUSE_UNKNOWN;
+    
+    uint32_t total_entries = LogSystem_GetEntryCount();
+    
+    // 从最新的日志中查找最新的复位原因分析
+    for(int32_t i = total_entries - 1; i >= 0 && i >= (int32_t)(total_entries - 50); i--) {
+        LogEntry_t entry;
+        if(LogSystem_ReadEntry(i, &entry) == LOG_SYSTEM_OK) {
+            if(entry.event_code == LOG_EVENT_RESET_CAUSE_ANALYSIS) {
+                // 解析复位原因
+                for(int j = 0; j < 6; j++) {
+                    if(strstr(entry.message, g_reset_cause_names[j])) {
+                        return (ResetCause_t)j;
+                    }
+                }
+            }
+        }
+    }
+    
+    return RESET_CAUSE_UNKNOWN;
+}
+
+
+
+/**
+ * @brief 复位分析系统重置 - Flash存储版本
+ * @retval 无
+ * @note 清空所有复位分析数据，重置统计计数
+ */
+void ResetAnalysis_Reset(void)
+{
+    DEBUG_Printf("=== 复位分析系统重置(Flash存储版) ===\r\n");
+    
+    if(!LogSystem_IsInitialized()) {
+        DEBUG_Printf("日志系统未初始化，无法重置复位分析数据\r\n");
+        return;
+    }
+    
+    // 注意：新的架构下，复位分析数据完全基于日志系统
+    // KEY2清空操作已经能够同时清空日志系统和复位分析数据
+    // 因为复位分析数据就是特殊的日志条目
+    
+    // 记录重置操作到日志
+    LogSystem_Record(LOG_CATEGORY_SYSTEM, 0, LOG_EVENT_RESET_ANALYSIS_INIT, "用户手动重置复位分析系统");
+    
+    DEBUG_Printf("复位分析系统重置说明:\r\n");
+    DEBUG_Printf("- 在新架构下，复位分析数据完全基于日志系统\r\n");
+    DEBUG_Printf("- 要完全清空复位分析数据，请使用KEY2长按3秒清空日志功能\r\n");
+    DEBUG_Printf("- 清空日志后，复位统计将自动重置为初始状态\r\n");
+    DEBUG_Printf("- 下次系统复位时，将重新开始统计分析\r\n");
+    DEBUG_Printf("注：所有复位分析数据与日志系统统一存储在Flash中\r\n");
+}
+
+/**
+ * @brief 复位分析查询请求处理 - 纯历史数据版本
+ * @retval 无
+ * @note 只显示复位时刻的历史状态快照，不包含任何实时数据
+ */
+void ResetAnalysis_HandleQueryRequest(void)
+{
+    DEBUG_Printf("=== 复位分析报告(历史状态快照) ===\r\n");
+    
+    if(!LogSystem_IsInitialized()) {
+        DEBUG_Printf("日志系统未初始化，无法查询复位分析数据\r\n");
+        return;
+    }
+    
+    // =================== 显示复位统计信息 ===================
+    uint32_t total_resets = ResetAnalysis_GetTotalResets();
+    uint32_t abnormal_resets = ResetAnalysis_GetAbnormalResets();
+    ResetCause_t last_reset_cause = ResetAnalysis_GetLastResetCause();
+    
+    DEBUG_Printf("复位统计信息:\r\n");
+    DEBUG_Printf("- 总复位次数: %lu\r\n", total_resets);
+    DEBUG_Printf("- 异常复位次数: %lu\r\n", abnormal_resets);
+    DEBUG_Printf("- 上次复位原因: %s\r\n", g_reset_cause_names[last_reset_cause]);
+    
+    // =================== 显示最后一次复位的状态快照 ===================
+    DEBUG_Printf("\r\n最后一次复位时的状态快照:\r\n");
+    
+    // 搜索最新的状态快照记录
+    uint32_t total_entries = LogSystem_GetEntryCount();
+    LogEntry_t entry;
+    
+    char gpio_states[48] = "未找到";
+    char relay_states[48] = "未找到";  
+    char contactor_states[48] = "未找到";
+    char temp_states[48] = "未找到";
+    char alarm_states[48] = "未找到";
+    
+    // 从最新日志开始向前搜索状态快照（搜索最近100条）
+    uint32_t search_count = (total_entries > 100) ? 100 : total_entries;
+    for(uint32_t i = 0; i < search_count; i++) {
+        uint32_t entry_index = total_entries - 1 - i;  // 从最新开始
+        
+        if(LogSystem_ReadEntry(entry_index, &entry) == LOG_SYSTEM_OK) {
+            if(entry.event_code == LOG_EVENT_RESET_SNAPSHOT) {
+                // 解析状态快照内容
+                if(strstr(entry.message, "K1_EN:") != NULL) {
+                    // GPIO状态快照
+                    strncpy(gpio_states, entry.message, sizeof(gpio_states)-1);
+                    gpio_states[sizeof(gpio_states)-1] = '\0';
+                } else if(strstr(entry.message, "K1_1:") != NULL) {
+                    // 继电器状态快照
+                    strncpy(relay_states, entry.message, sizeof(relay_states)-1);
+                    relay_states[sizeof(relay_states)-1] = '\0';
+                } else if(strstr(entry.message, "SW1:") != NULL) {
+                    // 接触器状态快照
+                    strncpy(contactor_states, entry.message, sizeof(contactor_states)-1);
+                    contactor_states[sizeof(contactor_states)-1] = '\0';
+                } else if(strstr(entry.message, "NTC1:") != NULL) {
+                    // 温度状态快照
+                    strncpy(temp_states, entry.message, sizeof(temp_states)-1);
+                    temp_states[sizeof(temp_states)-1] = '\0';
+                } else if(strstr(entry.message, "报警标志:") != NULL) {
+                    // 报警状态快照
+                    strncpy(alarm_states, entry.message, sizeof(alarm_states)-1);
+                    alarm_states[sizeof(alarm_states)-1] = '\0';
+                }
+            }
+        }
+    }
+    
+    // 显示复位时刻的状态快照
+    DEBUG_Printf("使能信号状态: %s\r\n", gpio_states);
+    DEBUG_Printf("继电器状态: %s\r\n", relay_states);
+    DEBUG_Printf("接触器状态: %s\r\n", contactor_states);
+    DEBUG_Printf("温度状态: %s\r\n", temp_states);
+    DEBUG_Printf("安全监控状态: %s\r\n", alarm_states);
+    
+    // =================== 显示风险评估 ===================
+    uint8_t risk_level = 0;
+    if(abnormal_resets >= 3) {
+        risk_level = 3;
+    } else if(abnormal_resets >= 2) {
+        risk_level = 2;
+    } else if(abnormal_resets >= 1) {
+        risk_level = 1;
+    }
+    
+    const char* risk_names[] = {"无风险", "低风险", "中风险", "高风险"};
+    const char* risk_descriptions[] = {
+        "系统运行稳定，无异常复位记录",
+        "系统基本稳定，建议观察",
+        "系统存在不稳定因素，建议检查硬件",
+        "系统不稳定，需要立即检查和维修"
+    };
+    
+    DEBUG_Printf("\r\n系统风险评估:\r\n");
+    DEBUG_Printf("- 风险等级: %d/3 (%s)\r\n", risk_level, risk_names[risk_level]);
+    DEBUG_Printf("- 风险评估: %s\r\n", risk_descriptions[risk_level]);
+    
+    // =================== 显示最近复位记录 ===================
+    DEBUG_Printf("\r\n--- 最近复位记录 ---\r\n");
+    
+    uint8_t found_records = 0;
+    // 搜索最近5条复位相关记录
+    for(uint32_t i = 0; i < search_count && found_records < 5; i++) {
+        uint32_t entry_index = total_entries - 1 - i;  // 从最新开始
+        
+        if(LogSystem_ReadEntry(entry_index, &entry) == LOG_SYSTEM_OK) {
+            if(entry.event_code == LOG_EVENT_RESET_CAUSE_ANALYSIS) {
+                DEBUG_Printf("[%lu] 复位原因: %s\r\n", entry.timestamp, entry.message);
+                found_records++;
+            }
+        }
+    }
+    
+    if(found_records == 0) {
+        DEBUG_Printf("近期无复位记录\r\n");
+    }
+    
+    DEBUG_Printf("========================\r\n");
+    DEBUG_Printf("注：所有数据为复位时刻的历史快照，存储在Flash中\r\n");
+    DEBUG_Printf("=== 复位分析查询完成 ===\r\n");
 }
 

@@ -29,20 +29,20 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include <stdio.h>         // 包含标准输入输出库，用于printf功能
-#include "gpio.h"          // 包含GPIO驱动模块头文件，用于GPIO底层操作
-#include "gpio_control.h"  // 包含GPIO控制模块
+#include "system_control.h"  // 系统控制和复位分析功能
+#include "gpio_control.h"
 #include "relay_control.h"
+#include "safety_monitor.h"
 #include "temperature_monitor.h"
+#include "smart_delay.h"
+#include "log_system.h"
+#include "w25q128_driver.h"
+#include "iwdg_control.h"
 #include "oled_display.h"
-#include "system_control.h"
-#include "usart.h"
-#include "iwdg_control.h"  // 包含IWDG看门狗控制模块
-#include "iwdg.h"          // 包含IWDG外设驱动
-#include "log_system.h"    // 包含日志系统模块
-#include "w25q128_driver.h" // 包含W25Q128 Flash驱动模块
+#include <stdio.h>         // 包含标准输入输出库，用于printf功能
 #include <string.h>        // 包含字符串操作函数
-#include "safety_monitor.h" // 包含安全监控模块
+#include <stdarg.h>        // 包含变量参数功能
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -312,6 +312,16 @@ int main(void)
     // 记录初始化失败到调试输出，无法记录到Flash
   }
   
+  // 复位分析系统初始化（在日志系统之后）
+  if(ResetAnalysis_Init() == 0) {
+    DEBUG_Printf("复位分析系统初始化完成\r\n");
+    if(LogSystem_IsInitialized()) {
+      LOG_RESET_ANALYSIS_INIT("复位分析系统启动");
+    }
+  } else {
+    DEBUG_Printf("复位分析系统初始化失败\r\n");
+  }
+  
   // 注意：IWDG将在系统进入正常状态后自动启动，无需在此处阻塞延时
   DEBUG_Printf("系统初始化完成，开始状态机循环\r\n");
   
@@ -404,26 +414,40 @@ int main(void)
                 DEBUG_Printf("\r\n=== KEY1长按%.1f秒，查看FLASH状态 ===\r\n", total_press_duration/1000.0f);
                 SystemControl_PrintFlashStatus();
                 DEBUG_Printf("=== FLASH状态查看完成 ===\r\n");
-            } else if (total_press_duration >= 3000) {
-                // KEY1长按3秒：输出日志
+            } else if (total_press_duration >= 5000) {
+                // KEY1长按5秒：输出日志（调整为5秒，让出3秒给复位分析）
                 key1_long_press_triggered = 1;
                 DEBUG_Printf("\r\n=== KEY1长按%.1f秒，开始输出日志 ===\r\n", total_press_duration/1000.0f);
-            
-            // 启动分批日志输出
-            if (LogSystem_IsInitialized() && !log_output_state.is_outputting) {
-                log_output_state.is_outputting = 1;
-                log_output_state.current_index = 0;
-                log_output_state.total_logs = LogSystem_GetLogCount();
-                log_output_state.last_output_time = HAL_GetTick();
                 
-                // 输出日志头信息
-                LogSystem_OutputHeader();
-                
-                DEBUG_Printf("开始分批输出 %lu 条日志...\r\n", log_output_state.total_logs);
-            } else if (!LogSystem_IsInitialized()) {
-                DEBUG_Printf("日志系统未初始化，无法输出日志\r\n");
-                DEBUG_Printf("=== 日志输出完成 ===\r\n");
+                // 启动分批日志输出
+                if (LogSystem_IsInitialized() && !log_output_state.is_outputting) {
+                    log_output_state.is_outputting = 1;
+                    log_output_state.current_index = 0;
+                    log_output_state.total_logs = LogSystem_GetLogCount();
+                    log_output_state.last_output_time = HAL_GetTick();
+                    
+                    // 输出日志头信息
+                    LogSystem_OutputHeader();
+                    
+                    DEBUG_Printf("开始分批输出 %lu 条日志...\r\n", log_output_state.total_logs);
+                } else if (!LogSystem_IsInitialized()) {
+                    DEBUG_Printf("日志系统未初始化，无法输出日志\r\n");
                 }
+                DEBUG_Printf("=== 日志输出完成 ===\r\n");
+            } else if (total_press_duration >= 3000) {
+                // KEY1长按3秒：复位分析查询
+                key1_long_press_triggered = 1;
+                DEBUG_Printf("\r\n=== KEY1长按%.1f秒，开始复位分析查询 ===\r\n", total_press_duration/1000.0f);
+                
+                // 调用复位分析查询功能
+                ResetAnalysis_HandleQueryRequest();
+                
+                // 记录查询请求到日志
+                if(LogSystem_IsInitialized()) {
+                    LOG_RESET_QUERY_REQUEST("KEY1长按3秒查询");
+                }
+                
+                DEBUG_Printf("=== 复位分析查询完成 ===\r\n");
             } else {
                 DEBUG_Printf("KEY1按压时间不足3秒（%.1f秒），无操作\r\n", total_press_duration/1000.0f);
             }
@@ -469,6 +493,7 @@ int main(void)
         if (!key2_was_pressed) {
             key2_was_pressed = 1;  // 标记按键曾经被按下
             key2_saved_start_time = key2_press_start_time;  // 保存开始时间
+            DEBUG_Printf("[KEY2调试] 按键按下检测，开始时间: %lu\r\n", key2_saved_start_time);
         }
         
         // 按键按下期间，只显示提示信息，不执行功能
@@ -493,19 +518,27 @@ int main(void)
                 } else {
                     DEBUG_Printf("KEY2已按下 %.1f 秒，需3秒清空，8秒快速写满，10秒完整写满，15秒完全擦除\r\n", press_duration/1000.0f);
                 }
+            } else {
+                DEBUG_Printf("[KEY2调试] KEY1同时按下，不显示单独KEY2提示\r\n");
             }
         }
     } else if (key2_was_pressed && !key2_long_press_triggered) {
         // 按键松开，根据总按压时长执行对应功能
         uint32_t total_press_duration = HAL_GetTick() - key2_saved_start_time;
+        DEBUG_Printf("[KEY2调试] 按键松开，总时长: %.1f秒, key2_long_press_triggered: %d\r\n", 
+                    total_press_duration/1000.0f, key2_long_press_triggered);
         
         // 只有在没有同时按下KEY1时才执行单独KEY2操作
         static uint8_t key1_was_pressed_with_key2 = 0;
         if (key1_pressed) {
             key1_was_pressed_with_key2 = 1;
+            DEBUG_Printf("[KEY2调试] 检测到KEY1同时按下\r\n");
         }
         
+        DEBUG_Printf("[KEY2调试] key1_was_pressed_with_key2: %d\r\n", key1_was_pressed_with_key2);
+        
         if (!key1_was_pressed_with_key2) {
+            DEBUG_Printf("[KEY2调试] 进入单独KEY2操作判断\r\n");
             // 单独KEY2操作
             if (total_press_duration >= 15000) {
                 // KEY2长按15秒：完全擦除FLASH（最危险操作）
@@ -516,7 +549,7 @@ int main(void)
                 DEBUG_Printf("=== FLASH完全擦除操作完成 ===\r\n");
             } else if (total_press_duration >= 10000) {
                 // KEY2长按10秒：完整FLASH写满测试（真正写满15MB）
-            key2_long_press_triggered = 1;
+                key2_long_press_triggered = 1;
                 DEBUG_Printf("\r\n=== KEY2长按%.1f秒，开始完整FLASH写满测试 ===\r\n", total_press_duration/1000.0f);
                 SystemControl_FlashFillTest();
                 DEBUG_Printf("=== 完整FLASH写满测试完成 ===\r\n");
@@ -527,31 +560,42 @@ int main(void)
                 SystemControl_FlashQuickFillTest();
                 DEBUG_Printf("=== 快速FLASH写满测试完成 ===\r\n");
             } else if (total_press_duration >= 3000) {
-                // KEY2长按3秒：快速清空日志（原功能）
+                // KEY2长按3秒：完全清空日志和复位分析（增强功能）
                 key2_long_press_triggered = 1;
-                DEBUG_Printf("\r\n=== KEY2长按%.1f秒，开始快速清空日志 ===\r\n", total_press_duration/1000.0f);
-            
-            // 清空所有日志
-            if (LogSystem_IsInitialized()) {
-                LogSystemStatus_t status = LogSystem_Reset();  // 使用快速重置方式
-                if (status == LOG_SYSTEM_OK) {
-                    DEBUG_Printf("已清空\r\n");  // 用户要求的反馈信息
+                DEBUG_Printf("[KEY2调试] 进入3秒清空日志逻辑\r\n");
+                DEBUG_Printf("\r\n=== KEY2长按%.1f秒，开始完全清空系统数据 ===\r\n", total_press_duration/1000.0f);
+                
+                // 第一步：清空日志系统
+                if (LogSystem_IsInitialized()) {
+                    DEBUG_Printf("[KEY2调试] 日志系统已初始化，开始清空\r\n");
+                    LogSystemStatus_t status = LogSystem_Reset();  // 使用快速重置方式
+                    if (status == LOG_SYSTEM_OK) {
+                        DEBUG_Printf("? 日志系统已清空\r\n");
+                    } else {
+                        DEBUG_Printf("? 日志清空失败，状态码: %d\r\n", status);
+                    }
                 } else {
-                    DEBUG_Printf("日志清空失败\r\n");
+                    DEBUG_Printf("? 日志系统未初始化，无法清空日志\r\n");
                 }
-            } else {
-                DEBUG_Printf("日志系统未初始化，无法清空日志\r\n");
-            }
-            
-            DEBUG_Printf("=== 日志清空操作完成 ===\r\n");
+                
+                // 第二步：重置复位分析系统
+                DEBUG_Printf("正在重置复位分析系统...\r\n");
+                ResetAnalysis_Reset();
+                DEBUG_Printf("? 复位分析系统已重置\r\n");
+                
+                DEBUG_Printf("=== 系统数据完全清空操作完成 ===\r\n");
+                DEBUG_Printf("已清空\r\n");  // 用户要求的反馈信息
             } else {
                 DEBUG_Printf("KEY2按压时间不足3秒（%.1f秒），无操作\r\n", total_press_duration/1000.0f);
             }
+        } else {
+            DEBUG_Printf("[KEY2调试] 跳过单独KEY2操作（KEY1同时按下）\r\n");
         }
         
         // 重置所有标志
         key2_was_pressed = 0;
         key1_was_pressed_with_key2 = 0;
+        DEBUG_Printf("[KEY2调试] 重置按键状态标志\r\n");
     }
     
     // 按键标志位超时重置（防止重复执行）

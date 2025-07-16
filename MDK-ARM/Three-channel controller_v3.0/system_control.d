@@ -49,3 +49,4 @@ three-channel controller_v3.0\system_control.o: ../Core/Inc/smart_delay.h
 three-channel controller_v3.0\system_control.o: ../Core/Inc/log_system.h
 three-channel controller_v3.0\system_control.o: ../Core/Inc/w25q128_driver.h
 three-channel controller_v3.0\system_control.o: ../Core/Inc/spi.h
+three-channel controller_v3.0\system_control.o: D:\Program Files\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h

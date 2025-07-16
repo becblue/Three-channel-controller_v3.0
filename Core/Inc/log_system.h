@@ -185,6 +185,16 @@ typedef enum {
 #define LOG_EVENT_WATCHDOG_STATS    0x4031      // 看门狗统计
 #define LOG_EVENT_MEMORY_USAGE      0x4032      // 内存使用情况
 
+/* 复位分析系统事件 (0x4040-0x404F) */
+#define LOG_EVENT_RESET_ANALYSIS_INIT    0x4040      // 复位分析系统初始化
+#define LOG_EVENT_RESET_SNAPSHOT         0x4041      // 复位前状态快照记录
+#define LOG_EVENT_RESET_CAUSE_ANALYSIS   0x4042      // 复位原因分析结果
+#define LOG_EVENT_RESET_STATISTICS       0x4043      // 复位统计更新
+#define LOG_EVENT_RESET_RISK_WARNING     0x4044      // 复位风险预警
+#define LOG_EVENT_RESET_ABNORMAL_STATE   0x4045      // 异常状态检测
+#define LOG_EVENT_RESET_QUERY_REQUEST    0x4046      // 复位查询请求
+#define LOG_EVENT_RESET_SYSTEM_STABLE    0x4047      // 系统稳定性评估
+
 /* USER CODE END EC */
 
 /* Exported macro ------------------------------------------------------------*/
@@ -244,6 +254,16 @@ typedef enum {
 #define LOG_FLASH_HEALTH(health)       LogSystem_Record(LOG_CATEGORY_MONITOR, 0, LOG_EVENT_FLASH_HEALTH, health)
 #define LOG_WATCHDOG_STATS(stats)      LogSystem_Record(LOG_CATEGORY_MONITOR, 0, LOG_EVENT_WATCHDOG_STATS, stats)
 #define LOG_MEMORY_USAGE(usage)        LogSystem_Record(LOG_CATEGORY_MONITOR, 0, LOG_EVENT_MEMORY_USAGE, usage)
+
+/* 复位分析系统 */
+#define LOG_RESET_ANALYSIS_INIT(desc)      LogSystem_Record(LOG_CATEGORY_MONITOR, 0, LOG_EVENT_RESET_ANALYSIS_INIT, desc)
+#define LOG_RESET_SNAPSHOT(desc)           LogSystem_Record(LOG_CATEGORY_MONITOR, 0, LOG_EVENT_RESET_SNAPSHOT, desc)
+#define LOG_RESET_CAUSE_ANALYSIS(cause)    LogSystem_Record(LOG_CATEGORY_MONITOR, 0, LOG_EVENT_RESET_CAUSE_ANALYSIS, cause)
+#define LOG_RESET_STATISTICS(desc)         LogSystem_Record(LOG_CATEGORY_MONITOR, 0, LOG_EVENT_RESET_STATISTICS, desc)
+#define LOG_RESET_RISK_WARNING(level)      LogSystem_Record(LOG_CATEGORY_MONITOR, 0, LOG_EVENT_RESET_RISK_WARNING, level)
+#define LOG_RESET_ABNORMAL_STATE(desc)     LogSystem_Record(LOG_CATEGORY_MONITOR, 0, LOG_EVENT_RESET_ABNORMAL_STATE, desc)
+#define LOG_RESET_QUERY_REQUEST(user)      LogSystem_Record(LOG_CATEGORY_MONITOR, 0, LOG_EVENT_RESET_QUERY_REQUEST, user)
+#define LOG_RESET_SYSTEM_STABLE(score)     LogSystem_Record(LOG_CATEGORY_MONITOR, 0, LOG_EVENT_RESET_SYSTEM_STABLE, score)
 
 /* USER CODE END EM */
 
