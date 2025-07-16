@@ -182,14 +182,23 @@ int main(void)
   RelayControl_Init();
   DEBUG_Printf("继电器控制模块初始化完成\r\n");
   
-  // 系统控制模块初始化（开始2秒LOGO显示）
+  // 系统控制模块初始化（包含自检流程）
   SystemControl_Init();
-  DEBUG_Printf("系统控制模块初始化完成，开始执行自检流程\r\n");
   
+  // 初始化GPIO轮询系统（替代中断方式）
+  GPIO_InitPollingSystem();
+  
+  // 禁用K_EN和DC_CTRL中断，改为轮询模式
+  GPIO_DisableInterrupts();
+
   // IWDG看门狗控制模块初始化
   IwdgControl_Init();
   DEBUG_Printf("IWDG看门狗控制模块初始化完成\r\n");
   
+  // 输出轮询系统初始化状态
+  GPIO_PrintPollingStats();
+  DEBUG_Printf("=== 系统已切换为轮询模式，EMI干扰保护已启用 ===\r\n");
+
   // 打印复位原因统计信息（在复位原因设置完成后）
   IwdgControl_PrintResetReason();
   
@@ -325,6 +334,9 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+    
+    // ? 最高优先级：GPIO轮询处理（替代中断方式）
+    GPIO_ProcessPolling();
     
     // ? 优先处理DC_CTRL中断标志（避免看门狗复位）
     SafetyMonitor_ProcessDcCtrlInterrupt();

@@ -38,3 +38,5 @@ three-channel controller_v3.0\gpio_control.o: D:\Program Files\Keil_v5\ARM\ARMCC
 three-channel controller_v3.0\gpio_control.o: D:\Program Files\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
 three-channel controller_v3.0\gpio_control.o: D:\Program Files\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
 three-channel controller_v3.0\gpio_control.o: ../Core/Inc/usart.h
+three-channel controller_v3.0\gpio_control.o: ../Core/Inc/relay_control.h
+three-channel controller_v3.0\gpio_control.o: ../Core/Inc/safety_monitor.h

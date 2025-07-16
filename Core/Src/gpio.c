@@ -184,26 +184,27 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
     switch(GPIO_Pin)
     {
-        case K1_EN_Pin:
-            // K1_EN中断处理：读取当前状态并传递给继电器控制模块
-            RelayControl_HandleEnableSignal(1, HAL_GPIO_ReadPin(K1_EN_GPIO_Port, K1_EN_Pin));
-            break;
-            
-        case K2_EN_Pin:
-            // K2_EN中断处理：读取当前状态并传递给继电器控制模块
-            RelayControl_HandleEnableSignal(2, HAL_GPIO_ReadPin(K2_EN_GPIO_Port, K2_EN_Pin));
-            break;
-            
-        case K3_EN_Pin:
-            // K3_EN中断处理：读取当前状态并传递给继电器控制模块
-            RelayControl_HandleEnableSignal(3, HAL_GPIO_ReadPin(K3_EN_GPIO_Port, K3_EN_Pin));
-            break;
-            
-        case DC_CTRL_Pin:
-            // 电源监控中断处理：调用安全监控模块的电源异常回调
-            DEBUG_Printf("DC_CTRL中断触发\r\n");
-            SafetyMonitor_PowerFailureCallback();
-            break;
+        // 注释掉K_EN和DC_CTRL中断处理，改为轮询方式
+        // case K1_EN_Pin:
+        //     // K1_EN中断处理：读取当前状态并传递给继电器控制模块
+        //     RelayControl_HandleEnableSignal(1, HAL_GPIO_ReadPin(K1_EN_GPIO_Port, K1_EN_Pin));
+        //     break;
+        //     
+        // case K2_EN_Pin:
+        //     // K2_EN中断处理：读取当前状态并传递给继电器控制模块
+        //     RelayControl_HandleEnableSignal(2, HAL_GPIO_ReadPin(K2_EN_GPIO_Port, K2_EN_Pin));
+        //     break;
+        //     
+        // case K3_EN_Pin:
+        //     // K3_EN中断处理：读取当前状态并传递给继电器控制模块
+        //     RelayControl_HandleEnableSignal(3, HAL_GPIO_ReadPin(K3_EN_GPIO_Port, K3_EN_Pin));
+        //     break;
+        //     
+        // case DC_CTRL_Pin:
+        //     // 电源监控中断处理：调用安全监控模块的电源异常回调
+        //     DEBUG_Printf("DC_CTRL中断触发\r\n");
+        //     SafetyMonitor_PowerFailureCallback();
+        //     break;
             
         case KEY1_Pin: // PC13按键中断处理
             // 检测按键状态
@@ -237,11 +238,14 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
             }
             break;
             
-        case GPIO_PIN_12: // PC12风扇测速
+        case FAN_SEN_Pin: // 风扇转速传感器中断
+            // 风扇脉冲计数（上升沿）
             fan_pulse_count++;
             break;
             
         default:
+            // 未知中断源，记录日志但不处理
+            DEBUG_Printf("未知GPIO中断: Pin=%d\r\n", GPIO_Pin);
             break;
     }
 }

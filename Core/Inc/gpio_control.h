@@ -73,6 +73,33 @@ void GPIO_DC_CTRL_Callback(uint16_t GPIO_Pin);
 
 // 去抖动处理相关（如有需要可扩展）
 
+// ================== GPIO轮询系统（替代中断方式） ===================
+
+// 轮询状态结构体
+typedef struct {
+    uint8_t current_state;      // 当前引脚状态
+    uint8_t last_state;         // 上次引脚状态  
+    uint8_t stable_state;       // 稳定状态（防抖后的状态）
+    uint32_t state_change_time; // 状态变化时间
+    uint32_t last_poll_time;    // 上次轮询时间
+    uint8_t debounce_counter;   // 防抖计数器
+} GPIO_PollState_t;
+
+// 防抖配置参数
+#define GPIO_DEBOUNCE_TIME_MS       50   // 防抖时间50ms
+#define GPIO_DEBOUNCE_SAMPLES       5    // 防抖采样次数
+#define GPIO_POLL_INTERVAL_MS       10   // 轮询间隔10ms
+
+// GPIO轮询系统函数声明
+void GPIO_InitPollingSystem(void);
+void GPIO_ProcessPolling(void);
+void GPIO_DisableInterrupts(void);
+uint8_t GPIO_GetStableState(uint8_t pin_index);
+
+// 轮询系统诊断函数
+void GPIO_PrintPollingStats(void);
+uint8_t GPIO_IsPollingEnabled(void);
+
 #ifdef __cplusplus
 }
 #endif
