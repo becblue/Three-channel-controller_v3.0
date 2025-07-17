@@ -200,24 +200,9 @@ void GPIO_InitPollingSystem(void)
   */
 void GPIO_DisableInterrupts(void)
 {
-    // 只禁用特定引脚的EXTI配置，不影响按键和风扇中断
-    // 禁用K1_EN (PB9)的EXTI配置
-    __HAL_GPIO_EXTI_CLEAR_IT(K1_EN_Pin);
-    EXTI->IMR &= ~(K1_EN_Pin);
-    
-    // 禁用K2_EN (PB8)的EXTI配置  
-    __HAL_GPIO_EXTI_CLEAR_IT(K2_EN_Pin);
-    EXTI->IMR &= ~(K2_EN_Pin);
-    
-    // 禁用K3_EN (PB15)的EXTI配置
-    __HAL_GPIO_EXTI_CLEAR_IT(K3_EN_Pin);
-    EXTI->IMR &= ~(K3_EN_Pin);
-    
-    // 禁用DC_CTRL (PB5)的EXTI配置
-    __HAL_GPIO_EXTI_CLEAR_IT(DC_CTRL_Pin);
-    EXTI->IMR &= ~(DC_CTRL_Pin);
-    
-    DEBUG_Printf("已禁用K_EN和DC_CTRL特定引脚中断，保留按键和风扇中断\r\n");
+    // 注意：K1_EN、K2_EN、K3_EN、DC_CTRL引脚已在gpio.c中配置为普通输入模式
+    // 无需再禁用EXTI中断，此函数保留仅用于日志输出
+    DEBUG_Printf("K1_EN、K2_EN、K3_EN、DC_CTRL已配置为普通输入模式，无中断功能\r\n");
 }
 
 /**

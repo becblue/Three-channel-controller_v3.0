@@ -24,18 +24,9 @@ static uint32_t g_async_total_operations = 0;
 static uint32_t g_async_completed_operations = 0;
 static uint32_t g_async_failed_operations = 0;
 
-// ================== 中断标志位变量 ===================
-// K_EN信号中断标志位（类似DC_CTRL中断处理方式）
-static volatile uint8_t g_k1_en_interrupt_flag = 0;
-static volatile uint8_t g_k2_en_interrupt_flag = 0;
-static volatile uint8_t g_k3_en_interrupt_flag = 0;
-static volatile uint32_t g_k1_en_interrupt_time = 0;
-static volatile uint32_t g_k2_en_interrupt_time = 0;
-static volatile uint32_t g_k3_en_interrupt_time = 0;
-
-// ================== 增强防抖和干扰检测变量 ===================
-// 防抖计时器
-static uint32_t g_last_interrupt_time[3] = {0, 0, 0};
+// ================== 增强防抖和干扰检测变量（轮询模式） ===================
+// 防抖计时器（用于轮询模式）
+static uint32_t g_last_poll_time[3] = {0, 0, 0};
 static uint32_t g_debounce_count[3] = {0, 0, 0};
 
 // 干扰检测过滤器
@@ -87,7 +78,7 @@ void RelayControl_Init(void)
     
     // ================== 初始化防抖和干扰检测 ===================
     for(uint8_t i = 0; i < 3; i++) {
-        g_last_interrupt_time[i] = 0;
+        g_last_poll_time[i] = 0;
         g_debounce_count[i] = 0;
         g_interference_filter.last_interrupt_time[i] = 0;
     }
@@ -199,11 +190,11 @@ void RelayControl_ClearError(uint8_t channelNum)
 }
 
 /**
-  * @brief  处理使能信号变化（增强版：防抖+干扰检测）
+  * @brief  处理使能信号变化（轮询模式：直接执行操作）
   * @param  channelNum: 通道号(1-3)
   * @param  state: 信号状态（0=低电平=开启，1=高电平=关闭）
   * @retval 无
-  * @note   增强功能：50ms防抖、干扰检测、统计计数
+  * @note   轮询模式：防抖+干扰检测+直接执行继电器操作
   */
 void RelayControl_HandleEnableSignal(uint8_t channelNum, uint8_t state)
 {
@@ -218,15 +209,15 @@ void RelayControl_HandleEnableSignal(uint8_t channelNum, uint8_t state)
     uint8_t ch_idx = channelNum - 1; // 转换为0-2索引
     
     // ================== 防抖检查 ===================
-    // 50ms内的重复中断直接丢弃
-    if(current_time - g_last_interrupt_time[ch_idx] < INTERRUPT_DEBOUNCE_TIME_MS) {
+    // 50ms内的重复调用直接丢弃
+    if(current_time - g_last_poll_time[ch_idx] < INTERRUPT_DEBOUNCE_TIME_MS) {
         g_filtered_interrupts_count++;
         g_debounce_count[ch_idx]++;
         return;
     }
     
     // ================== 干扰检测 ===================
-    // 检查是否在很短时间内多个通道同时中断（疑似干扰）
+    // 检查是否在很短时间内多个通道同时变化（疑似干扰）
     uint8_t simultaneous_count = 0;
     for(uint8_t i = 0; i < 3; i++) {
         if(current_time - g_interference_filter.last_interrupt_time[i] < INTERFERENCE_DETECT_TIME_MS) {
@@ -234,7 +225,7 @@ void RelayControl_HandleEnableSignal(uint8_t channelNum, uint8_t state)
         }
     }
     
-    // 如果检测到多个通道同时中断，可能是干扰
+    // 如果检测到多个通道同时变化，可能是干扰
     if(simultaneous_count >= 2) {
         g_interference_filter.interference_detected = 1;
         g_interference_filter.simultaneous_count = simultaneous_count + 1;
@@ -242,29 +233,77 @@ void RelayControl_HandleEnableSignal(uint8_t channelNum, uint8_t state)
         g_interference_total_count++;
         g_filtered_interrupts_count++;
         
-        // 注意：这里不输出DEBUG_Printf，避免中断中阻塞
+        DEBUG_Printf("?? [干扰过滤] 通道%d状态变化被过滤：检测到%d个通道同时变化\r\n", 
+                    channelNum, simultaneous_count + 1);
         return;
     }
     
-    // ================== 正常中断处理 ===================
-    // 更新时间记录
-    g_last_interrupt_time[ch_idx] = current_time;
+    // ================== 系统安全检查 ===================
+    // 检查系统状态，如果处于报警状态则停止处理
+    extern SystemState_t SystemControl_GetState(void);
+    SystemState_t system_state = SystemControl_GetState();
+    if(system_state == SYSTEM_STATE_ALARM) {
+        DEBUG_Printf("?? [安全阻止] 通道%d操作被阻止：系统处于报警状态\r\n", channelNum);
+        return;
+    }
+    
+    // 检查是否存在关键异常
+    if(SafetyMonitor_IsAlarmActive(ALARM_FLAG_B) ||  // K1_1_STA工作异常
+       SafetyMonitor_IsAlarmActive(ALARM_FLAG_C) ||  // K2_1_STA工作异常
+       SafetyMonitor_IsAlarmActive(ALARM_FLAG_D) ||  // K3_1_STA工作异常
+       SafetyMonitor_IsAlarmActive(ALARM_FLAG_E) ||  // K1_2_STA工作异常
+       SafetyMonitor_IsAlarmActive(ALARM_FLAG_F) ||  // K2_2_STA工作异常
+       SafetyMonitor_IsAlarmActive(ALARM_FLAG_G) ||  // K3_2_STA工作异常
+       SafetyMonitor_IsAlarmActive(ALARM_FLAG_O)) {  // 外部电源异常（DC_CTRL）
+        DEBUG_Printf("?? [安全阻止] 通道%d操作被阻止：检测到关键异常\r\n", channelNum);
+        return;
+    }
+    
+    // ================== 更新时间记录 ===================
+    g_last_poll_time[ch_idx] = current_time;
     g_interference_filter.last_interrupt_time[ch_idx] = current_time;
     
-    // 设置中断标志
+    // ================== 直接执行继电器操作 ===================
+    // 读取当前硬件状态
+    uint8_t k_sta_all;
     switch(channelNum) {
         case 1:
-            g_k1_en_interrupt_flag = 1;
-            g_k1_en_interrupt_time = current_time;
+            k_sta_all = GPIO_ReadK1_1_STA() && GPIO_ReadK1_2_STA() && GPIO_ReadSW1_STA();
             break;
         case 2:
-            g_k2_en_interrupt_flag = 1;
-            g_k2_en_interrupt_time = current_time;
+            k_sta_all = GPIO_ReadK2_1_STA() && GPIO_ReadK2_2_STA() && GPIO_ReadSW2_STA();
             break;
         case 3:
-            g_k3_en_interrupt_flag = 1;
-            g_k3_en_interrupt_time = current_time;
+            k_sta_all = GPIO_ReadK3_1_STA() && GPIO_ReadK3_2_STA() && GPIO_ReadSW3_STA();
             break;
+        default:
+            return;
+    }
+    
+    DEBUG_Printf("? [轮询触发] 通道%d: K_EN=%d, STA=%d\r\n", channelNum, state, k_sta_all);
+    
+    // 执行操作逻辑：检测K_EN为0且STA也为0，则启动异步开启操作
+    if(state == 0 && k_sta_all == 0) {
+        DEBUG_Printf("? [异步开启] 通道%d: K_EN=0且STA=0，启动异步开启\r\n", channelNum);
+        uint8_t result = RelayControl_StartOpenChannel(channelNum);
+        if(result == RELAY_ERR_NONE) {
+            DEBUG_Printf("? 通道%d异步开启操作已启动\r\n", channelNum);
+        } else {
+            DEBUG_Printf("? 通道%d异步开启启动失败，错误码=%d\r\n", channelNum, result);
+        }
+    }
+    // 执行操作逻辑：检测K_EN为1且STA也为1，则启动异步关闭操作
+    else if(state == 1 && k_sta_all == 1) {
+        DEBUG_Printf("? [异步关闭] 通道%d: K_EN=1且STA=1，启动异步关闭\r\n", channelNum);
+        uint8_t result = RelayControl_StartCloseChannel(channelNum);
+        if(result == RELAY_ERR_NONE) {
+            DEBUG_Printf("? 通道%d异步关闭操作已启动\r\n", channelNum);
+        } else {
+            DEBUG_Printf("? 通道%d异步关闭启动失败，错误码=%d\r\n", channelNum, result);
+        }
+    } else {
+        DEBUG_Printf("?? [状态检查] 通道%d: K_EN=%d, STA=%d，条件不满足，无操作\r\n", 
+                    channelNum, state, k_sta_all);
     }
 }
 
@@ -296,161 +335,20 @@ uint8_t RelayControl_ValidateStateChange(uint8_t k1_en, uint8_t k2_en, uint8_t k
   */
 uint8_t RelayControl_GetHighestPriorityInterrupt(void)
 {
-    uint32_t earliest_time = UINT32_MAX;
-    uint8_t priority_channel = 0;
-    
-    // 找到时间最早的中断
-    if(g_k1_en_interrupt_flag && g_k1_en_interrupt_time < earliest_time) {
-        earliest_time = g_k1_en_interrupt_time;
-        priority_channel = 1;
-    }
-    if(g_k2_en_interrupt_flag && g_k2_en_interrupt_time < earliest_time) {
-        earliest_time = g_k2_en_interrupt_time;
-        priority_channel = 2;
-    }
-    if(g_k3_en_interrupt_flag && g_k3_en_interrupt_time < earliest_time) {
-        earliest_time = g_k3_en_interrupt_time;
-        priority_channel = 3;
-    }
-    
-    return priority_channel;
+    // 删除中断标志位和时间变量，此函数不再适用
+    return 0;
 }
 
 /**
-  * @brief  处理K_EN中断标志并执行继电器动作（增强版：优先级+状态验证+异步操作）
+  * @brief  处理K_EN中断标志并执行继电器动作（已废弃：改为轮询模式）
   * @retval 无
-  * @note   新功能：优先级处理、干扰检测、状态验证、异步操作、非阻塞执行
+  * @note   此函数已废弃，K_EN信号现在通过轮询模式在gpio_control.c中处理
   */
 void RelayControl_ProcessPendingActions(void)
 {
-    uint32_t current_time = HAL_GetTick();
-    
-    // ================== 系统安全检查 ===================
-    // 检查系统状态，如果处于报警状态则停止处理
-    extern SystemState_t SystemControl_GetState(void);
-    SystemState_t system_state = SystemControl_GetState();
-    if(system_state == SYSTEM_STATE_ALARM) {
-        return; // 报警状态下停止继电器操作
-    }
-    
-    // 检查是否存在关键异常
-    if(SafetyMonitor_IsAlarmActive(ALARM_FLAG_B) ||  // K1_1_STA工作异常
-       SafetyMonitor_IsAlarmActive(ALARM_FLAG_C) ||  // K2_1_STA工作异常
-       SafetyMonitor_IsAlarmActive(ALARM_FLAG_D) ||  // K3_1_STA工作异常
-       SafetyMonitor_IsAlarmActive(ALARM_FLAG_E) ||  // K1_2_STA工作异常
-       SafetyMonitor_IsAlarmActive(ALARM_FLAG_F) ||  // K2_2_STA工作异常
-       SafetyMonitor_IsAlarmActive(ALARM_FLAG_G) ||  // K3_2_STA工作异常
-       SafetyMonitor_IsAlarmActive(ALARM_FLAG_O)) {  // 外部电源异常（DC_CTRL）
-        return; // 发生关键异常时停止处理
-    }
-    
-    // ================== 检查是否有中断需要处理 ===================
-    uint8_t pending_count = 0;
-    if(g_k1_en_interrupt_flag) pending_count++;
-    if(g_k2_en_interrupt_flag) pending_count++;
-    if(g_k3_en_interrupt_flag) pending_count++;
-    
-    if(pending_count == 0) {
-        return; // 没有中断需要处理
-    }
-    
-    // ================== 同时中断检测和状态验证 ===================
-    if(pending_count > 1) {
-        // 检测到多个同时中断，进行状态验证
-        uint8_t k1_en = GPIO_ReadK1_EN();
-        uint8_t k2_en = GPIO_ReadK2_EN();
-        uint8_t k3_en = GPIO_ReadK3_EN();
-        
-        DEBUG_Printf("?? 检测到%d个同时中断，验证状态: K1_EN=%d, K2_EN=%d, K3_EN=%d\r\n", 
-                    pending_count, k1_en, k2_en, k3_en);
-        
-        // 状态验证 - 检查是否符合互锁逻辑
-        if(!RelayControl_ValidateStateChange(k1_en, k2_en, k3_en)) {
-            DEBUG_Printf("? 状态变化不合理，判定为干扰，丢弃所有中断\r\n");
-            
-            // 清除所有中断标志，记录干扰统计
-            g_k1_en_interrupt_flag = 0;
-            g_k2_en_interrupt_flag = 0;
-            g_k3_en_interrupt_flag = 0;
-            g_interference_total_count++;
-            g_filtered_interrupts_count += pending_count;
-            
-            return;
-        }
-        
-        DEBUG_Printf("? 状态验证通过，但采用优先级处理机制\r\n");
-    }
-    
-    // ================== 优先级处理：每次只处理一个中断 ===================
-    uint8_t priority_channel = RelayControl_GetHighestPriorityInterrupt();
-    
-    if(priority_channel == 0) {
-        return; // 没有有效的中断
-    }
-    
-    // 只处理优先级最高（时间最早）的中断
-    uint8_t k_en, k_sta_all;
-    uint32_t interrupt_time;
-    
-    switch(priority_channel) {
-        case 1:
-            g_k1_en_interrupt_flag = 0; // 清除标志位
-            k_en = GPIO_ReadK1_EN();
-            k_sta_all = GPIO_ReadK1_1_STA() && GPIO_ReadK1_2_STA() && GPIO_ReadSW1_STA();
-            interrupt_time = g_k1_en_interrupt_time;
-            break;
-            
-        case 2:
-            g_k2_en_interrupt_flag = 0; // 清除标志位
-            k_en = GPIO_ReadK2_EN();
-            k_sta_all = GPIO_ReadK2_1_STA() && GPIO_ReadK2_2_STA() && GPIO_ReadSW2_STA();
-            interrupt_time = g_k2_en_interrupt_time;
-            break;
-            
-        case 3:
-            g_k3_en_interrupt_flag = 0; // 清除标志位
-            k_en = GPIO_ReadK3_EN();
-            k_sta_all = GPIO_ReadK3_1_STA() && GPIO_ReadK3_2_STA() && GPIO_ReadSW3_STA();
-            interrupt_time = g_k3_en_interrupt_time;
-            break;
-            
-        default:
-            return;
-    }
-    
-    // ================== 执行异步操作 ===================
-    uint32_t delay = current_time - interrupt_time;
-    DEBUG_Printf("? [优先级处理] 通道%d中断: 时间=%lu, 中断时间=%lu, 延迟=%lums, K_EN=%d, STA=%d\r\n", 
-                priority_channel, current_time, interrupt_time, delay, k_en, k_sta_all);
-    
-    // 中断逻辑：检测K_EN为0且STA也为0，则启动异步开启操作
-    if(k_en == 0 && k_sta_all == 0) {
-        DEBUG_Printf("? [异步操作] 通道%d: K_EN=0且STA=0，启动异步开启\r\n", priority_channel);
-        uint8_t result = RelayControl_StartOpenChannel(priority_channel);
-        if(result == RELAY_ERR_NONE) {
-            DEBUG_Printf("? 通道%d异步开启操作已启动\r\n", priority_channel);
-        } else {
-            DEBUG_Printf("? 通道%d异步开启启动失败，错误码=%d\r\n", priority_channel, result);
-        }
-    }
-    // 中断逻辑：检测K_EN为1且STA也为1，则启动异步关闭操作
-    else if(k_en == 1 && k_sta_all == 1) {
-        DEBUG_Printf("? [异步操作] 通道%d: K_EN=1且STA=1，启动异步关闭\r\n", priority_channel);
-        uint8_t result = RelayControl_StartCloseChannel(priority_channel);
-        if(result == RELAY_ERR_NONE) {
-            DEBUG_Printf("? 通道%d异步关闭操作已启动\r\n", priority_channel);
-        } else {
-            DEBUG_Printf("? 通道%d异步关闭启动失败，错误码=%d\r\n", priority_channel, result);
-        }
-    } else {
-        DEBUG_Printf("? [状态检查] 通道%d: K_EN=%d, STA=%d，条件不满足，无操作\r\n", 
-                    priority_channel, k_en, k_sta_all);
-    }
-    
-    // 如果还有其他中断等待处理，它们将在下次调用时处理（优先级机制）
-    if(pending_count > 1) {
-        DEBUG_Printf("? 还有%d个中断等待处理，将在下次循环中按优先级处理\r\n", pending_count - 1);
-    }
+    // 此函数已废弃，K_EN信号现在通过轮询模式处理
+    // 保留空函数以保持兼容性
+    return;
 } 
 
 // ================== 异步操作辅助函数 ===================

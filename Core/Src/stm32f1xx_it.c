@@ -221,9 +221,10 @@ void EXTI9_5_IRQHandler(void)
   /* USER CODE BEGIN EXTI9_5_IRQn 0 */
 
   /* USER CODE END EXTI9_5_IRQn 0 */
-  HAL_GPIO_EXTI_IRQHandler(DC_CTRL_Pin);
-  HAL_GPIO_EXTI_IRQHandler(K2_EN_Pin);
-  HAL_GPIO_EXTI_IRQHandler(K1_EN_Pin);
+  // 移除K1_EN、K2_EN、DC_CTRL的中断处理，改为轮询模式
+  // HAL_GPIO_EXTI_IRQHandler(DC_CTRL_Pin);  // 已移除
+  // HAL_GPIO_EXTI_IRQHandler(K2_EN_Pin);   // 已移除
+  // HAL_GPIO_EXTI_IRQHandler(K1_EN_Pin);   // 已移除
   /* USER CODE BEGIN EXTI9_5_IRQn 1 */
 
   /* USER CODE END EXTI9_5_IRQn 1 */
@@ -251,10 +252,10 @@ void EXTI15_10_IRQHandler(void)
   /* USER CODE BEGIN EXTI15_10_IRQn 0 */
 
   /* USER CODE END EXTI15_10_IRQn 0 */
-  HAL_GPIO_EXTI_IRQHandler(FAN_SEN_Pin);
-  HAL_GPIO_EXTI_IRQHandler(KEY1_Pin);
-  HAL_GPIO_EXTI_IRQHandler(KEY2_Pin);
-  HAL_GPIO_EXTI_IRQHandler(K3_EN_Pin);
+  HAL_GPIO_EXTI_IRQHandler(FAN_SEN_Pin);  // 保留风扇转速传感器中断
+  HAL_GPIO_EXTI_IRQHandler(KEY1_Pin);     // 保留按键1中断
+  HAL_GPIO_EXTI_IRQHandler(KEY2_Pin);     // 保留按键2中断
+  // HAL_GPIO_EXTI_IRQHandler(K3_EN_Pin); // 已移除K3_EN中断处理，改为轮询模式
   /* USER CODE BEGIN EXTI15_10_IRQn 1 */
 
   /* USER CODE END EXTI15_10_IRQn 1 */

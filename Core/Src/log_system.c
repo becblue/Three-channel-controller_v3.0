@@ -665,30 +665,65 @@ LogSystemStatus_t LogSystem_FindLastWritePosition(void)
     DEBUG_Printf("扫描日志系统存储区域...\r\n");
     
     /* 首先检查是否存在重置标记 */
+    uint8_t reset_marker_found = 0;  // 标记是否发现有效重置标记
     if (W25Q128_ReadData(log_manager.start_address, (uint8_t*)&reset_marker, LOG_RESET_MARKER_SIZE) == W25Q128_OK) {
         if (reset_marker.reset_magic == LOG_RESET_MARKER_MAGIC && reset_marker.final_magic == LOG_MAGIC_NUMBER) {
-            DEBUG_Printf("发现重置标记，时间戳:%u，重置次数:%u\r\n", 
+            DEBUG_Printf("发现潜在重置标记，时间戳:%u，重置次数:%u\r\n", 
                          reset_marker.reset_timestamp, reset_marker.reset_count);
             DEBUG_Printf("重置原因: %s\r\n", reset_marker.reset_reason);
             
-            /* 更新管理器状态为空状态 */
-            log_manager.write_address = log_manager.start_address;  // 新日志将覆盖重置标记
-            log_manager.total_entries = 0;
-            log_manager.used_size = 0;
-            log_manager.total_reset_count = reset_marker.reset_count;
+            /* 验证重置标记的校验和 */
+            uint32_t calculated_checksum = 0;
+            uint8_t* data = (uint8_t*)&reset_marker;
+            for (int i = 0; i < sizeof(LogResetMarker_t) - 8; i++) { // 排除checksum和final_magic
+                calculated_checksum += data[i];
+            }
             
-            DEBUG_Printf("已从重置状态恢复，下次写入将覆盖重置标记\r\n");
-            return LOG_SYSTEM_OK;
+            if (calculated_checksum == reset_marker.checksum) {
+                DEBUG_Printf("? 重置标记校验和正确，确认日志系统已清空\r\n");
+                reset_marker_found = 1;  // 标记为已找到有效重置标记
+                
+                /* 更新管理器状态为空状态 */
+                log_manager.write_address = log_manager.start_address + LOG_RESET_MARKER_SIZE;  // ? 跳过重置标记
+                log_manager.total_entries = 0;                         // ? 强制设为0
+                log_manager.used_size = 0;                            // ? 强制设为0  
+                log_manager.total_reset_count = reset_marker.reset_count;
+                log_manager.oldest_entry_index = 0;
+                log_manager.newest_entry_index = 0;
+                log_manager.is_full = 0;
+                
+                DEBUG_Printf("? 已从重置状态恢复，跳过普通扫描直接返回\r\n");
+                DEBUG_Printf("? 强制设置: total_entries=0, used_size=0\r\n");
+                DEBUG_Printf("? 写入地址设为: 0x%08X (跳过重置标记)\r\n", log_manager.write_address);
+                DEBUG_Printf("? **重要**：不执行普通扫描，保持清空状态\r\n");
+                return LOG_SYSTEM_OK;
+            } else {
+                DEBUG_Printf("??  重置标记校验和错误 (期望:%u, 实际:%u)，将作为普通数据处理\r\n", 
+                           calculated_checksum, reset_marker.checksum);
+            }
+        } else {
+            DEBUG_Printf("未发现有效重置标记 (magic1:0x%08X, magic2:0x%08X)\r\n", 
+                       reset_marker.reset_magic, reset_marker.final_magic);
         }
+    } else {
+        DEBUG_Printf("读取重置标记失败\r\n");
     }
     
-    DEBUG_Printf("未发现重置标记，开始完整扫描...\r\n");
+    /* 如果已经发现有效重置标记，应该不会执行到这里 */
+    if (reset_marker_found) {
+        DEBUG_Printf("??  逻辑错误：发现重置标记但未正确返回\r\n");
+        return LOG_SYSTEM_OK;
+    }
+    
+    DEBUG_Printf("? 开始完整扫描现有日志...\r\n");
+    DEBUG_Printf("? 注意：如果执行到此处说明没有发现有效重置标记\r\n");
     
     /* 扫描日志系统的存储区域 */
     while (address + LOG_ENTRY_SIZE <= log_manager.end_address + 1) {
         /* 定期喂狗 */
         if ((entry_count % 1000) == 0) {
             HAL_IWDG_Refresh(&hiwdg);
+            DEBUG_Printf("扫描进度: 已检查 %d 条记录...\r\n", entry_count);
         }
         
         /* 读取条目 */
@@ -698,9 +733,24 @@ LogSystemStatus_t LogSystem_FindLastWritePosition(void)
         }
         
         /* 检查条目有效性 */
-        if (!LogSystem_VerifyEntry(&temp_entry) || temp_entry.log_category < LOG_CATEGORY_SAFETY || temp_entry.log_category > LOG_CATEGORY_MONITOR) {
+        if (!LogSystem_VerifyEntry(&temp_entry) || 
+            temp_entry.log_category < LOG_CATEGORY_SAFETY || 
+            temp_entry.log_category > LOG_CATEGORY_MONITOR ||
+            temp_entry.magic_number != LOG_MAGIC_NUMBER) {
             /* 找到第一个无效条目，这里就是写入位置 */
+            DEBUG_Printf("在地址 0x%08X 找到无效条目，停止扫描\r\n", address);
             break;
+        }
+        
+        /* ? 特殊处理：如果这是重置标记位置，跳过整个重置标记大小 */
+        if (address == log_manager.start_address) {
+            LogResetMarker_t* potential_reset = (LogResetMarker_t*)&temp_entry;
+            if (potential_reset->reset_magic == LOG_RESET_MARKER_MAGIC) {
+                DEBUG_Printf("? 跳过重置标记区域，从 0x%08X 到 0x%08X\r\n", 
+                           address, address + LOG_RESET_MARKER_SIZE);
+                address += LOG_RESET_MARKER_SIZE;
+                continue;  // 不计入entry_count
+            }
         }
         
         /* 继续下一条目 */
@@ -727,8 +777,10 @@ LogSystemStatus_t LogSystem_FindLastWritePosition(void)
         DEBUG_Printf("日志系统存储区已满，启用循环覆盖模式\r\n");
     }
     
-    DEBUG_Printf("日志系统扫描完成: 找到 %d 条日志，写入位置:0x%08X\r\n",
+    DEBUG_Printf("日志系统扫描完成: 找到 %d 条有效日志，写入位置:0x%08X\r\n",
                  entry_count, log_manager.write_address);
+    DEBUG_Printf("计算结果: total_entries=%d, used_size=%d\r\n", 
+                 log_manager.total_entries, log_manager.used_size);
     
     return LOG_SYSTEM_OK;
 }
@@ -930,13 +982,17 @@ LogSystemStatus_t LogSystem_Reset(void)
     reset_marker.reserved3 = 0;
     reset_marker.final_magic = LOG_MAGIC_NUMBER;
     
-    /* 计算重置标记的校验和 */
+    /* 计算重置标记的校验和（排除checksum和final_magic字段） */
     uint32_t checksum = 0;
     uint8_t* data = (uint8_t*)&reset_marker;
-    for (int i = 0; i < sizeof(LogResetMarker_t) - 8; i++) { // 排除checksum和final_magic
+    for (int i = 0; i < sizeof(LogResetMarker_t) - 8; i++) { // 排除checksum(4字节)和final_magic(4字节)
         checksum += data[i];
     }
     reset_marker.checksum = checksum;
+    
+    DEBUG_Printf("重置标记信息: magic=0x%08X, timestamp=%u, count=%u, checksum=0x%08X\r\n",
+                 reset_marker.reset_magic, reset_marker.reset_timestamp, 
+                 reset_marker.reset_count, reset_marker.checksum);
     
     /* 检查是否需要擦除第一个扇区 */
     if ((log_manager.start_address % LOG_SECTOR_SIZE) == 0) {
@@ -954,11 +1010,23 @@ LogSystemStatus_t LogSystem_Reset(void)
         return LOG_SYSTEM_ERROR;
     }
     
-    /* 更新管理结构为空状态 */
-    log_manager.write_address = log_manager.start_address;
+    /* 立即验证写入的重置标记 */
+    LogResetMarker_t verify_marker;
+    if (W25Q128_ReadData(log_manager.start_address, (uint8_t*)&verify_marker, LOG_RESET_MARKER_SIZE) == W25Q128_OK) {
+        if (verify_marker.reset_magic == LOG_RESET_MARKER_MAGIC && 
+            verify_marker.checksum == checksum &&
+            verify_marker.final_magic == LOG_MAGIC_NUMBER) {
+            DEBUG_Printf("? 重置标记写入验证成功\r\n");
+        } else {
+            DEBUG_Printf("??  重置标记写入验证失败\r\n");
+        }
+    }
+    
+    /* 立即更新管理结构为空状态 */
+    log_manager.write_address = log_manager.start_address + LOG_RESET_MARKER_SIZE;  // ? 跳过重置标记
     log_manager.read_address = log_manager.start_address;
-    log_manager.used_size = 0;
-    log_manager.total_entries = 0;
+    log_manager.used_size = 0;                    // ? 立即设为0
+    log_manager.total_entries = 0;               // ? 立即设为0  
     log_manager.oldest_entry_index = 0;
     log_manager.newest_entry_index = 0;
     log_manager.is_full = 0;
@@ -971,7 +1039,16 @@ LogSystemStatus_t LogSystem_Reset(void)
     DEBUG_Printf("- 重置标记已写入Flash，时间戳: %u\r\n", reset_marker.reset_timestamp);
     DEBUG_Printf("- 重置次数: %u\r\n", log_manager.total_reset_count);
     DEBUG_Printf("- 写入位置重置为: 0x%08X\r\n", log_manager.write_address);
+    DEBUG_Printf("- ? total_entries 已设为: %d\r\n", log_manager.total_entries);
+    DEBUG_Printf("- ? used_size 已设为: %d\r\n", log_manager.used_size);
     DEBUG_Printf("- 系统重启后将从重置标记恢复空状态\r\n");
+    
+    /* ? 额外验证：立即确认管理器状态 */
+    DEBUG_Printf("? 立即验证管理器状态：\r\n");
+    DEBUG_Printf("?   - total_entries: %d (应为0)\r\n", log_manager.total_entries);
+    DEBUG_Printf("?   - used_size: %d (应为0)\r\n", log_manager.used_size);
+    DEBUG_Printf("?   - write_address: 0x%08X\r\n", log_manager.write_address);
+    DEBUG_Printf("?   - is_initialized: %d\r\n", log_manager.is_initialized);
     
     return LOG_SYSTEM_OK;
 }
@@ -1087,6 +1164,82 @@ LogSystemStatus_t LogSystem_DeInit(void)
     log_manager.is_initialized = 0;
     
     return LOG_SYSTEM_OK;
+}
+
+/**
+  * @brief  调试重置过程：输出详细的重置跟踪信息
+  * @param  None
+  * @retval 无
+  */
+void LogSystem_DebugResetProcess(void)
+{
+    DEBUG_Printf("? ========== 日志系统重置调试信息 ==========\r\n");
+    
+    /* 读取并分析重置标记 */
+    LogResetMarker_t reset_marker;
+    if (W25Q128_ReadData(log_manager.start_address, (uint8_t*)&reset_marker, LOG_RESET_MARKER_SIZE) == W25Q128_OK) {
+        DEBUG_Printf("? Flash起始地址数据读取：\r\n");
+        DEBUG_Printf("?   - reset_magic: 0x%08X (期望: 0x%08X)\r\n", 
+                     reset_marker.reset_magic, LOG_RESET_MARKER_MAGIC);
+        DEBUG_Printf("?   - final_magic: 0x%08X (期望: 0x%08X)\r\n", 
+                     reset_marker.final_magic, LOG_MAGIC_NUMBER);
+        DEBUG_Printf("?   - timestamp: %u\r\n", reset_marker.reset_timestamp);
+        DEBUG_Printf("?   - reset_count: %u\r\n", reset_marker.reset_count);
+        DEBUG_Printf("?   - checksum: 0x%08X\r\n", reset_marker.checksum);
+        DEBUG_Printf("?   - reset_reason: %.32s\r\n", reset_marker.reset_reason);
+        
+        /* 验证校验和 */
+        uint32_t calculated_checksum = 0;
+        uint8_t* data = (uint8_t*)&reset_marker;
+        for (int i = 0; i < sizeof(LogResetMarker_t) - 8; i++) {
+            calculated_checksum += data[i];
+        }
+        DEBUG_Printf("?   - 计算校验和: 0x%08X %s\r\n", 
+                     calculated_checksum,
+                     (calculated_checksum == reset_marker.checksum) ? "(?匹配)" : "(?不匹配)");
+                     
+        if (reset_marker.reset_magic == LOG_RESET_MARKER_MAGIC && 
+            reset_marker.final_magic == LOG_MAGIC_NUMBER &&
+            calculated_checksum == reset_marker.checksum) {
+            DEBUG_Printf("? ? 重置标记完全有效\r\n");
+        } else {
+            DEBUG_Printf("? ? 重置标记无效或损坏\r\n");
+        }
+    } else {
+        DEBUG_Printf("? ? 无法读取Flash起始地址数据\r\n");
+    }
+    
+    /* 输出当前管理器状态 */
+    DEBUG_Printf("? 当前日志管理器状态：\r\n");
+    DEBUG_Printf("?   - is_initialized: %d\r\n", log_manager.is_initialized);
+    DEBUG_Printf("?   - total_entries: %d\r\n", log_manager.total_entries);
+    DEBUG_Printf("?   - used_size: %d\r\n", log_manager.used_size);
+    DEBUG_Printf("?   - write_address: 0x%08X\r\n", log_manager.write_address);
+    DEBUG_Printf("?   - start_address: 0x%08X\r\n", log_manager.start_address);
+    DEBUG_Printf("?   - is_full: %d\r\n", log_manager.is_full);
+    DEBUG_Printf("?   - total_reset_count: %d\r\n", log_manager.total_reset_count);
+    
+    /* 尝试扫描前几个条目 */
+    DEBUG_Printf("? 扫描前3个存储位置：\r\n");
+    for (int i = 0; i < 3; i++) {
+        uint32_t addr = log_manager.start_address + (i * LOG_ENTRY_SIZE);
+        LogEntry_t entry;
+        if (W25Q128_ReadData(addr, (uint8_t*)&entry, LOG_ENTRY_SIZE) == W25Q128_OK) {
+            DEBUG_Printf("?   [%d] 地址:0x%08X, magic:0x%08X, category:%d, event:0x%04X\r\n",
+                         i, addr, entry.magic_number, entry.log_category, entry.event_code);
+            if (i == 0) {
+                DEBUG_Printf("?       前16字节: %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X\r\n",
+                           ((uint8_t*)&entry)[0], ((uint8_t*)&entry)[1], ((uint8_t*)&entry)[2], ((uint8_t*)&entry)[3],
+                           ((uint8_t*)&entry)[4], ((uint8_t*)&entry)[5], ((uint8_t*)&entry)[6], ((uint8_t*)&entry)[7],
+                           ((uint8_t*)&entry)[8], ((uint8_t*)&entry)[9], ((uint8_t*)&entry)[10], ((uint8_t*)&entry)[11],
+                           ((uint8_t*)&entry)[12], ((uint8_t*)&entry)[13], ((uint8_t*)&entry)[14], ((uint8_t*)&entry)[15]);
+            }
+        } else {
+            DEBUG_Printf("?   [%d] 地址:0x%08X 读取失败\r\n", i, addr);
+        }
+    }
+    
+    DEBUG_Printf("? ==========================================\r\n");
 }
 
 /* USER CODE BEGIN 4 */

@@ -1,7 +1,7 @@
 Dependencies for Project 'Three-channel controller_v3.0', Target 'Three-channel controller_v3.0': (DO NOT MODIFY !)
 CompilerVersion: 5060960::V5.06 update 7 (build 960)::.\ARMCC
 F (startup_stm32f103xe.s)(0x686BD2E8)(--cpu Cortex-M3 -g --apcs=interwork --pd "__MICROLIB SETA 1"-I.\RTE\_Three-channel_controller_v3.0-I"D:\Program Files\Keil_v5\Arm\Packs\ARM\CMSIS\5.8.0\CMSIS\Core\Include"-I"D:\Program Files\Keil_v5\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\Include"--pd "__UVISION_VERSION SETA 536" --pd "_RTE_ SETA 1" --pd "STM32F10X_HD SETA 1" --pd "_RTE_ SETA 1"--list startup_stm32f103xe.lst --xref -o "three-channel controller_v3.0\startup_stm32f103xe.o" --depend "three-channel controller_v3.0\startup_stm32f103xe.d")
-F (..\Core\Src\gpio_control.c)(0x6877C3CA)(--c99 -c --cpu Cortex-M3 -D__MICROLIB -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I ../Drivers/CMSIS/Include-I.\RTE\_Three-channel_controller_v3.0-I"D:\Program Files\Keil_v5\Arm\Packs\ARM\CMSIS\5.8.0\CMSIS\Core\Include"-I"D:\Program Files\Keil_v5\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\Include"-D__UVISION_VERSION="536" -D_RTE_ -DSTM32F10X_HD -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F103xE-o "three-channel controller_v3.0\gpio_control.o" --omf_browse "three-channel controller_v3.0\gpio_control.crf" --depend "three-channel controller_v3.0\gpio_control.d")
+F (..\Core\Src\gpio_control.c)(0x687923B7)(--c99 -c --cpu Cortex-M3 -D__MICROLIB -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I ../Drivers/CMSIS/Include-I.\RTE\_Three-channel_controller_v3.0-I"D:\Program Files\Keil_v5\Arm\Packs\ARM\CMSIS\5.8.0\CMSIS\Core\Include"-I"D:\Program Files\Keil_v5\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\Include"-D__UVISION_VERSION="536" -D_RTE_ -DSTM32F10X_HD -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F103xE-o "three-channel controller_v3.0\gpio_control.o" --omf_browse "three-channel controller_v3.0\gpio_control.crf" --depend "three-channel controller_v3.0\gpio_control.d")
 I (../Core/Inc/gpio_control.h)(0x68778296)
 I (../Core/Inc/main.h)(0x6877C3CA)
 I (../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h)(0x67715408)
@@ -39,10 +39,10 @@ I (../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h)(0x67715408)
 I (D:\Program Files\Keil_v5\ARM\ARMCC\include\stdarg.h)(0x60252376)
 I (D:\Program Files\Keil_v5\ARM\ARMCC\include\stdio.h)(0x60252374)
 I (D:\Program Files\Keil_v5\ARM\ARMCC\include\string.h)(0x6025237E)
-I (../Core/Inc/usart.h)(0x68778031)
+I (../Core/Inc/usart.h)(0x68791AD7)
 I (../Core/Inc/relay_control.h)(0x68778031)
 I (../Core/Inc/safety_monitor.h)(0x6878F848)
-F (..\Core\Src\relay_control.c)(0x6877C3CA)(--c99 -c --cpu Cortex-M3 -D__MICROLIB -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I ../Drivers/CMSIS/Include-I.\RTE\_Three-channel_controller_v3.0-I"D:\Program Files\Keil_v5\Arm\Packs\ARM\CMSIS\5.8.0\CMSIS\Core\Include"-I"D:\Program Files\Keil_v5\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\Include"-D__UVISION_VERSION="536" -D_RTE_ -DSTM32F10X_HD -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F103xE-o "three-channel controller_v3.0\relay_control.o" --omf_browse "three-channel controller_v3.0\relay_control.crf" --depend "three-channel controller_v3.0\relay_control.d")
+F (..\Core\Src\relay_control.c)(0x68792643)(--c99 -c --cpu Cortex-M3 -D__MICROLIB -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I ../Drivers/CMSIS/Include-I.\RTE\_Three-channel_controller_v3.0-I"D:\Program Files\Keil_v5\Arm\Packs\ARM\CMSIS\5.8.0\CMSIS\Core\Include"-I"D:\Program Files\Keil_v5\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\Include"-D__UVISION_VERSION="536" -D_RTE_ -DSTM32F10X_HD -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F103xE-o "three-channel controller_v3.0\relay_control.o" --omf_browse "three-channel controller_v3.0\relay_control.crf" --depend "three-channel controller_v3.0\relay_control.d")
 I (../Core/Inc/relay_control.h)(0x68778031)
 I (../Core/Inc/main.h)(0x6877C3CA)
 I (../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h)(0x67715408)
@@ -85,9 +85,9 @@ I (../Core/Inc/safety_monitor.h)(0x6878F848)
 I (../Core/Inc/smart_delay.h)(0x686A7655)
 I (../Core/Inc/system_control.h)(0x6878EBFE)
 I (../Core/Inc/iwdg_control.h)(0x6878F43E)
-I (../Core/Inc/usart.h)(0x68778031)
-I (../Core/Inc/log_system.h)(0x68779582)
-I (../Core/Inc/w25q128_driver.h)(0x686BC77E)
+I (../Core/Inc/usart.h)(0x68791AD7)
+I (../Core/Inc/log_system.h)(0x68792BD3)
+I (../Core/Inc/w25q128_driver.h)(0x68791AD7)
 I (../Core/Inc/spi.h)(0x68637D77)
 F (..\Core\Src\temperature_monitor.c)(0x6866B705)(--c99 -c --cpu Cortex-M3 -D__MICROLIB -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I ../Drivers/CMSIS/Include-I.\RTE\_Three-channel_controller_v3.0-I"D:\Program Files\Keil_v5\Arm\Packs\ARM\CMSIS\5.8.0\CMSIS\Core\Include"-I"D:\Program Files\Keil_v5\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\Include"-D__UVISION_VERSION="536" -D_RTE_ -DSTM32F10X_HD -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F103xE-o "three-channel controller_v3.0\temperature_monitor.o" --omf_browse "three-channel controller_v3.0\temperature_monitor.crf" --depend "three-channel controller_v3.0\temperature_monitor.d")
 I (../Core/Inc/temperature_monitor.h)(0x686661AE)
@@ -130,7 +130,7 @@ I (D:\Program Files\Keil_v5\ARM\ARMCC\include\string.h)(0x6025237E)
 I (../Core/Inc/adc.h)(0x68637D76)
 I (../Core/Inc/tim.h)(0x68637D77)
 I (../Core/Inc/gpio_control.h)(0x68778296)
-I (../Core/Inc/usart.h)(0x68778031)
+I (../Core/Inc/usart.h)(0x68791AD7)
 F (..\Core\Src\oled_display.c)(0x6876866C)(--c99 -c --cpu Cortex-M3 -D__MICROLIB -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I ../Drivers/CMSIS/Include-I.\RTE\_Three-channel_controller_v3.0-I"D:\Program Files\Keil_v5\Arm\Packs\ARM\CMSIS\5.8.0\CMSIS\Core\Include"-I"D:\Program Files\Keil_v5\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\Include"-D__UVISION_VERSION="536" -D_RTE_ -DSTM32F10X_HD -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F103xE-o "three-channel controller_v3.0\oled_display.o" --omf_browse "three-channel controller_v3.0\oled_display.crf" --depend "three-channel controller_v3.0\oled_display.d")
 I (../Core/Inc/oled_display.h)(0x68764D52)
 I (../Core/Inc/main.h)(0x6877C3CA)
@@ -170,13 +170,13 @@ I (D:\Program Files\Keil_v5\ARM\ARMCC\include\stdarg.h)(0x60252376)
 I (D:\Program Files\Keil_v5\ARM\ARMCC\include\stdio.h)(0x60252374)
 I (D:\Program Files\Keil_v5\ARM\ARMCC\include\string.h)(0x6025237E)
 I (../Core/Inc/i2c.h)(0x68637D76)
-I (../Core/Inc/log_system.h)(0x68779582)
-I (../Core/Inc/w25q128_driver.h)(0x686BC77E)
+I (../Core/Inc/log_system.h)(0x68792BD3)
+I (../Core/Inc/w25q128_driver.h)(0x68791AD7)
 I (../Core/Inc/spi.h)(0x68637D77)
 I (../Core/Inc/smart_delay.h)(0x686A7655)
 I (../Core/Inc/system_control.h)(0x6878EBFE)
 I (../Core/Inc/iwdg_control.h)(0x6878F43E)
-F (..\Core\Src\system_control.c)(0x6878F8DD)(--c99 -c --cpu Cortex-M3 -D__MICROLIB -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I ../Drivers/CMSIS/Include-I.\RTE\_Three-channel_controller_v3.0-I"D:\Program Files\Keil_v5\Arm\Packs\ARM\CMSIS\5.8.0\CMSIS\Core\Include"-I"D:\Program Files\Keil_v5\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\Include"-D__UVISION_VERSION="536" -D_RTE_ -DSTM32F10X_HD -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F103xE-o "three-channel controller_v3.0\system_control.o" --omf_browse "three-channel controller_v3.0\system_control.crf" --depend "three-channel controller_v3.0\system_control.d")
+F (..\Core\Src\system_control.c)(0x68792B0F)(--c99 -c --cpu Cortex-M3 -D__MICROLIB -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I ../Drivers/CMSIS/Include-I.\RTE\_Three-channel_controller_v3.0-I"D:\Program Files\Keil_v5\Arm\Packs\ARM\CMSIS\5.8.0\CMSIS\Core\Include"-I"D:\Program Files\Keil_v5\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\Include"-D__UVISION_VERSION="536" -D_RTE_ -DSTM32F10X_HD -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F103xE-o "three-channel controller_v3.0\system_control.o" --omf_browse "three-channel controller_v3.0\system_control.crf" --depend "three-channel controller_v3.0\system_control.d")
 I (../Core/Inc/system_control.h)(0x6878EBFE)
 I (../Core/Inc/main.h)(0x6877C3CA)
 I (../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h)(0x67715408)
@@ -220,11 +220,11 @@ I (../Core/Inc/temperature_monitor.h)(0x686661AE)
 I (../Core/Inc/oled_display.h)(0x68764D52)
 I (../Core/Inc/gpio_control.h)(0x68778296)
 I (../Core/Inc/safety_monitor.h)(0x6878F848)
-I (../Core/Inc/usart.h)(0x68778031)
+I (../Core/Inc/usart.h)(0x68791AD7)
 I (../Core/Inc/iwdg.h)(0x686B5402)
 I (../Core/Inc/smart_delay.h)(0x686A7655)
-I (../Core/Inc/log_system.h)(0x68779582)
-I (../Core/Inc/w25q128_driver.h)(0x686BC77E)
+I (../Core/Inc/log_system.h)(0x68792BD3)
+I (../Core/Inc/w25q128_driver.h)(0x68791AD7)
 I (../Core/Inc/spi.h)(0x68637D77)
 I (D:\Program Files\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x60252374)
 F (..\Core\Src\safety_monitor.c)(0x6878F8F6)(--c99 -c --cpu Cortex-M3 -D__MICROLIB -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I ../Drivers/CMSIS/Include-I.\RTE\_Three-channel_controller_v3.0-I"D:\Program Files\Keil_v5\Arm\Packs\ARM\CMSIS\5.8.0\CMSIS\Core\Include"-I"D:\Program Files\Keil_v5\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\Include"-D__UVISION_VERSION="536" -D_RTE_ -DSTM32F10X_HD -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F103xE-o "three-channel controller_v3.0\safety_monitor.o" --omf_browse "three-channel controller_v3.0\safety_monitor.crf" --depend "three-channel controller_v3.0\safety_monitor.d")
@@ -268,15 +268,15 @@ I (D:\Program Files\Keil_v5\ARM\ARMCC\include\string.h)(0x6025237E)
 I (../Core/Inc/gpio_control.h)(0x68778296)
 I (../Core/Inc/relay_control.h)(0x68778031)
 I (../Core/Inc/temperature_monitor.h)(0x686661AE)
-I (../Core/Inc/log_system.h)(0x68779582)
-I (../Core/Inc/w25q128_driver.h)(0x686BC77E)
+I (../Core/Inc/log_system.h)(0x68792BD3)
+I (../Core/Inc/w25q128_driver.h)(0x68791AD7)
 I (../Core/Inc/spi.h)(0x68637D77)
 I (../Core/Inc/smart_delay.h)(0x686A7655)
 I (../Core/Inc/system_control.h)(0x6878EBFE)
 I (../Core/Inc/iwdg_control.h)(0x6878F43E)
-I (../Core/Inc/usart.h)(0x68778031)
+I (../Core/Inc/usart.h)(0x68791AD7)
 F (..\Core\Src\minyerlogo.c)(0x6869535C)(--c99 -c --cpu Cortex-M3 -D__MICROLIB -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I ../Drivers/CMSIS/Include-I.\RTE\_Three-channel_controller_v3.0-I"D:\Program Files\Keil_v5\Arm\Packs\ARM\CMSIS\5.8.0\CMSIS\Core\Include"-I"D:\Program Files\Keil_v5\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\Include"-D__UVISION_VERSION="536" -D_RTE_ -DSTM32F10X_HD -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F103xE-o "three-channel controller_v3.0\minyerlogo.o" --omf_browse "three-channel controller_v3.0\minyerlogo.crf" --depend "three-channel controller_v3.0\minyerlogo.d")
-F (..\Core\Src\iwdg_control.c)(0x6877C3CA)(--c99 -c --cpu Cortex-M3 -D__MICROLIB -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I ../Drivers/CMSIS/Include-I.\RTE\_Three-channel_controller_v3.0-I"D:\Program Files\Keil_v5\Arm\Packs\ARM\CMSIS\5.8.0\CMSIS\Core\Include"-I"D:\Program Files\Keil_v5\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\Include"-D__UVISION_VERSION="536" -D_RTE_ -DSTM32F10X_HD -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F103xE-o "three-channel controller_v3.0\iwdg_control.o" --omf_browse "three-channel controller_v3.0\iwdg_control.crf" --depend "three-channel controller_v3.0\iwdg_control.d")
+F (..\Core\Src\iwdg_control.c)(0x68791AD7)(--c99 -c --cpu Cortex-M3 -D__MICROLIB -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I ../Drivers/CMSIS/Include-I.\RTE\_Three-channel_controller_v3.0-I"D:\Program Files\Keil_v5\Arm\Packs\ARM\CMSIS\5.8.0\CMSIS\Core\Include"-I"D:\Program Files\Keil_v5\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\Include"-D__UVISION_VERSION="536" -D_RTE_ -DSTM32F10X_HD -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F103xE-o "three-channel controller_v3.0\iwdg_control.o" --omf_browse "three-channel controller_v3.0\iwdg_control.crf" --depend "three-channel controller_v3.0\iwdg_control.d")
 I (../Core/Inc/iwdg_control.h)(0x6878F43E)
 I (../Core/Inc/main.h)(0x6877C3CA)
 I (../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h)(0x67715408)
@@ -317,11 +317,11 @@ I (D:\Program Files\Keil_v5\ARM\ARMCC\include\string.h)(0x6025237E)
 I (../Core/Inc/iwdg.h)(0x686B5402)
 I (../Core/Inc/safety_monitor.h)(0x6878F848)
 I (../Core/Inc/system_control.h)(0x6878EBFE)
-I (../Core/Inc/log_system.h)(0x68779582)
-I (../Core/Inc/w25q128_driver.h)(0x686BC77E)
+I (../Core/Inc/log_system.h)(0x68792BD3)
+I (../Core/Inc/w25q128_driver.h)(0x68791AD7)
 I (../Core/Inc/spi.h)(0x68637D77)
 I (../Core/Inc/smart_delay.h)(0x686A7655)
-I (../Core/Inc/usart.h)(0x68778031)
+I (../Core/Inc/usart.h)(0x68791AD7)
 F (..\Core\Src\smart_delay.c)(0x687667A9)(--c99 -c --cpu Cortex-M3 -D__MICROLIB -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I ../Drivers/CMSIS/Include-I.\RTE\_Three-channel_controller_v3.0-I"D:\Program Files\Keil_v5\Arm\Packs\ARM\CMSIS\5.8.0\CMSIS\Core\Include"-I"D:\Program Files\Keil_v5\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\Include"-D__UVISION_VERSION="536" -D_RTE_ -DSTM32F10X_HD -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F103xE-o "three-channel controller_v3.0\smart_delay.o" --omf_browse "three-channel controller_v3.0\smart_delay.crf" --depend "three-channel controller_v3.0\smart_delay.d")
 I (../Core/Inc/smart_delay.h)(0x686A7655)
 I (../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h)(0x67715408)
@@ -363,9 +363,9 @@ I (D:\Program Files\Keil_v5\ARM\ARMCC\include\stdio.h)(0x60252374)
 I (D:\Program Files\Keil_v5\ARM\ARMCC\include\string.h)(0x6025237E)
 I (../Core/Inc/iwdg_control.h)(0x6878F43E)
 I (../Core/Inc/iwdg.h)(0x686B5402)
-I (../Core/Inc/usart.h)(0x68778031)
-F (..\Core\Src\log_system.c)(0x6877A502)(--c99 -c --cpu Cortex-M3 -D__MICROLIB -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I ../Drivers/CMSIS/Include-I.\RTE\_Three-channel_controller_v3.0-I"D:\Program Files\Keil_v5\Arm\Packs\ARM\CMSIS\5.8.0\CMSIS\Core\Include"-I"D:\Program Files\Keil_v5\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\Include"-D__UVISION_VERSION="536" -D_RTE_ -DSTM32F10X_HD -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F103xE-o "three-channel controller_v3.0\log_system.o" --omf_browse "three-channel controller_v3.0\log_system.crf" --depend "three-channel controller_v3.0\log_system.d")
-I (../Core/Inc/log_system.h)(0x68779582)
+I (../Core/Inc/usart.h)(0x68791AD7)
+F (..\Core\Src\log_system.c)(0x68792EBA)(--c99 -c --cpu Cortex-M3 -D__MICROLIB -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I ../Drivers/CMSIS/Include-I.\RTE\_Three-channel_controller_v3.0-I"D:\Program Files\Keil_v5\Arm\Packs\ARM\CMSIS\5.8.0\CMSIS\Core\Include"-I"D:\Program Files\Keil_v5\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\Include"-D__UVISION_VERSION="536" -D_RTE_ -DSTM32F10X_HD -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F103xE-o "three-channel controller_v3.0\log_system.o" --omf_browse "three-channel controller_v3.0\log_system.crf" --depend "three-channel controller_v3.0\log_system.d")
+I (../Core/Inc/log_system.h)(0x68792BD3)
 I (../Core/Inc/main.h)(0x6877C3CA)
 I (../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h)(0x67715408)
 I (../Core/Inc/stm32f1xx_hal_conf.h)(0x686A9413)
@@ -402,15 +402,15 @@ I (../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h)(0x67715408)
 I (D:\Program Files\Keil_v5\ARM\ARMCC\include\stdarg.h)(0x60252376)
 I (D:\Program Files\Keil_v5\ARM\ARMCC\include\stdio.h)(0x60252374)
 I (D:\Program Files\Keil_v5\ARM\ARMCC\include\string.h)(0x6025237E)
-I (../Core/Inc/w25q128_driver.h)(0x686BC77E)
+I (../Core/Inc/w25q128_driver.h)(0x68791AD7)
 I (../Core/Inc/spi.h)(0x68637D77)
 I (../Core/Inc/smart_delay.h)(0x686A7655)
 I (../Core/Inc/system_control.h)(0x6878EBFE)
 I (../Core/Inc/iwdg_control.h)(0x6878F43E)
-I (../Core/Inc/usart.h)(0x68778031)
+I (../Core/Inc/usart.h)(0x68791AD7)
 I (../Core/Inc/iwdg.h)(0x686B5402)
-F (..\Core\Src\w25q128_driver.c)(0x687667A9)(--c99 -c --cpu Cortex-M3 -D__MICROLIB -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I ../Drivers/CMSIS/Include-I.\RTE\_Three-channel_controller_v3.0-I"D:\Program Files\Keil_v5\Arm\Packs\ARM\CMSIS\5.8.0\CMSIS\Core\Include"-I"D:\Program Files\Keil_v5\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\Include"-D__UVISION_VERSION="536" -D_RTE_ -DSTM32F10X_HD -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F103xE-o "three-channel controller_v3.0\w25q128_driver.o" --omf_browse "three-channel controller_v3.0\w25q128_driver.crf" --depend "three-channel controller_v3.0\w25q128_driver.d")
-I (../Core/Inc/w25q128_driver.h)(0x686BC77E)
+F (..\Core\Src\w25q128_driver.c)(0x68791AD7)(--c99 -c --cpu Cortex-M3 -D__MICROLIB -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I ../Drivers/CMSIS/Include-I.\RTE\_Three-channel_controller_v3.0-I"D:\Program Files\Keil_v5\Arm\Packs\ARM\CMSIS\5.8.0\CMSIS\Core\Include"-I"D:\Program Files\Keil_v5\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\Include"-D__UVISION_VERSION="536" -D_RTE_ -DSTM32F10X_HD -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F103xE-o "three-channel controller_v3.0\w25q128_driver.o" --omf_browse "three-channel controller_v3.0\w25q128_driver.crf" --depend "three-channel controller_v3.0\w25q128_driver.d")
+I (../Core/Inc/w25q128_driver.h)(0x68791AD7)
 I (../Core/Inc/main.h)(0x6877C3CA)
 I (../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h)(0x67715408)
 I (../Core/Inc/stm32f1xx_hal_conf.h)(0x686A9413)
@@ -451,8 +451,8 @@ I (../Core/Inc/spi.h)(0x68637D77)
 I (../Core/Inc/smart_delay.h)(0x686A7655)
 I (../Core/Inc/system_control.h)(0x6878EBFE)
 I (../Core/Inc/iwdg_control.h)(0x6878F43E)
-I (../Core/Inc/usart.h)(0x68778031)
-F (../Core/Src/main.c)(0x6878DB5D)(--c99 -c --cpu Cortex-M3 -D__MICROLIB -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I ../Drivers/CMSIS/Include-I.\RTE\_Three-channel_controller_v3.0-I"D:\Program Files\Keil_v5\Arm\Packs\ARM\CMSIS\5.8.0\CMSIS\Core\Include"-I"D:\Program Files\Keil_v5\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\Include"-D__UVISION_VERSION="536" -D_RTE_ -DSTM32F10X_HD -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F103xE-o "three-channel controller_v3.0\main.o" --omf_browse "three-channel controller_v3.0\main.crf" --depend "three-channel controller_v3.0\main.d")
+I (../Core/Inc/usart.h)(0x68791AD7)
+F (../Core/Src/main.c)(0x68791AD7)(--c99 -c --cpu Cortex-M3 -D__MICROLIB -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I ../Drivers/CMSIS/Include-I.\RTE\_Three-channel_controller_v3.0-I"D:\Program Files\Keil_v5\Arm\Packs\ARM\CMSIS\5.8.0\CMSIS\Core\Include"-I"D:\Program Files\Keil_v5\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\Include"-D__UVISION_VERSION="536" -D_RTE_ -DSTM32F10X_HD -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F103xE-o "three-channel controller_v3.0\main.o" --omf_browse "three-channel controller_v3.0\main.crf" --depend "three-channel controller_v3.0\main.d")
 I (../Core/Inc/main.h)(0x6877C3CA)
 I (../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h)(0x67715408)
 I (../Core/Inc/stm32f1xx_hal_conf.h)(0x686A9413)
@@ -495,7 +495,7 @@ I (../Core/Inc/i2c.h)(0x68637D76)
 I (../Core/Inc/iwdg.h)(0x686B5402)
 I (../Core/Inc/spi.h)(0x68637D77)
 I (../Core/Inc/tim.h)(0x68637D77)
-I (../Core/Inc/usart.h)(0x68778031)
+I (../Core/Inc/usart.h)(0x68791AD7)
 I (../Core/Inc/gpio.h)(0x68640A56)
 I (../Core/Inc/system_control.h)(0x6878EBFE)
 I (../Core/Inc/iwdg_control.h)(0x6878F43E)
@@ -504,10 +504,10 @@ I (../Core/Inc/relay_control.h)(0x68778031)
 I (../Core/Inc/safety_monitor.h)(0x6878F848)
 I (../Core/Inc/temperature_monitor.h)(0x686661AE)
 I (../Core/Inc/smart_delay.h)(0x686A7655)
-I (../Core/Inc/log_system.h)(0x68779582)
-I (../Core/Inc/w25q128_driver.h)(0x686BC77E)
+I (../Core/Inc/log_system.h)(0x68792BD3)
+I (../Core/Inc/w25q128_driver.h)(0x68791AD7)
 I (../Core/Inc/oled_display.h)(0x68764D52)
-F (../Core/Src/gpio.c)(0x6877C3CA)(--c99 -c --cpu Cortex-M3 -D__MICROLIB -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I ../Drivers/CMSIS/Include-I.\RTE\_Three-channel_controller_v3.0-I"D:\Program Files\Keil_v5\Arm\Packs\ARM\CMSIS\5.8.0\CMSIS\Core\Include"-I"D:\Program Files\Keil_v5\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\Include"-D__UVISION_VERSION="536" -D_RTE_ -DSTM32F10X_HD -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F103xE-o "three-channel controller_v3.0\gpio.o" --omf_browse "three-channel controller_v3.0\gpio.crf" --depend "three-channel controller_v3.0\gpio.d")
+F (../Core/Src/gpio.c)(0x687922D8)(--c99 -c --cpu Cortex-M3 -D__MICROLIB -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I ../Drivers/CMSIS/Include-I.\RTE\_Three-channel_controller_v3.0-I"D:\Program Files\Keil_v5\Arm\Packs\ARM\CMSIS\5.8.0\CMSIS\Core\Include"-I"D:\Program Files\Keil_v5\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\Include"-D__UVISION_VERSION="536" -D_RTE_ -DSTM32F10X_HD -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F103xE-o "three-channel controller_v3.0\gpio.o" --omf_browse "three-channel controller_v3.0\gpio.crf" --depend "three-channel controller_v3.0\gpio.d")
 I (../Core/Inc/gpio.h)(0x68640A56)
 I (../Core/Inc/main.h)(0x6877C3CA)
 I (../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h)(0x67715408)
@@ -547,9 +547,9 @@ I (D:\Program Files\Keil_v5\ARM\ARMCC\include\stdio.h)(0x60252374)
 I (D:\Program Files\Keil_v5\ARM\ARMCC\include\string.h)(0x6025237E)
 I (../Core/Inc/relay_control.h)(0x68778031)
 I (../Core/Inc/safety_monitor.h)(0x6878F848)
-I (../Core/Inc/usart.h)(0x68778031)
-I (../Core/Inc/log_system.h)(0x68779582)
-I (../Core/Inc/w25q128_driver.h)(0x686BC77E)
+I (../Core/Inc/usart.h)(0x68791AD7)
+I (../Core/Inc/log_system.h)(0x68792BD3)
+I (../Core/Inc/w25q128_driver.h)(0x68791AD7)
 I (../Core/Inc/spi.h)(0x68637D77)
 I (../Core/Inc/smart_delay.h)(0x686A7655)
 I (../Core/Inc/system_control.h)(0x6878EBFE)
@@ -782,8 +782,8 @@ I (../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h)(0x67715408)
 I (D:\Program Files\Keil_v5\ARM\ARMCC\include\stdarg.h)(0x60252376)
 I (D:\Program Files\Keil_v5\ARM\ARMCC\include\stdio.h)(0x60252374)
 I (D:\Program Files\Keil_v5\ARM\ARMCC\include\string.h)(0x6025237E)
-F (../Core/Src/usart.c)(0x68778031)(--c99 -c --cpu Cortex-M3 -D__MICROLIB -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I ../Drivers/CMSIS/Include-I.\RTE\_Three-channel_controller_v3.0-I"D:\Program Files\Keil_v5\Arm\Packs\ARM\CMSIS\5.8.0\CMSIS\Core\Include"-I"D:\Program Files\Keil_v5\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\Include"-D__UVISION_VERSION="536" -D_RTE_ -DSTM32F10X_HD -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F103xE-o "three-channel controller_v3.0\usart.o" --omf_browse "three-channel controller_v3.0\usart.crf" --depend "three-channel controller_v3.0\usart.d")
-I (../Core/Inc/usart.h)(0x68778031)
+F (../Core/Src/usart.c)(0x68791AD7)(--c99 -c --cpu Cortex-M3 -D__MICROLIB -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I ../Drivers/CMSIS/Include-I.\RTE\_Three-channel_controller_v3.0-I"D:\Program Files\Keil_v5\Arm\Packs\ARM\CMSIS\5.8.0\CMSIS\Core\Include"-I"D:\Program Files\Keil_v5\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\Include"-D__UVISION_VERSION="536" -D_RTE_ -DSTM32F10X_HD -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F103xE-o "three-channel controller_v3.0\usart.o" --omf_browse "three-channel controller_v3.0\usart.crf" --depend "three-channel controller_v3.0\usart.d")
+I (../Core/Inc/usart.h)(0x68791AD7)
 I (../Core/Inc/main.h)(0x6877C3CA)
 I (../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h)(0x67715408)
 I (../Core/Inc/stm32f1xx_hal_conf.h)(0x686A9413)
@@ -820,7 +820,7 @@ I (../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h)(0x67715408)
 I (D:\Program Files\Keil_v5\ARM\ARMCC\include\stdarg.h)(0x60252376)
 I (D:\Program Files\Keil_v5\ARM\ARMCC\include\stdio.h)(0x60252374)
 I (D:\Program Files\Keil_v5\ARM\ARMCC\include\string.h)(0x6025237E)
-F (../Core/Src/stm32f1xx_it.c)(0x6877C3CA)(--c99 -c --cpu Cortex-M3 -D__MICROLIB -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I ../Drivers/CMSIS/Include-I.\RTE\_Three-channel_controller_v3.0-I"D:\Program Files\Keil_v5\Arm\Packs\ARM\CMSIS\5.8.0\CMSIS\Core\Include"-I"D:\Program Files\Keil_v5\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\Include"-D__UVISION_VERSION="536" -D_RTE_ -DSTM32F10X_HD -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F103xE-o "three-channel controller_v3.0\stm32f1xx_it.o" --omf_browse "three-channel controller_v3.0\stm32f1xx_it.crf" --depend "three-channel controller_v3.0\stm32f1xx_it.d")
+F (../Core/Src/stm32f1xx_it.c)(0x687922F0)(--c99 -c --cpu Cortex-M3 -D__MICROLIB -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I ../Drivers/CMSIS/Include-I.\RTE\_Three-channel_controller_v3.0-I"D:\Program Files\Keil_v5\Arm\Packs\ARM\CMSIS\5.8.0\CMSIS\Core\Include"-I"D:\Program Files\Keil_v5\Arm\Packs\Keil\STM32F1xx_DFP\2.4.1\Device\Include"-D__UVISION_VERSION="536" -D_RTE_ -DSTM32F10X_HD -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F103xE-o "three-channel controller_v3.0\stm32f1xx_it.o" --omf_browse "three-channel controller_v3.0\stm32f1xx_it.crf" --depend "three-channel controller_v3.0\stm32f1xx_it.d")
 I (../Core/Inc/main.h)(0x6877C3CA)
 I (../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h)(0x67715408)
 I (../Core/Inc/stm32f1xx_hal_conf.h)(0x686A9413)

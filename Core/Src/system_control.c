@@ -393,10 +393,11 @@ void SystemControl_MainLoopScheduler(void)
         RelayControl_ProcessAsyncOperations();
     }
     
-    // ================== 中断处理：每10ms处理中断标志 ===================
-    if(currentTime - lastRelayTime >= 10) {
+    // ================== 继电器异步操作处理：每1ms处理异步状态机 ===================
+    if(currentTime - lastRelayTime >= 1) {
         lastRelayTime = currentTime;
-        RelayControl_ProcessPendingActions();
+        RelayControl_ProcessAsyncOperations(); // 处理异步状态机
+        // RelayControl_ProcessPendingActions(); // 已废弃：改为轮询模式
     }
     
     // 每1000ms输出K_EN状态诊断信息（已注释 - 便于查看异常信息）
@@ -1509,6 +1510,39 @@ void SystemControl_PrintFlashStatus(void)
     DEBUG_Printf("总容量: %.1f MB\r\n", (float)LOG_SYSTEM_SIZE / (1024 * 1024));
     DEBUG_Printf("每条日志: %d 字节\r\n", LOG_ENTRY_SIZE);
     
+    /* ? 添加调试信息：检查重置标记状态 */
+    DEBUG_Printf("=== 重置标记调试信息 ===\r\n");
+    
+    // 读取并分析重置标记
+    uint8_t reset_marker_data[64];  // 读取足够的字节用于分析
+    if (W25Q128_ReadData(LOG_SYSTEM_START_ADDR, reset_marker_data, 64) == W25Q128_OK) {
+        uint32_t* magic1 = (uint32_t*)&reset_marker_data[0];
+        uint32_t* magic2 = (uint32_t*)&reset_marker_data[60];  // final_magic在结构体末尾
+        
+        DEBUG_Printf("? Flash起始地址数据分析：\r\n");
+        DEBUG_Printf("?   - 前4字节(magic1): 0x%08X %s\r\n", 
+                     *magic1, (*magic1 == LOG_RESET_MARKER_MAGIC) ? "(?重置标记)" : "(?普通数据)");
+        DEBUG_Printf("?   - 第60-63字节(magic2): 0x%08X %s\r\n", 
+                     *magic2, (*magic2 == LOG_MAGIC_NUMBER) ? "(?日志标记)" : "(?非日志)");
+        
+        if (*magic1 == LOG_RESET_MARKER_MAGIC && *magic2 == LOG_MAGIC_NUMBER) {
+            DEBUG_Printf("? ? 检测到有效重置标记 - 系统应为清空状态\r\n");
+            DEBUG_Printf("? ??  但是查询显示有%d条日志，存在数据不一致！\r\n", total_entries);
+        } else {
+            DEBUG_Printf("? ? 未检测到重置标记 - 系统为正常使用状态\r\n");
+        }
+        
+        // 显示原始数据的前16字节
+        DEBUG_Printf("?   原始前16字节: ");
+        for(int i = 0; i < 16; i++) {
+            DEBUG_Printf("%02X ", reset_marker_data[i]);
+        }
+        DEBUG_Printf("\r\n");
+    } else {
+        DEBUG_Printf("? ? 无法读取Flash起始地址数据\r\n");
+    }
+    
+    DEBUG_Printf("========================\r\n");
     DEBUG_Printf("===================\r\n");
 }
 

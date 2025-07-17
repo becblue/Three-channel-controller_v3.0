@@ -320,6 +320,9 @@ const char* LogSystem_GetEventCodeString(uint16_t event_code);
 /* 内部验证函数 */
 uint8_t LogSystem_ValidateCategory(LogCategory_t category);
 
+/* 调试函数 */
+void LogSystem_DebugResetProcess(void);
+
 /* USER CODE END EFP */
 
 #ifdef __cplusplus

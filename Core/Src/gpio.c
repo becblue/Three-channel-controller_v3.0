@@ -139,7 +139,7 @@ void MX_GPIO_Init(void)
 
   /*Configure GPIO pin : PtPin */
   GPIO_InitStruct.Pin = K3_EN_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;  // 改为普通输入模式，禁用中断
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(K3_EN_GPIO_Port, &GPIO_InitStruct);
 
@@ -165,7 +165,7 @@ void MX_GPIO_Init(void)
 
   /*Configure GPIO pins : PBPin PBPin PBPin */
   GPIO_InitStruct.Pin = DC_CTRL_Pin|K2_EN_Pin|K1_EN_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;  // 改为普通输入模式，禁用中断
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
