@@ -154,9 +154,6 @@ int main(void)
   
   // 串口初始化测试
   DEBUG_Printf("\r\n=== 三通道切换箱控制系统启动 ===\r\n");
-  DEBUG_Printf("MCU: STM32F103RCT6\r\n");
-  DEBUG_Printf("系统时钟: %luMHz\r\n", HAL_RCC_GetSysClockFreq() / 1000000);
-  DEBUG_Printf("编译时间: %s %s\r\n", __DATE__, __TIME__);
   DEBUG_Printf("USART3调试串口初始化完成\r\n");
 
   // 初始化各功能模块
@@ -197,7 +194,7 @@ int main(void)
   
   // 输出轮询系统初始化状态
   GPIO_PrintPollingStats();
-  DEBUG_Printf("=== 系统已切换为轮询模式，EMI干扰保护已启用 ===\r\n");
+ // DEBUG_Printf("=== 系统已切换为轮询模式，EMI干扰保护已启用 ===\r\n");
 
   // 打印复位原因统计信息（在复位原因设置完成后）
   IwdgControl_PrintResetReason();

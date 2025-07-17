@@ -1,3 +1,11 @@
 {
-    "C_Cpp.default.compilerPath": "d:\\Program Files\\Keil_v5\\UV4\\UV4.exe"
+    "C_Cpp.default.compilerPath": "d:\\Program Files\\Keil_v5\\UV4\\UV4.exe",
+    "files.associations": {
+        "gpio_control.h": "c",
+        "usart.h": "c",
+        "main.h": "c",
+        "iwdg.h": "c",
+        "smart_delay.h": "c",
+        "oled_display.h": "c"
+    }
 }

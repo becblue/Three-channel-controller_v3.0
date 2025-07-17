@@ -130,6 +130,9 @@ void SystemControl_StartLogoDisplay(void)
     // 显示LOGO
     OLED_ShowLogo();
     
+    // 启动开机提示音（使用安全监控系统的非阻塞方式）
+    SafetyMonitor_StartStartupBeep();
+    
     DEBUG_Printf("开始LOGO显示阶段，持续时间: %d秒\r\n", LOGO_DISPLAY_TIME_MS/1000);
 }
 

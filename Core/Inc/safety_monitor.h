@@ -49,11 +49,13 @@ typedef enum {
 } AlarmType_t;
 
 // 蜂鸣器状态枚举
+// 蜂鸣器状态枚举
 typedef enum {
     BEEP_STATE_OFF = 0,     // 蜂鸣器关闭
-    BEEP_STATE_PULSE_1S,    // 1秒间隔脉冲（A、N类异常）
-    BEEP_STATE_PULSE_50MS,  // 50ms间隔脉冲（B~J类异常）
-    BEEP_STATE_CONTINUOUS   // 持续输出（K~M类异常）
+    BEEP_STATE_PULSE_1S,    // 1秒脉冲响（A类N类异常）
+    BEEP_STATE_PULSE_50MS,  // 50ms脉冲响（B~J类异常）
+    BEEP_STATE_CONTINUOUS,  // 连续响（K~M类异常）
+    BEEP_STATE_STARTUP      // 开机提示音
 } BeepState_t;
 
 // 异常信息结构体
@@ -65,20 +67,29 @@ typedef struct {
 } AlarmInfo_t;
 
 // 安全监控结构体
+// 安全监控结构体
 typedef struct {
-    uint16_t alarm_flags;               // 异常标志位（位图，支持16个异常）
+    uint16_t alarm_flags;               // 异常标志位图（支持16个异常）
     AlarmInfo_t alarm_info[ALARM_FLAG_COUNT];  // 详细异常信息
-    uint8_t alarm_output_active;        // ALARM引脚输出状态（1:低电平输出 0:高电平）
+    uint8_t alarm_output_active;        // ALARM输出引脚状态（1:低电平有效 0:高电平无效）
     BeepState_t beep_state;             // 当前蜂鸣器状态
     uint32_t beep_last_toggle_time;     // 蜂鸣器上次切换时间
     uint8_t beep_current_level;         // 蜂鸣器当前电平状态
     uint8_t power_monitor_enabled;      // 电源监控使能标志
+    // 开机提示音相关
+    uint8_t startup_beep_count;         // 开机提示音已响次数
+    uint8_t startup_beep_active;        // 开机提示音激活标志
+    uint32_t startup_beep_start_time;   // 开机提示音开始时间
 } SafetyMonitor_t;
 
 // 时间常量定义
-#define BEEP_PULSE_1S_INTERVAL      1000    // 1秒间隔脉冲周期（ms）
-#define BEEP_PULSE_50MS_INTERVAL    50      // 50ms间隔脉冲周期（ms）
+// 时间常量定义
+#define BEEP_PULSE_1S_INTERVAL      1000    // 1秒脉冲间隔（ms）
+#define BEEP_PULSE_50MS_INTERVAL    50      // 50ms脉冲间隔（ms）
 #define BEEP_PULSE_DURATION         25      // 脉冲持续时间（ms）
+#define BEEP_STARTUP_BEEP_DURATION  200     // 开机提示音单次响声持续时间（ms）
+#define BEEP_STARTUP_BEEP_INTERVAL  200     // 开机提示音间隔时间（ms）
+#define BEEP_STARTUP_BEEP_COUNT     3       // 开机提示音次数
 
 // 温度异常阈值（与temperature_monitor模块保持一致）
 #define TEMP_ALARM_THRESHOLD        60.0f   // 温度报警阈值（60℃）
@@ -125,14 +136,20 @@ void SafetyMonitor_ForceAlarmOutput(uint8_t active);
 
 // ================== 蜂鸣器控制 ===================
 
-// 更新蜂鸣器状态（根据异常类型决定脉冲方式）
+// 更新蜂鸣器状态（根据异常情况决定蜂鸣器响法）
 void SafetyMonitor_UpdateBeepState(void);
 
-// 蜂鸣器脉冲处理（定时调用）
+// 蜂鸣器处理函数（定时调用）
 void SafetyMonitor_ProcessBeep(void);
 
 // 强制设置蜂鸣器状态
 void SafetyMonitor_ForceBeepState(BeepState_t state);
+
+// 启动开机提示音
+void SafetyMonitor_StartStartupBeep(void);
+
+// 停止开机提示音
+void SafetyMonitor_StopStartupBeep(void);
 
 // ================== 电源监控 ===================
 
@@ -197,5 +214,5 @@ void SafetyMonitor_DebugPrint(void);
 }
 #endif
 
-#endif /* __SAFETY_MONITOR_H__ */ 
+#endif /* __SAFETY_MONITOR_H__ */
 

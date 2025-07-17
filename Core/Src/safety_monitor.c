@@ -72,11 +72,16 @@ void SafetyMonitor_Init(void)
     g_safety_monitor.beep_current_level = 0;
     g_safety_monitor.beep_last_toggle_time = HAL_GetTick();
     
-    // 启用电源监控
+    // 初始化开机提示音相关变量
+    g_safety_monitor.startup_beep_count = 0;
+    g_safety_monitor.startup_beep_active = 0;
+    g_safety_monitor.startup_beep_start_time = 0;
+    
+    // 设置电源监控
     g_safety_monitor.power_monitor_enabled = 1;
     
-    // 初始化硬件引脚状态
-    GPIO_SetAlarmOutput(0);  // ALARM引脚初始化为高电平（正常状态）
+    // 初始化硬件输出状态
+    GPIO_SetAlarmOutput(0);  // ALARM输出初始化为高电平（正常状态）
     GPIO_SetBeepOutput(0);   // 蜂鸣器初始化为高电平（关闭状态）
     
     DEBUG_Printf("安全监控模块初始化完成\r\n");
@@ -386,18 +391,76 @@ void SafetyMonitor_ForceAlarmOutput(uint8_t active)
 // ================== 蜂鸣器控制 ===================
 
 /**
+  * @brief  启动开机提示音
+  * @retval 无
+  */
+void SafetyMonitor_StartStartupBeep(void)
+{
+    // 如果已经在进行开机提示音，不重复启动
+    if(g_safety_monitor.startup_beep_active) {
+        DEBUG_Printf("[安全监控] 开机提示音已在进行中，忽略重复启动\r\n");
+        return;
+    }
+    
+    // 初始化开机提示音状态
+    g_safety_monitor.startup_beep_active = 1;
+    g_safety_monitor.startup_beep_count = 0;
+    g_safety_monitor.startup_beep_start_time = HAL_GetTick();
+    g_safety_monitor.beep_state = BEEP_STATE_STARTUP;
+    g_safety_monitor.beep_last_toggle_time = HAL_GetTick();
+    g_safety_monitor.beep_current_level = 0;
+    
+    DEBUG_Printf("[安全监控] 开机提示音启动\r\n");
+}
+
+/**
+  * @brief  停止开机提示音
+  * @retval 无
+  */
+void SafetyMonitor_StopStartupBeep(void)
+{
+    if(!g_safety_monitor.startup_beep_active) {
+        return;
+    }
+    
+    // 停止开机提示音
+    g_safety_monitor.startup_beep_active = 0;
+    g_safety_monitor.startup_beep_count = 0;
+    
+    // 关闭蜂鸣器输出
+    GPIO_SetBeepOutput(0);
+    g_safety_monitor.beep_current_level = 0;
+    
+    // 重新评估蜂鸣器状态（检查是否有异常需要响）
+    SafetyMonitor_UpdateBeepState();
+    
+    DEBUG_Printf("[安全监控] 开机提示音停止\r\n");
+}
+
+/**
   * @brief  更新蜂鸣器状态（根据异常类型决定脉冲方式）
   * @retval 无
   */
 void SafetyMonitor_UpdateBeepState(void)
 {
+    // 如果开机提示音正在进行，优先处理开机提示音
+    if(g_safety_monitor.startup_beep_active) {
+        if(g_safety_monitor.beep_state != BEEP_STATE_STARTUP) {
+            g_safety_monitor.beep_state = BEEP_STATE_STARTUP;
+            g_safety_monitor.beep_last_toggle_time = HAL_GetTick();
+            g_safety_monitor.beep_current_level = 0;
+            DEBUG_Printf("[安全监控] 蜂鸣器状态切换: 开机提示音\r\n");
+        }
+        return;
+    }
+    
     BeepState_t new_state = BEEP_STATE_OFF;
     
-    // 按优先级检查异常类型（K~M类最高优先级）
+    // 按照优先级检查异常类型（K~M类最高优先级）
     if(SafetyMonitor_IsAlarmActive(ALARM_FLAG_K) || 
        SafetyMonitor_IsAlarmActive(ALARM_FLAG_L) || 
        SafetyMonitor_IsAlarmActive(ALARM_FLAG_M)) {
-        new_state = BEEP_STATE_CONTINUOUS;  // 持续低电平
+        new_state = BEEP_STATE_CONTINUOUS;  // 连续低电平
     } else if(SafetyMonitor_IsAlarmActive(ALARM_FLAG_B) || 
               SafetyMonitor_IsAlarmActive(ALARM_FLAG_C) || 
               SafetyMonitor_IsAlarmActive(ALARM_FLAG_D) || 
@@ -407,11 +470,11 @@ void SafetyMonitor_UpdateBeepState(void)
               SafetyMonitor_IsAlarmActive(ALARM_FLAG_H) || 
               SafetyMonitor_IsAlarmActive(ALARM_FLAG_I) || 
               SafetyMonitor_IsAlarmActive(ALARM_FLAG_J)) {
-        new_state = BEEP_STATE_PULSE_50MS;  // 50ms间隔脉冲
+        new_state = BEEP_STATE_PULSE_50MS;  // 50ms脉冲响
     } else if(SafetyMonitor_IsAlarmActive(ALARM_FLAG_A) || 
               SafetyMonitor_IsAlarmActive(ALARM_FLAG_N) ||
               SafetyMonitor_IsAlarmActive(ALARM_FLAG_O)) {  // 添加O类异常处理
-        new_state = BEEP_STATE_PULSE_1S;    // 1秒间隔脉冲
+        new_state = BEEP_STATE_PULSE_1S;    // 1秒脉冲响
     }
     
     // 如果状态改变，更新蜂鸣器
@@ -425,7 +488,7 @@ void SafetyMonitor_UpdateBeepState(void)
         
         // 立即更新蜂鸣器输出
         if(new_state == BEEP_STATE_CONTINUOUS) {
-            GPIO_SetBeepOutput(1);  // 持续低电平
+            GPIO_SetBeepOutput(1);  // 连续低电平
             g_safety_monitor.beep_current_level = 1;
         } else if(new_state == BEEP_STATE_OFF) {
             GPIO_SetBeepOutput(0);  // 关闭
@@ -444,16 +507,40 @@ void SafetyMonitor_ProcessBeep(void)
     uint32_t elapsed_time = current_time - g_safety_monitor.beep_last_toggle_time;
     
     switch(g_safety_monitor.beep_state) {
+        case BEEP_STATE_STARTUP:
+            // 开机提示音：200ms低电平，200ms高电平，重复3次
+            if(g_safety_monitor.beep_current_level == 1 && elapsed_time >= BEEP_STARTUP_BEEP_DURATION) {
+                // 结束低电平响声，切换到高电平
+                GPIO_SetBeepOutput(0);
+                g_safety_monitor.beep_current_level = 0;
+                g_safety_monitor.beep_last_toggle_time = current_time;
+            } else if(g_safety_monitor.beep_current_level == 0 && 
+                     elapsed_time >= BEEP_STARTUP_BEEP_INTERVAL) {
+                // 开始下一个低电平响声
+                g_safety_monitor.startup_beep_count++;
+                if(g_safety_monitor.startup_beep_count <= BEEP_STARTUP_BEEP_COUNT) {
+                    GPIO_SetBeepOutput(1);
+                    g_safety_monitor.beep_current_level = 1;
+                    g_safety_monitor.beep_last_toggle_time = current_time;
+                    DEBUG_Printf("[安全监控] 开机提示音第%d次响声\r\n", g_safety_monitor.startup_beep_count);
+                } else {
+                    // 开机提示音完成，停止
+                    SafetyMonitor_StopStartupBeep();
+                    DEBUG_Printf("[安全监控] 开机提示音完成\r\n");
+                }
+            }
+            break;
+            
         case BEEP_STATE_PULSE_1S:
-            // 1秒间隔脉冲：25ms低电平，975ms高电平
+            // 1秒脉冲响：25ms低电平，975ms高电平
             if(g_safety_monitor.beep_current_level == 1 && elapsed_time >= BEEP_PULSE_DURATION) {
-                // 结束低电平脉冲，切换到高电平
+                // 结束低电平响声，切换到高电平
                 GPIO_SetBeepOutput(0);
                 g_safety_monitor.beep_current_level = 0;
                 g_safety_monitor.beep_last_toggle_time = current_time;
             } else if(g_safety_monitor.beep_current_level == 0 && 
                      elapsed_time >= (BEEP_PULSE_1S_INTERVAL - BEEP_PULSE_DURATION)) {
-                // 开始下一个低电平脉冲
+                // 开始下一个低电平响声
                 GPIO_SetBeepOutput(1);
                 g_safety_monitor.beep_current_level = 1;
                 g_safety_monitor.beep_last_toggle_time = current_time;
@@ -461,7 +548,7 @@ void SafetyMonitor_ProcessBeep(void)
             break;
             
         case BEEP_STATE_PULSE_50MS:
-            // 50ms间隔脉冲：25ms低电平，25ms高电平
+            // 50ms脉冲响：25ms低电平，25ms高电平
             if(elapsed_time >= BEEP_PULSE_DURATION) {
                 g_safety_monitor.beep_current_level = !g_safety_monitor.beep_current_level;
                 GPIO_SetBeepOutput(g_safety_monitor.beep_current_level);
@@ -470,7 +557,7 @@ void SafetyMonitor_ProcessBeep(void)
             break;
             
         case BEEP_STATE_CONTINUOUS:
-            // 持续低电平，无需处理
+            // 连续低电平，无需处理
             break;
             
         case BEEP_STATE_OFF:
@@ -1015,9 +1102,10 @@ const char* SafetyMonitor_GetBeepStateDescription(BeepState_t state)
 {
     switch(state) {
         case BEEP_STATE_OFF:         return "关闭";
-        case BEEP_STATE_PULSE_1S:    return "1秒间隔脉冲";
-        case BEEP_STATE_PULSE_50MS:  return "50ms间隔脉冲";
-        case BEEP_STATE_CONTINUOUS:  return "持续输出";
+        case BEEP_STATE_PULSE_1S:    return "1秒脉冲响";
+        case BEEP_STATE_PULSE_50MS:  return "50ms脉冲响";
+        case BEEP_STATE_CONTINUOUS:  return "连续响";
+        case BEEP_STATE_STARTUP:     return "开机提示音";
         default:                     return "未知状态";
     }
 }
@@ -1048,5 +1136,5 @@ static AlarmType_t SafetyMonitor_GetAlarmType(AlarmFlag_t flag)
         return ALARM_TYPE_KM;  // K~M类异常：持续低电平
     }
     return ALARM_TYPE_AN;  // 默认类型
-} 
+}
 
