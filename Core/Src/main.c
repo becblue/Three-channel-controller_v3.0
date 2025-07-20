@@ -397,9 +397,10 @@ int main(void)
                 }
                 DEBUG_Printf("=== 日志输出完成 ===\r\n");
             } else if (total_press_duration >= 3000) {
-                // KEY1长按3秒：复位分析查询功能已删除
+                // KEY1长按3秒：输出日志
                 key1_long_press_triggered = 1;
-                DEBUG_Printf("\r\n=== KEY1长按%.1f秒，复位分析查询功能已删除 ===\r\n", total_press_duration/1000.0f);
+                DEBUG_Printf("\r\n=== KEY1长按%.1f秒，开始输出日志 ===\r\n", total_press_duration/1000.0f);
+                LogSystem_OutputAll(LOG_FORMAT_DETAILED);
             } else {
                 DEBUG_Printf("KEY1按压时间不足3秒（%.1f秒），无操作\r\n", total_press_duration/1000.0f);
             }
@@ -523,7 +524,7 @@ int main(void)
                     DEBUG_Printf("? 日志系统未初始化，无法清空日志\r\n");
                 }
                 
-                // 复位分析系统重置功能已删除
+                // 复位分析系统重置功能已删除  
                 DEBUG_Printf("复位分析系统重置功能已删除\r\n");
                 
                 DEBUG_Printf("=== 系统数据完全清空操作完成 ===\r\n");

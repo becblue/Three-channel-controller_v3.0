@@ -212,15 +212,21 @@ PUTCHAR_PROTOTYPE
     return ch;
 }
 
-// 调试信息格式化输出函数
+// 调试信息格式化输出函数（临时禁用用于测试）
 void DEBUG_Printf(const char *format, ...)
 {
-    char buf[256];
-    va_list args;
-    va_start(args, format);
-    vsprintf(buf, format, args);
-    va_end(args);
-    HAL_UART_Transmit(&huart3, (uint8_t *)buf, strlen(buf), 100);
+    // 暂时禁用所有调试输出，测试看门狗超时问题
+    // 如果禁用后不再超时，说明问题是调试输出过多导致
+    return;
+    
+    
+    // char buf[256];
+    // va_list args;
+    // va_start(args, format);
+    // vsprintf(buf, format, args);
+    // va_end(args);
+    // HAL_UART_Transmit(&huart3, (uint8_t *)buf, strlen(buf), 100);
+    
 }
 
 /* USER CODE END 1 */
