@@ -272,38 +272,7 @@ int main(void)
   if(LogSystem_Init() == LOG_SYSTEM_OK) {
     DEBUG_Printf("日志系统初始化完成\r\n");
     
-    // 记录重启原因到日志系统（完整支持所有复位类型）
-    char log_msg[48];
-    switch(reset_reason_detected) {
-      case 1:  // 看门狗复位
-        snprintf(log_msg, sizeof(log_msg), "看门狗复位(第%lu次)", reset_count);
-        LOG_WATCHDOG_RESET();
-        // 同时记录详细信息
-        LogSystem_Record(LOG_CATEGORY_SAFETY, 0, LOG_EVENT_WATCHDOG_RESET, log_msg);
-        break;
-        
-      case 6:  // 窗口看门狗复位
-        snprintf(log_msg, sizeof(log_msg), "窗口看门狗复位(第%lu次)", reset_count);
-        LOG_WATCHDOG_RESET();
-        LogSystem_Record(LOG_CATEGORY_SAFETY, 0, LOG_EVENT_WATCHDOG_RESET, log_msg);
-        break;
-        
-      case 2:  // 软件复位
-        LOG_SOFTWARE_RESET("软件主动复位");
-        break;
-        
-      case 3:  // 上电复位
-        LOG_POWER_ON_RESET();
-        break;
-        
-      case 4:  // 引脚复位
-        LOG_SYSTEM_RESTART("引脚复位(按复位按钮)");
-        break;
-        
-      default:  // 正常启动
-        LOG_SYSTEM_START();
-        break;
-    }
+    // 复位原因已记录到调试输出，日志记录功能已删除
   } else {
     DEBUG_Printf("日志系统初始化失败\r\n");
     // 记录初始化失败到调试输出，无法记录到Flash
@@ -312,9 +281,7 @@ int main(void)
   // 复位分析系统初始化（在日志系统之后）
   if(ResetAnalysis_Init() == 0) {
     DEBUG_Printf("复位分析系统初始化完成\r\n");
-    if(LogSystem_IsInitialized()) {
-      LOG_RESET_ANALYSIS_INIT("复位分析系统启动");
-    }
+    // 复位分析系统初始化完成，日志记录功能已删除
   } else {
     DEBUG_Printf("复位分析系统初始化失败\r\n");
   }
@@ -397,12 +364,10 @@ int main(void)
         }
         
         if (key2_was_pressed_with_key1 && total_press_duration >= 3000) {
-            // KEY1+KEY2组合：FLASH读取测试
+            // KEY1+KEY2组合功能已删除
             key1_long_press_triggered = 1;
             key2_long_press_triggered = 1;
-            DEBUG_Printf("\r\n=== KEY1+KEY2组合（%.1f秒），开始FLASH读取测试 ===\r\n", total_press_duration/1000.0f);
-            SystemControl_FlashReadTest();
-            DEBUG_Printf("=== FLASH读取测试完成 ===\r\n");
+            DEBUG_Printf("\r\n=== KEY1+KEY2组合（%.1f秒），功能已删除 ===\r\n", total_press_duration/1000.0f);
         } else if (!key2_was_pressed_with_key1) {
             // 单独KEY1
             if (total_press_duration >= 8000) {
@@ -432,19 +397,9 @@ int main(void)
                 }
                 DEBUG_Printf("=== 日志输出完成 ===\r\n");
             } else if (total_press_duration >= 3000) {
-                // KEY1长按3秒：复位分析查询
+                // KEY1长按3秒：复位分析查询功能已删除
                 key1_long_press_triggered = 1;
-                DEBUG_Printf("\r\n=== KEY1长按%.1f秒，开始复位分析查询 ===\r\n", total_press_duration/1000.0f);
-                
-                // 调用复位分析查询功能
-                ResetAnalysis_HandleQueryRequest();
-                
-                // 记录查询请求到日志
-                if(LogSystem_IsInitialized()) {
-                    LOG_RESET_QUERY_REQUEST("KEY1长按3秒查询");
-                }
-                
-                DEBUG_Printf("=== 复位分析查询完成 ===\r\n");
+                DEBUG_Printf("\r\n=== KEY1长按%.1f秒，复位分析查询功能已删除 ===\r\n", total_press_duration/1000.0f);
             } else {
                 DEBUG_Printf("KEY1按压时间不足3秒（%.1f秒），无操作\r\n", total_press_duration/1000.0f);
             }
@@ -538,24 +493,17 @@ int main(void)
             DEBUG_Printf("[KEY2调试] 进入单独KEY2操作判断\r\n");
             // 单独KEY2操作
             if (total_press_duration >= 15000) {
-                // KEY2长按15秒：完全擦除FLASH（最危险操作）
+                // KEY2长按15秒：功能已删除
                 key2_long_press_triggered = 1;
-                DEBUG_Printf("\r\n=== KEY2长按%.1f秒，开始完全擦除FLASH ===\r\n", total_press_duration/1000.0f);
-                DEBUG_Printf("警告：这将永久删除所有日志数据！\r\n");
-                SystemControl_FlashCompleteErase();
-                DEBUG_Printf("=== FLASH完全擦除操作完成 ===\r\n");
+                DEBUG_Printf("\r\n=== KEY2长按%.1f秒，测试功能已删除 ===\r\n", total_press_duration/1000.0f);
             } else if (total_press_duration >= 10000) {
-                // KEY2长按10秒：完整FLASH写满测试（真正写满15MB）
+                // KEY2长按10秒：功能已删除
                 key2_long_press_triggered = 1;
-                DEBUG_Printf("\r\n=== KEY2长按%.1f秒，开始完整FLASH写满测试 ===\r\n", total_press_duration/1000.0f);
-                SystemControl_FlashFillTest();
-                DEBUG_Printf("=== 完整FLASH写满测试完成 ===\r\n");
+                DEBUG_Printf("\r\n=== KEY2长按%.1f秒，测试功能已删除 ===\r\n", total_press_duration/1000.0f);
             } else if (total_press_duration >= 8000) {
-                // KEY2长按8秒：快速FLASH写满测试（写入10000条）
+                // KEY2长按8秒：功能已删除
                 key2_long_press_triggered = 1;
-                DEBUG_Printf("\r\n=== KEY2长按%.1f秒，开始快速FLASH写满测试 ===\r\n", total_press_duration/1000.0f);
-                SystemControl_FlashQuickFillTest();
-                DEBUG_Printf("=== 快速FLASH写满测试完成 ===\r\n");
+                DEBUG_Printf("\r\n=== KEY2长按%.1f秒，测试功能已删除 ===\r\n", total_press_duration/1000.0f);
             } else if (total_press_duration >= 3000) {
                 // KEY2长按3秒：完全清空日志和复位分析（增强功能）
                 key2_long_press_triggered = 1;
@@ -575,10 +523,8 @@ int main(void)
                     DEBUG_Printf("? 日志系统未初始化，无法清空日志\r\n");
                 }
                 
-                // 第二步：重置复位分析系统
-                DEBUG_Printf("正在重置复位分析系统...\r\n");
-                ResetAnalysis_Reset();
-                DEBUG_Printf("? 复位分析系统已重置\r\n");
+                // 复位分析系统重置功能已删除
+                DEBUG_Printf("复位分析系统重置功能已删除\r\n");
                 
                 DEBUG_Printf("=== 系统数据完全清空操作完成 ===\r\n");
                 DEBUG_Printf("已清空\r\n");  // 用户要求的反馈信息

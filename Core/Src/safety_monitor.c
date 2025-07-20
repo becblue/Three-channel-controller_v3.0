@@ -169,59 +169,7 @@ void SafetyMonitor_SetAlarmFlag(AlarmFlag_t flag, const char* description)
     DEBUG_Printf("[安全监控] 异常标志设置: %c类异常 - %s\r\n", 
                 'A' + flag, g_safety_monitor.alarm_info[flag].description);
     
-    // 记录异常事件到日志系统
-    char log_msg[48];
-    snprintf(log_msg, sizeof(log_msg), "%c类异常:%s", 'A' + flag, g_safety_monitor.alarm_info[flag].description);
-    
-    switch(flag) {
-        case ALARM_FLAG_A:
-            LOG_SAFETY_ALARM_A(log_msg);
-            break;
-        case ALARM_FLAG_B:
-            LOG_SAFETY_ALARM_B(log_msg);
-            break;
-        case ALARM_FLAG_C:
-            LOG_SAFETY_ALARM_C(log_msg);
-            break;
-        case ALARM_FLAG_D:
-            LOG_SAFETY_ALARM_D(log_msg);
-            break;
-        case ALARM_FLAG_E:
-            LOG_SAFETY_ALARM_E(log_msg);
-            break;
-        case ALARM_FLAG_F:
-            LOG_SAFETY_ALARM_F(log_msg);
-            break;
-        case ALARM_FLAG_G:
-            LOG_SAFETY_ALARM_G(log_msg);
-            break;
-        case ALARM_FLAG_H:
-            LOG_SAFETY_ALARM_H(log_msg);
-            break;
-        case ALARM_FLAG_I:
-            LOG_SAFETY_ALARM_I(log_msg);
-            break;
-        case ALARM_FLAG_J:
-            LOG_SAFETY_ALARM_J(log_msg);
-            break;
-        case ALARM_FLAG_K:
-            LOG_SAFETY_ALARM_K(1, log_msg);  // NTC1温度异常
-            break;
-        case ALARM_FLAG_L:
-            LOG_SAFETY_ALARM_L(2, log_msg);  // NTC2温度异常
-            break;
-        case ALARM_FLAG_M:
-            LOG_SAFETY_ALARM_M(3, log_msg);  // NTC3温度异常
-            break;
-        case ALARM_FLAG_N:
-            LOG_SAFETY_ALARM_N(log_msg);
-            break;
-        case ALARM_FLAG_O:
-            LOG_SAFETY_ALARM_O(log_msg);
-            break;
-        default:
-            break;
-    }
+    // 异常事件检测完成，日志记录功能已删除
 }
 
 /**
@@ -244,59 +192,7 @@ void SafetyMonitor_ClearAlarmFlag(AlarmFlag_t flag)
     
     DEBUG_Printf("[安全监控] 异常标志清除: %c类异常解除\r\n", 'A' + flag);
     
-    // 记录异常解除事件到日志系统
-    char log_msg[48];
-    snprintf(log_msg, sizeof(log_msg), "%c类异常解除", 'A' + flag);
-    
-    switch(flag) {
-        case ALARM_FLAG_A:
-            LOG_SAFETY_RESOLVED_A(log_msg);
-            break;
-        case ALARM_FLAG_B:
-            LOG_SAFETY_RESOLVED_B(log_msg);
-            break;
-        case ALARM_FLAG_C:
-            LOG_SAFETY_RESOLVED_C(log_msg);
-            break;
-        case ALARM_FLAG_D:
-            LOG_SAFETY_RESOLVED_D(log_msg);
-            break;
-        case ALARM_FLAG_E:
-            LOG_SAFETY_RESOLVED_E(log_msg);
-            break;
-        case ALARM_FLAG_F:
-            LOG_SAFETY_RESOLVED_F(log_msg);
-            break;
-        case ALARM_FLAG_G:
-            LOG_SAFETY_RESOLVED_G(log_msg);
-            break;
-        case ALARM_FLAG_H:
-            LOG_SAFETY_RESOLVED_H(log_msg);
-            break;
-        case ALARM_FLAG_I:
-            LOG_SAFETY_RESOLVED_I(log_msg);
-            break;
-        case ALARM_FLAG_J:
-            LOG_SAFETY_RESOLVED_J(log_msg);
-            break;
-        case ALARM_FLAG_K:
-            LOG_SAFETY_RESOLVED_K(1, log_msg);  // NTC1温度异常解除
-            break;
-        case ALARM_FLAG_L:
-            LOG_SAFETY_RESOLVED_L(2, log_msg);  // NTC2温度异常解除
-            break;
-        case ALARM_FLAG_M:
-            LOG_SAFETY_RESOLVED_M(3, log_msg);  // NTC3温度异常解除
-            break;
-        case ALARM_FLAG_N:
-            LOG_SAFETY_RESOLVED_N(log_msg);
-            break;
-        case ALARM_FLAG_O:
-            LOG_SAFETY_RESOLVED_O(log_msg);
-            break;
-        default:
-            break;
-    }
+    // 异常解除事件检测完成，日志记录功能已删除
 }
 
 /**

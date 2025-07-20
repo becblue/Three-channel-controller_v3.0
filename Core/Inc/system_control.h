@@ -167,26 +167,11 @@ void SystemControl_PrintKEnDiagnostics(void);
 
 // ================== FLASH测试和管理功能 ===================
 
-// FLASH快速写满测试函数（写入10000条测试数据）
-void SystemControl_FlashQuickFillTest(void);
-
-// FLASH完整写满测试函数（真正写满15MB，测试循环记录功能）
-void SystemControl_FlashFillTest(void);
-
-// FLASH读取测试函数（测试大文件读取功能）
-void SystemControl_FlashReadTest(void);
-
-// 获取FLASH状态信息
+// 获取FLASH状态信息（保留的管理功能）
 void SystemControl_PrintFlashStatus(void);
 
-// 获取复位统计信息
+// 获取复位统计信息（保留的管理功能）
 void SystemControl_PrintResetStatistics(void);
-
-// 完全清空FLASH日志（真正擦除所有数据）
-void SystemControl_FlashCompleteErase(void);
-
-// FLASH性能基准测试函数（测试优化后的传输速度）
-void SystemControl_FlashSpeedBenchmark(void);
 
 // ============== 复位分析系统相关定义 - Flash存储版本 ==============
 
@@ -200,18 +185,8 @@ typedef enum {
     RESET_CAUSE_LOW_POWER           // 低功耗复位
 } ResetCause_t;
 
-// 复位分析系统函数声明 - Flash存储版本
-uint8_t ResetAnalysis_Init(void);                          // 初始化复位分析系统
-void ResetAnalysis_HandleQueryRequest(void);               // 处理查询请求
-void ResetAnalysis_UpdateRealTimeStatus(void);             // 更新实时状态
-uint8_t ResetAnalysis_CheckAbnormalConditions(void);       // 检查异常条件
-uint8_t ResetAnalysis_PredictResetRisk(void);              // 预测复位风险
-void ResetAnalysis_Reset(void);                            // 重置复位分析系统
-
-// Flash存储版本新增函数
-uint32_t ResetAnalysis_GetTotalResets(void);               // 获取总复位次数
-uint32_t ResetAnalysis_GetAbnormalResets(void);            // 获取异常复位次数
-ResetCause_t ResetAnalysis_GetLastResetCause(void);        // 获取最新复位原因
+// 复位分析系统函数声明 - 简化版本（只保留基础初始化功能）
+uint8_t ResetAnalysis_Init(void);                          // 初始化复位分析系统（简化版）
 
 // DEBUG_Printf函数在usart.h中声明
 

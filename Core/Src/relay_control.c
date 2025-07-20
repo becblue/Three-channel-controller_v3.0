@@ -96,8 +96,7 @@ void RelayControl_Init(void)
     DEBUG_Printf("继电器控制模块初始化完成 - 异步状态机版本\r\n");
     DEBUG_Printf("支持功能: 异步操作、中断防抖、干扰检测、优先级处理\r\n");
     
-    // 记录继电器模块初始化日志
-    LogSystem_Record(LOG_CATEGORY_SYSTEM, 0, LOG_EVENT_SYSTEM_START, "继电器异步状态机初始化完成");
+    // 继电器模块初始化完成，日志记录功能已删除
 }
 
 /**
