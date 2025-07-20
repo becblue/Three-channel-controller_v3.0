@@ -208,7 +208,7 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle)
 // printf重定向到USART3
 PUTCHAR_PROTOTYPE
 {
-    HAL_UART_Transmit(&huart3, (uint8_t *)&ch, 1, 0xFFFF);
+    HAL_UART_Transmit(&huart3, (uint8_t *)&ch, 1, 100);
     return ch;
 }
 
@@ -220,7 +220,7 @@ void DEBUG_Printf(const char *format, ...)
     va_start(args, format);
     vsprintf(buf, format, args);
     va_end(args);
-    HAL_UART_Transmit(&huart3, (uint8_t *)buf, strlen(buf), 0xFFFF);
+    HAL_UART_Transmit(&huart3, (uint8_t *)buf, strlen(buf), 100);
 }
 
 /* USER CODE END 1 */
